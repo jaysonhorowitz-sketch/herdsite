@@ -1,0 +1,298 @@
+/**
+ * How Bad Is It? — News Agent
+ *
+ * Fetches recent US policy news, asks Claude to evaluate and structure each
+ * story as a tracker issue, deduplicates against existing issues, then
+ * inserts genuinely new ones into Supabase.
+ *
+ * Requires env vars:
+ *   ANTHROPIC_API_KEY      — claude API key
+ *   NEWS_API_KEY           — newsapi.org key (free tier is fine)
+ *   SUPABASE_URL           — your supabase project URL
+ *   SUPABASE_SERVICE_KEY   — service-role key (not anon — needs write access)
+ */
+
+import Anthropic from "@anthropic-ai/sdk"
+import { createClient } from "@supabase/supabase-js"
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const supabase  = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+)
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function daysAgo(n) {
+  const d = new Date()
+  d.setDate(d.getDate() - n)
+  return d.toISOString().split("T")[0]
+}
+
+function slugify(str) {
+  return str.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .slice(0, 80)
+}
+
+// ── Step 1: Fetch news ─────────────────────────────────────────────────────
+
+async function fetchArticles() {
+  const QUERIES = [
+    "US federal government policy executive order",
+    "Trump administration agency cut fired",
+    "US tariff trade policy Congress",
+    "US immigration deportation border policy",
+    "US healthcare Medicare Medicaid federal",
+    "US environment EPA climate federal ruling",
+    "US Supreme Court federal court ruling",
+    "US military NATO foreign policy",
+    "US press freedom media government",
+    "US federal budget spending cut",
+  ]
+
+  const from = daysAgo(7)
+  const seen = new Set()
+  const articles = []
+
+  for (const q of QUERIES) {
+    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(q)}&language=en&sortBy=publishedAt&pageSize=10&from=${from}&apiKey=${process.env.NEWS_API_KEY}`
+    const res  = await fetch(url)
+    const data = await res.json()
+
+    if (data.status !== "ok") {
+      console.warn(`NewsAPI error for "${q}":`, data.message)
+      continue
+    }
+
+    for (const a of (data.articles || [])) {
+      if (!a.url || !a.title || !a.description) continue
+      if (seen.has(a.url)) continue
+      seen.add(a.url)
+      articles.push(a)
+    }
+  }
+
+  return articles
+}
+
+// ── Step 2: Load existing issues ───────────────────────────────────────────
+
+async function getExisting() {
+  const { data, error } = await supabase
+    .from("issues")
+    .select("title, slug, category, date, severity_score")
+    .order("created_at", { ascending: false })
+
+  if (error) throw new Error("Supabase read error: " + error.message)
+  return data || []
+}
+
+// ── Step 3: Ask Claude to evaluate ────────────────────────────────────────
+
+async function evaluateWithClaude(articles, existing) {
+  const existingList = existing
+    .map(i => `- [${i.slug}] ${i.title} (${i.category}, ${i.date}, score ${i.severity_score})`)
+    .join("\n")
+
+  const articleList = articles
+    .map((a, i) => [
+      `### Article ${i}`,
+      `Title: ${a.title}`,
+      `Description: ${a.description}`,
+      `Source: ${a.source?.name ?? "Unknown"}`,
+      `URL: ${a.url}`,
+      `Published: ${a.publishedAt?.slice(0, 10)}`,
+    ].join("\n"))
+    .join("\n\n")
+
+  const prompt = `You are the editorial AI for "How Bad Is It?" — a nonpartisan U.S. policy severity tracker. Your job is to review recent news and extract SPECIFIC, GRANULAR policy actions worth tracking.
+
+## RULES
+- Tone must be neutral and factual — wire-service style, no opinion
+- Each issue must be ONE specific action or event, not a broad theme
+- Do NOT duplicate any existing issue (listed below)
+- Do NOT add opinion pieces, fundraising stories, or speculation
+- Severity should be CONSERVATIVE: most things are 4–7. Reserve 8–10 for genuinely severe institutional threats. Reserve 1–3 for routine/minor matters.
+- Severity labels: "worth watching" (1–3), "notable impact" (4–6), "major impact" (7–8), "severe impact" (9–10)
+- Categories (pick exactly one): Rule of Law, Government, Economy, Military, Foreign Policy, Healthcare, Immigration, Environment, Science, Press Freedom, Culture, Corruption
+- Actions must be SPECIFIC and ACTIONABLE — real phone numbers, real organizations, real URLs when possible
+- Date format: "Mon YYYY" e.g. "Mar 2025"
+
+## EXISTING ISSUES (do not duplicate)
+${existingList}
+
+## ARTICLES TO EVALUATE
+${articleList}
+
+## OUTPUT
+Return ONLY a valid JSON array. No prose, no markdown fences, no explanation — just the raw JSON array.
+If no articles warrant a new issue, return [].
+
+Each element must match this exact shape:
+{
+  "title": "Specific factual title under 85 characters",
+  "slug": "url-safe-slug-max-60-chars",
+  "category": "one of the categories above",
+  "date": "Mon YYYY",
+  "severity_score": integer 1–10,
+  "severity_label": "worth watching | notable impact | major impact | severe impact",
+  "description": "2–3 sentences, factual, no editorializing. Explain what happened, who it affects, and why it matters institutionally.",
+  "actions": [
+    {"effort": "2 min",  "text": "Specific short action", "url": "https://..."},
+    {"effort": "20 min", "text": "Deeper action"},
+    {"effort": "ongoing","text": "Sustained engagement"}
+  ],
+  "sources": [
+    {"label": "Source name — article headline", "url": "https://..."}
+  ],
+  "is_published": true
+}`
+
+  const msg = await anthropic.messages.create({
+    model: "claude-opus-4-6",
+    max_tokens: 8000,
+    messages: [{ role: "user", content: prompt }],
+  })
+
+  const raw = msg.content[0].text.trim()
+
+  // Strip any accidental markdown fences
+  const cleaned = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim()
+
+  try {
+    const parsed = JSON.parse(cleaned)
+    return Array.isArray(parsed) ? parsed : []
+  } catch (e) {
+    console.error("⚠️  Claude returned invalid JSON. Raw output:")
+    console.error(raw.slice(0, 500))
+    return []
+  }
+}
+
+// ── Step 4: Validate + deduplicate ────────────────────────────────────────
+
+function validateIssue(issue) {
+  const required = ["title", "slug", "category", "date", "severity_score", "severity_label", "description"]
+  for (const field of required) {
+    if (!issue[field]) return `missing field: ${field}`
+  }
+  if (issue.severity_score < 1 || issue.severity_score > 10) return "severity_score out of range"
+  return null // valid
+}
+
+// ── Step 5: Mark stale tariff/superseded issues ────────────────────────────
+
+async function consolidateTariffIssues(newIssues) {
+  // If the agent added a newer tariff summary, unpublish older granular ones
+  const newTariffIssues = newIssues.filter(i =>
+    i.category === "Economy" && /tariff/i.test(i.title)
+  )
+  if (newTariffIssues.length === 0) return
+
+  const { data: oldTariffs } = await supabase
+    .from("issues")
+    .select("id, title, slug, date")
+    .eq("category", "Economy")
+    .ilike("title", "%tariff%")
+    .eq("is_published", true)
+
+  if (!oldTariffs?.length) return
+
+  // Only unpublish ones that are strictly older
+  const newDates = newTariffIssues.map(i => parseDateScore(i.date))
+  const maxNewDate = Math.max(...newDates)
+
+  const toUnpublish = oldTariffs.filter(o => parseDateScore(o.date) < maxNewDate)
+  if (!toUnpublish.length) return
+
+  const ids = toUnpublish.map(i => i.id)
+  await supabase.from("issues").update({ is_published: false }).in("id", ids)
+  console.log(`📦  Unpublished ${ids.length} older tariff issues (superseded by newer entries)`)
+}
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+function parseDateScore(d) {
+  if (!d) return 0
+  const [mon, yr] = d.split(" ")
+  return (parseInt(yr) || 0) * 12 + (MONTHS.indexOf(mon) || 0)
+}
+
+// ── Main ───────────────────────────────────────────────────────────────────
+
+async function main() {
+  console.log("━━━ How Bad Is It? — News Agent ━━━")
+  console.log(`Run started: ${new Date().toISOString()}\n`)
+
+  // 1. Fetch news
+  console.log("🔍 Fetching recent news (last 7 days)...")
+  const articles = await fetchArticles()
+  console.log(`   Found ${articles.length} unique articles\n`)
+
+  if (articles.length === 0) {
+    console.log("No articles found. Exiting.")
+    return
+  }
+
+  // 2. Load existing issues
+  console.log("📋 Loading existing issues from Supabase...")
+  const existing = await getExisting()
+  const existingSlugs = new Set(existing.map(i => i.slug))
+  console.log(`   ${existing.length} existing issues loaded\n`)
+
+  // 3. Evaluate with Claude (process in batches of 20 articles)
+  const BATCH = 20
+  const allNewIssues = []
+  for (let i = 0; i < articles.length; i += BATCH) {
+    const batch = articles.slice(i, i + BATCH)
+    console.log(`🤖 Sending batch ${Math.floor(i / BATCH) + 1} of ${Math.ceil(articles.length / BATCH)} to Claude...`)
+    const issues = await evaluateWithClaude(batch, existing)
+    console.log(`   Claude identified ${issues.length} potential new issues`)
+    allNewIssues.push(...issues)
+  }
+
+  // 4. Validate and deduplicate
+  const toInsert = []
+  for (const issue of allNewIssues) {
+    // Ensure unique slug
+    if (!issue.slug) issue.slug = slugify(issue.title)
+    if (existingSlugs.has(issue.slug)) {
+      console.log(`   ⏭  Skipping duplicate slug: ${issue.slug}`)
+      continue
+    }
+
+    const err = validateIssue(issue)
+    if (err) {
+      console.log(`   ⚠️  Skipping invalid issue "${issue.title}": ${err}`)
+      continue
+    }
+
+    existingSlugs.add(issue.slug) // prevent intra-batch duplicates
+    toInsert.push(issue)
+  }
+
+  console.log(`\n✅ ${toInsert.length} new issues ready to insert`)
+
+  // 5. Insert
+  if (toInsert.length > 0) {
+    const { error } = await supabase.from("issues").insert(toInsert)
+    if (error) throw new Error("Supabase insert error: " + error.message)
+
+    console.log("\nInserted:")
+    toInsert.forEach(i => console.log(`   [${i.severity_score}/10] ${i.title}`))
+
+    // 6. Consolidate superseded issues (e.g. old tariff entries)
+    await consolidateTariffIssues(toInsert)
+  } else {
+    console.log("   Nothing new to insert.")
+  }
+
+  console.log(`\nRun complete: ${new Date().toISOString()}`)
+}
+
+main().catch(e => {
+  console.error("Fatal error:", e)
+  process.exit(1)
+})
