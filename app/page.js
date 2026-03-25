@@ -6,22 +6,32 @@ import Link from "next/link"
 const supabase = createClient("https://mwahckdqmiopkzrmdxyc.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13YWhja2RxbWlvcGt6cm1keHljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDgxMjgsImV4cCI6MjA4ODkyNDEyOH0.0Ua6sM8_zLzCdjJ8SGX-MVFkbbbyzDvrjtZuRoZVVxM")
 
 function barColor(s) {
-  if (s <= 3) return "#22c55e"
-  if (s <= 6) return "#eab308"
-  if (s <= 8) return "#f97316"
+  if (s <= 3) return "#60a5fa"
+  if (s <= 5) return "#facc15"
+  if (s <= 7) return "#fb923c"
+  if (s <= 9) return "#f87171"
   return "#ef4444"
 }
 function badgeBg(s) {
-  if (s <= 3) return "rgba(34,197,94,0.09)"
-  if (s <= 6) return "rgba(234,179,8,0.09)"
-  if (s <= 8) return "rgba(249,115,22,0.09)"
-  return "rgba(239,68,68,0.09)"
+  if (s <= 3) return "rgba(96,165,250,0.09)"
+  if (s <= 5) return "rgba(234,179,8,0.09)"
+  if (s <= 7) return "rgba(249,115,22,0.09)"
+  if (s <= 9) return "rgba(248,113,113,0.09)"
+  return "rgba(239,68,68,0.11)"
 }
 function badgeText(s) {
-  if (s <= 3) return "#4ade80"
-  if (s <= 6) return "#facc15"
-  if (s <= 8) return "#fb923c"
+  if (s <= 3) return "#93c5fd"
+  if (s <= 5) return "#fde047"
+  if (s <= 7) return "#fdba74"
+  if (s <= 9) return "#fca5a5"
   return "#f87171"
+}
+function impactLabel(s) {
+  if (s <= 3) return "Low Impact"
+  if (s <= 5) return "Worth Watching"
+  if (s <= 7) return "Notable"
+  if (s <= 9) return "Major"
+  return "Critical"
 }
 function effortStyle(e) {
   if (e === "2 min")  return { bg: "rgba(14,116,144,0.12)",  color: "#67e8f9", border: "rgba(103,232,249,0.15)" }
@@ -131,7 +141,7 @@ export default function Home() {
   const word = SCALE_WORDS[wordIdx]
 
   return (
-    <div style={{ background: "#111827", minHeight: "100vh", color: "#e2e8f0", fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+    <div style={{ background: "linear-gradient(180deg, #111827 0%, #131e2e 100%)", minHeight: "100vh", color: "#e2e8f0", fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
 
       {/* ── Nav ── */}
       <nav style={{
@@ -326,16 +336,16 @@ export default function Home() {
             <Link href={"/issue/" + issue.slug} key={issue.id} style={{ textDecoration: "none", color: "inherit" }}>
               <div
                 style={{
-                  background: "#1a2236",
+                  background: "#1e2a3a",
                   borderRadius: 12,
                   padding: "20px 24px",
                   cursor: "pointer",
                   transition: "background 0.15s, transform 0.15s",
-                  border: "1px solid rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.09)",
                   borderLeft: "3px solid " + barColor(issue.severity_score),
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#1f2a42"; e.currentTarget.style.transform = "translateY(-1px)" }}
-                onMouseLeave={e => { e.currentTarget.style.background = "#1a2236"; e.currentTarget.style.transform = "translateY(0)" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#243347"; e.currentTarget.style.transform = "translateY(-1px)" }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#1e2a3a"; e.currentTarget.style.transform = "translateY(0)" }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -350,7 +360,7 @@ export default function Home() {
                       <span style={{ fontSize: 11, color: "#374151" }}>{issue.date}</span>
                     </div>
                     <h2 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 7px", color: "#e2e8f0", lineHeight: 1.45, letterSpacing: "-0.01em" }}>{issue.title}</h2>
-                    <p style={{ color: "#5b6880", fontSize: 13, lineHeight: 1.65, margin: "0 0 12px" }}>{issue.description}</p>
+                    <p style={{ color: "#8899aa", fontSize: 13, lineHeight: 1.65, margin: "0 0 12px" }}>{issue.description}</p>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                       {issue.actions && issue.actions.map((a, i) => {
                         const s = effortStyle(a.effort)
@@ -375,7 +385,7 @@ export default function Home() {
                       fontSize: 20, fontWeight: 800, color: badgeText(issue.severity_score),
                       letterSpacing: "-0.02em",
                     }}>{issue.severity_score}</div>
-                    <div style={{ fontSize: 9, color: "#374151", marginTop: 5, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 500 }}>{issue.severity_label}</div>
+                    <div style={{ fontSize: 9, color: "#374151", marginTop: 5, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 500 }}>{impactLabel(issue.severity_score)}</div>
                   </div>
                 </div>
 
