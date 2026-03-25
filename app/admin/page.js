@@ -15,16 +15,16 @@ const CATEGORIES = [
 
 function autoSeverityLabel(score) {
   const n = Number(score)
-  if (n <= 3) return "LOW IMPACT"
-  if (n <= 6) return "NOTABLE IMPACT"
-  if (n <= 8) return "MAJOR IMPACT"
-  return "CRITICAL IMPACT"
+  if (n <= 3) return "NOTABLE"
+  if (n <= 6) return "SIGNIFICANT"
+  if (n <= 8) return "MAJOR"
+  return "CRITICAL"
 }
 
 const EMPTY_ACTION = { effort: "2 min", text: "" }
 const EMPTY_FORM = {
   title: "", slug: "", category: CATEGORIES[0], severity_score: 5,
-  severity_label: "NOTABLE IMPACT",
+  severity_label: "SIGNIFICANT",
   description: "",
   actions: [{ ...EMPTY_ACTION }, { ...EMPTY_ACTION }, { ...EMPTY_ACTION }],
   date: "", is_published: true,
@@ -35,10 +35,10 @@ function toSlug(title) {
 }
 
 function severityLabel(s) {
-  if (s <= 3) return { text: "Low",    color: "#4ade80" }
-  if (s <= 6) return { text: "Medium", color: "#facc15" }
-  if (s <= 8) return { text: "High",   color: "#fb923c" }
-  return              { text: "Critical", color: "#f87171" }
+  if (s <= 3) return { text: "Notable",    color: "#4ade80" }
+  if (s <= 6) return { text: "Significant", color: "#facc15" }
+  if (s <= 8) return { text: "Major",      color: "#fb923c" }
+  return              { text: "Critical",   color: "#f87171" }
 }
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
@@ -285,7 +285,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Row 2: category + severity + severity_label + date + published */}
+              {/* Row 2: category + impact score + impact label + date + published */}
               <div style={{ display: "grid", gridTemplateColumns: "2fr 80px 1fr 1fr auto", gap: 16, marginBottom: 16, alignItems: "end" }}>
                 <div>
                   <label style={LABEL}>Category</label>
@@ -295,12 +295,12 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div>
-                  <label style={LABEL}>Severity</label>
+                  <label style={LABEL}>Impact Score</label>
                   <input style={INPUT} type="number" min={1} max={10} value={form.severity_score}
                     onChange={e => setField("severity_score", e.target.value)} />
                 </div>
                 <div>
-                  <label style={LABEL}>Severity Label</label>
+                  <label style={LABEL}>Impact Label</label>
                   <input style={INPUT} value={form.severity_label}
                     onChange={e => setField("severity_label", e.target.value)}
                     placeholder="auto-generated" />
@@ -390,7 +390,7 @@ export default function AdminPage() {
             gridTemplateColumns: "3fr 1.4fr 52px 60px 54px 120px",
             padding: "10px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)",
             gap: 12 }}>
-            {["Title", "Category", "Sev", "Date", "Live", ""].map(h => (
+            {["Title", "Category", "Imp", "Date", "Live", ""].map(h => (
               <span key={h} style={{ fontSize: 10, fontWeight: 700, color: "#374151",
                 letterSpacing: "0.1em", textTransform: "uppercase" }}>{h}</span>
             ))}
@@ -429,7 +429,7 @@ export default function AdminPage() {
                     {issue.category}
                   </div>
 
-                  {/* Severity */}
+                  {/* Impact */}
                   <div style={{ fontSize: 13, fontWeight: 700, color: sev.color }}>
                     {issue.severity_score}
                   </div>

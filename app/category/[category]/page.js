@@ -30,10 +30,10 @@ function barColor(s) {
   return "#ef4444"
 }
 function badgeBg(s) {
-  if (s <= 3) return "rgba(34,197,94,0.1)"
-  if (s <= 6) return "rgba(234,179,8,0.1)"
-  if (s <= 8) return "rgba(249,115,22,0.1)"
-  return "rgba(239,68,68,0.1)"
+  if (s <= 3) return "rgba(34,197,94,0.09)"
+  if (s <= 6) return "rgba(234,179,8,0.09)"
+  if (s <= 8) return "rgba(249,115,22,0.09)"
+  return "rgba(239,68,68,0.09)"
 }
 function badgeText(s) {
   if (s <= 3) return "#4ade80"
@@ -42,9 +42,9 @@ function badgeText(s) {
   return "#f87171"
 }
 function effortStyle(e) {
-  if (e === "2 min")  return { bg: "rgba(14,116,144,0.12)",  color: "#67e8f9", border: "rgba(103,232,249,0.12)" }
-  if (e === "20 min") return { bg: "rgba(124,58,237,0.12)",  color: "#c4b5fd", border: "rgba(196,181,253,0.12)" }
-  return                     { bg: "rgba(15,118,110,0.12)",  color: "#5eead4", border: "rgba(94,234,212,0.12)" }
+  if (e === "2 min")  return { bg: "rgba(14,116,144,0.12)",  color: "#67e8f9", border: "rgba(103,232,249,0.15)" }
+  if (e === "20 min") return { bg: "rgba(124,58,237,0.12)",  color: "#c4b5fd", border: "rgba(196,181,253,0.15)" }
+  return                     { bg: "rgba(15,118,110,0.12)",  color: "#5eead4", border: "rgba(94,234,212,0.15)"  }
 }
 
 function relativeTime(iso) {
@@ -153,7 +153,7 @@ export default function CategoryPage() {
           </h1>
           {!loading && (
             <p style={{ fontSize: 13, color: "#4b5563", margin: 0 }}>
-              {issues.length} issue{issues.length !== 1 ? "s" : ""} tracked · sorted by severity
+              {issues.length} issue{issues.length !== 1 ? "s" : ""} tracked · sorted by impact
             </p>
           )}
         </div>
@@ -208,12 +208,12 @@ export default function CategoryPage() {
             No issues found in this category.
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {issues.map(issue => (
               <Link href={"/issue/" + issue.slug} key={issue.id} style={{ textDecoration: "none", color: "inherit" }}>
                 <div
                   style={{
-                    background: "#1a2236", borderRadius: 10, padding: "20px 24px", cursor: "pointer",
+                    background: "#1a2236", borderRadius: 12, padding: "20px 24px", cursor: "pointer",
                     transition: "background 0.15s, transform 0.15s",
                     border: "1px solid rgba(255,255,255,0.06)",
                     borderLeft: "3px solid " + barColor(issue.severity_score),
@@ -234,7 +234,7 @@ export default function CategoryPage() {
                       </div>
                       <h2 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 7px", color: "#e2e8f0",
                         lineHeight: 1.45, letterSpacing: "-0.01em" }}>{issue.title}</h2>
-                      <p style={{ color: "#4b5563", fontSize: 13, lineHeight: 1.65, margin: "0 0 12px" }}>{issue.description}</p>
+                      <p style={{ color: "#5b6880", fontSize: 13, lineHeight: 1.65, margin: "0 0 12px" }}>{issue.description}</p>
                       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                         {issue.actions?.map((a, i) => {
                           const s = effortStyle(a.effort)
@@ -249,7 +249,7 @@ export default function CategoryPage() {
                     </div>
                     <div style={{ textAlign: "center", flexShrink: 0 }}>
                       <div style={{
-                        width: 46, height: 46, borderRadius: 9,
+                        width: 48, height: 48, borderRadius: 10,
                         background: badgeBg(issue.severity_score),
                         border: `1px solid ${barColor(issue.severity_score)}33`,
                         display: "flex", alignItems: "center", justifyContent: "center",
@@ -276,7 +276,7 @@ export default function CategoryPage() {
           display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontSize: 11, color: "#374151", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>How Bad Is It?</span>
           <p style={{ fontSize: 12, color: "#374151", margin: 0, maxWidth: 500, textAlign: "right", lineHeight: 1.7 }}>
-            Severity ratings are editorial assessments based on institutional impact, scope, reversibility, and legal precedent. Not affiliated with any political party.
+            Impact ratings are editorial assessments based on institutional impact, scope, reversibility, and legal precedent. Not affiliated with any political party.
           </p>
         </div>
       </div>

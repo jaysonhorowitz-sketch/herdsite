@@ -30,8 +30,8 @@ const CLAUDE_PROMPT = `You are a bold, nonpartisan political editor. Given these
 Rules:
 - Generate EXACTLY 10 issues, no more, no fewer
 - Be factual and nonpartisan — no partisan framing, no loaded language
-- severity_score: 1-3 = routine, 4-6 = notable policy shift, 7-8 = major institutional impact, 9-10 = constitutional/crisis level — USE THE FULL RANGE
-- severity_label must be exactly one of: "LOW IMPACT", "NOTABLE IMPACT", "MAJOR IMPACT", "CRITICAL IMPACT", "SEVERE IMPACT"
+- impact_score: 1-3 = routine (NOTABLE), 4-6 = notable policy shift (SIGNIFICANT), 7-8 = major institutional impact (MAJOR), 9-10 = constitutional/crisis level (CRITICAL) — USE THE FULL RANGE
+- impact_label must be exactly one of: "NOTABLE", "SIGNIFICANT", "MAJOR", "CRITICAL"
 - category must be exactly one of: ${CATEGORIES.join(", ")}
 - slug: lowercase, hyphens only, descriptive, unique (e.g. "senate-budget-vote-mar-2026")
 - description: 2-3 sentences, factual, nonpartisan
@@ -47,8 +47,8 @@ Example shape (do not copy values, only structure):
     "title": "Senate Passes Continuing Resolution to Avoid Shutdown",
     "slug": "senate-continuing-resolution-mar-2026",
     "category": "Economy",
-    "severity_score": 6,
-    "severity_label": "NOTABLE IMPACT",
+    "impact_score": 6,
+    "impact_label": "SIGNIFICANT",
     "description": "The Senate passed a short-term spending bill...",
     "actions": [
       { "effort": "2 min", "text": "Call your senator to express your position" },
@@ -145,7 +145,8 @@ async function handler(request) {
 
   // Basic field validation — drop malformed entries
   const valid = issues.filter(issue =>
-    issue.title && issue.slug && issue.category && issue.severity_score &&
+    issue.title && issue.slug && issue.category &&
+    (issue.impact_score || issue.severity_score) &&
     CATEGORIES.includes(issue.category)
   )
 
@@ -173,8 +174,8 @@ async function handler(request) {
     title:          issue.title,
     slug:           issue.slug,
     category:       issue.category,
-    severity_score: Number(issue.severity_score),
-    severity_label: issue.severity_label || severityLabel(issue.severity_score),
+    severity_score: Number(issue.impact_score || issue.severity_score),
+    severity_label: issue.impact_label || issue.severity_label || impactLabel(issue.impact_score || issue.severity_score),
     description:    issue.description || "",
     actions:        Array.isArray(issue.actions) ? issue.actions : [],
     sources:        Array.isArray(issue.sources) ? issue.sources : [],
@@ -198,12 +199,12 @@ async function handler(request) {
   })
 }
 
-function severityLabel(score) {
+function impactLabel(score) {
   const n = Number(score)
-  if (n <= 3) return "LOW IMPACT"
-  if (n <= 6) return "NOTABLE IMPACT"
-  if (n <= 8) return "MAJOR IMPACT"
-  return "CRITICAL IMPACT"
+  if (n <= 3) return "NOTABLE"
+  if (n <= 6) return "SIGNIFICANT"
+  if (n <= 8) return "MAJOR"
+  return "CRITICAL"
 }
 
 export async function POST(request) { return handler(request) }

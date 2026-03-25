@@ -12,10 +12,10 @@ function barColor(s) {
   return "#ef4444"
 }
 function badgeBg(s) {
-  if (s <= 3) return "rgba(34,197,94,0.1)"
-  if (s <= 6) return "rgba(234,179,8,0.1)"
-  if (s <= 8) return "rgba(249,115,22,0.1)"
-  return "rgba(239,68,68,0.1)"
+  if (s <= 3) return "rgba(34,197,94,0.09)"
+  if (s <= 6) return "rgba(234,179,8,0.09)"
+  if (s <= 8) return "rgba(249,115,22,0.09)"
+  return "rgba(239,68,68,0.09)"
 }
 function badgeText(s) {
   if (s <= 3) return "#4ade80"
@@ -24,9 +24,9 @@ function badgeText(s) {
   return "#f87171"
 }
 function effortStyle(e) {
-  if (e === "2 min")  return { bg: "rgba(14,116,144,0.12)",  color: "#67e8f9", border: "rgba(103,232,249,0.12)" }
-  if (e === "20 min") return { bg: "rgba(124,58,237,0.12)",  color: "#c4b5fd", border: "rgba(196,181,253,0.12)" }
-  return                     { bg: "rgba(15,118,110,0.12)",  color: "#5eead4", border: "rgba(94,234,212,0.12)" }
+  if (e === "2 min")  return { bg: "rgba(14,116,144,0.12)",  color: "#67e8f9", border: "rgba(103,232,249,0.15)" }
+  if (e === "20 min") return { bg: "rgba(124,58,237,0.12)",  color: "#c4b5fd", border: "rgba(196,181,253,0.15)" }
+  return                     { bg: "rgba(15,118,110,0.12)",  color: "#5eead4", border: "rgba(94,234,212,0.15)"  }
 }
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
@@ -68,6 +68,28 @@ export default function Home() {
   const [scrolled,    setScrolled]    = useState(false)
   const [wordIdx,     setWordIdx]     = useState(4)
   const [wordVisible, setWordVisible] = useState(true)
+  // loading=true means "checking localStorage" — show blank screen until resolved.
+  // Plain useState(true) (not lazy) so both server and client start with true,
+  // ensuring the blank screen is the very first thing rendered — no flash.
+  const [loading, setLoading]   = useState(true)
+  const [prefs,   setPrefs]     = useState(null)
+  const [showAll, setShowAll]   = useState(false)
+
+  useEffect(() => {
+    let parsed = null
+    try {
+      const raw = localStorage.getItem("howbadisite_prefs")
+      if (raw) parsed = JSON.parse(raw)
+    } catch {}
+
+    if (!parsed || !parsed.completedAt) {
+      window.location.replace("/onboarding")
+      return // keep loading=true — blank screen persists while browser navigates
+    }
+
+    setPrefs(parsed)
+    setLoading(false)
+  }, [])
 
   useEffect(() => {
     supabase.from("issues").select("*").eq("is_published", true)
@@ -88,10 +110,18 @@ export default function Home() {
     return () => clearInterval(id)
   }, [])
 
+  if (loading) return <div style={{ background: "#111827", minHeight: "100vh" }} />
+
+  const userCats   = prefs.categories || []
+  const isPersonal = userCats.length > 0 && !showAll
+
   const existingCats = new Set(issues.map(i => i.category))
   const cats = CAT_ORDER.filter(c => c === "All" || existingCats.has(c))
 
-  const base     = cat === "All" ? issues : issues.filter(i => i.category === cat)
+  // Personalized base: filter to user's chosen categories unless "See All" is active
+  // Category tab filter (cat) is applied on top
+  const personalBase = isPersonal ? issues.filter(i => userCats.includes(i.category)) : issues
+  const base     = cat === "All" ? personalBase : personalBase.filter(i => i.category === cat)
   const filtered = [...base].sort((a, b) => {
     if (sort === "severity") return b.severity_score - a.severity_score
     if (sort === "az")       return a.title.localeCompare(b.title)
@@ -116,8 +146,12 @@ export default function Home() {
             <div style={{ width: 7, height: 7, borderRadius: "50%", background: word.color, boxShadow: `0 0 8px ${word.color}88`, transition: "all 0.5s ease" }} />
             <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#94a3b8" }}>How Bad Is It</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-            <span style={{ fontSize: 12, color: "#4b5563", letterSpacing: "0.04em" }}>United States · 2025</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            <span style={{ fontSize: 12, color: "#4b5563", letterSpacing: "0.04em" }}>Civic Tracker · Stay Informed · Take Action</span>
+            <Link href="/profile" style={{
+              fontSize: 12, fontWeight: 600, color: "#60a5fa",
+              textDecoration: "none", letterSpacing: "0.02em",
+            }}>My Impact</Link>
             <Link href="/donate" style={{
               fontSize: 12, fontWeight: 600, color: "#cbd5e1",
               padding: "7px 16px", borderRadius: 6,
@@ -193,10 +227,47 @@ export default function Home() {
 
           {/* Subtitle */}
           <p style={{ fontSize: 16, color: "#6b7280", lineHeight: 1.7, maxWidth: 480, margin: 0, fontWeight: 400 }}>
-            A nonpartisan severity index tracking U.S. policy actions — with institutional impact, legal context, and steps you can take.
+            Connect with the issues you care about — understand what's happening, why it matters, and how you can make a difference.
           </p>
         </div>
       </div>
+
+      {/* ── Personalized feed banner ── */}
+      {isPersonal && (
+        <div style={{ background: "rgba(59,130,246,0.07)", borderBottom: "1px solid rgba(59,130,246,0.15)" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 32px",
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#60a5fa", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                Your Feed
+              </span>
+              <span style={{ fontSize: 12, color: "#374151" }}>
+                Showing issues in: {userCats.slice(0, 3).join(", ")}{userCats.length > 3 ? ` +${userCats.length - 3} more` : ""}
+              </span>
+            </div>
+            <button
+              onClick={() => setShowAll(true)}
+              style={{ fontSize: 12, color: "#4b5563", background: "none", border: "none",
+                cursor: "pointer", whiteSpace: "nowrap", textDecoration: "underline" }}>
+              See all issues
+            </button>
+          </div>
+        </div>
+      )}
+      {showAll && (
+        <div style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 32px",
+            display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 12, color: "#4b5563" }}>Showing all issues</span>
+            <button
+              onClick={() => setShowAll(false)}
+              style={{ fontSize: 12, color: "#60a5fa", background: "none", border: "none",
+                cursor: "pointer", textDecoration: "underline" }}>
+              ← Back to my feed
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Filter / Sort bar ── */}
       <div style={{
@@ -230,7 +301,7 @@ export default function Home() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0" }}>
             <span style={{ fontSize: 12, color: "#4b5563" }}>
               <span style={{ color: "#6b7280", fontWeight: 600 }}>{filtered.length}</span>{" "}
-              {cat !== "All" ? `results in ${cat}` : "issues tracked"}
+              {cat !== "All" ? `results in ${cat}` : isPersonal ? "issues in your feed" : "issues tracked"}
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <span style={{ fontSize: 11, color: "#374151", marginRight: 6, letterSpacing: "0.06em", textTransform: "uppercase" }}>Sort</span>
@@ -251,13 +322,13 @@ export default function Home() {
 
       {/* ── Issue list ── */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "20px 32px 80px" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {filtered.map(issue => (
             <Link href={"/issue/" + issue.slug} key={issue.id} style={{ textDecoration: "none", color: "inherit" }}>
               <div
                 style={{
                   background: "#1a2236",
-                  borderRadius: 10,
+                  borderRadius: 12,
                   padding: "20px 24px",
                   cursor: "pointer",
                   transition: "background 0.15s, transform 0.15s",
@@ -280,7 +351,7 @@ export default function Home() {
                       <span style={{ fontSize: 11, color: "#374151" }}>{issue.date}</span>
                     </div>
                     <h2 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 7px", color: "#e2e8f0", lineHeight: 1.45, letterSpacing: "-0.01em" }}>{issue.title}</h2>
-                    <p style={{ color: "#4b5563", fontSize: 13, lineHeight: 1.65, margin: "0 0 12px" }}>{issue.description}</p>
+                    <p style={{ color: "#5b6880", fontSize: 13, lineHeight: 1.65, margin: "0 0 12px" }}>{issue.description}</p>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                       {issue.actions && issue.actions.map((a, i) => {
                         const s = effortStyle(a.effort)
@@ -298,7 +369,7 @@ export default function Home() {
 
                   <div style={{ textAlign: "center", flexShrink: 0 }}>
                     <div style={{
-                      width: 46, height: 46, borderRadius: 9,
+                      width: 48, height: 48, borderRadius: 10,
                       background: badgeBg(issue.severity_score),
                       border: `1px solid ${barColor(issue.severity_score)}33`,
                       display: "flex", alignItems: "center", justifyContent: "center",
@@ -320,7 +391,7 @@ export default function Home() {
         <div style={{ marginTop: 64, paddingTop: 32, borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontSize: 11, color: "#374151", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>How Bad Is It?</span>
           <p style={{ fontSize: 12, color: "#374151", margin: 0, maxWidth: 500, textAlign: "right", lineHeight: 1.7 }}>
-            Severity ratings are editorial assessments based on institutional impact, scope, reversibility, and legal precedent. Not affiliated with any political party. Always verify with primary sources.
+            Impact ratings are editorial assessments based on institutional impact, scope, reversibility, and legal precedent. Not affiliated with any political party. Always verify with primary sources.
           </p>
         </div>
       </div>

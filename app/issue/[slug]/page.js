@@ -7,10 +7,10 @@ import { useParams } from "next/navigation"
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
 function getSev(score) {
-  if (score <= 3) return { accent: "#22c55e", bar: "bg-green-500",  label: "Worth Watching"        }
-  if (score <= 6) return { accent: "#eab308", bar: "bg-amber-400",  label: "Notable Impact"        }
-  if (score <= 8) return { accent: "#f97316", bar: "bg-orange-500", label: "Major Impact"          }
-  return               { accent: "#ef4444", bar: "bg-red-500",    label: "Severe Impact"         }
+  if (score <= 3) return { accent: "#22c55e", label: "Notable"    }
+  if (score <= 6) return { accent: "#eab308", label: "Significant" }
+  if (score <= 8) return { accent: "#f97316", label: "Major"      }
+  return                 { accent: "#ef4444", label: "Critical"   }
 }
 
 function effortConfig(effort) {
@@ -227,12 +227,17 @@ function SiteHeader() {
         <Link href="/" style={{ fontSize: 13, fontWeight: 800, color: "#f1f5f9", textDecoration: "none", letterSpacing: "0.08em", textTransform: "uppercase" }}>
           How Bad Is It?
         </Link>
-        <Link href="/" style={{ fontSize: 13, color: "#4b5563", textDecoration: "none", display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
-          </svg>
-          All issues
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <Link href="/profile" style={{ fontSize: 12, fontWeight: 600, color: "#60a5fa", textDecoration: "none", letterSpacing: "0.02em" }}>
+            My Impact
+          </Link>
+          <Link href="/" style={{ fontSize: 13, color: "#4b5563", textDecoration: "none", display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+            </svg>
+            All issues
+          </Link>
+        </div>
       </div>
     </header>
   )
@@ -293,18 +298,65 @@ export default function IssuePage() {
   const params            = useParams()
   const [issue, setIssue] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [news,    setNews]    = useState([])
+  const [news,       setNews]       = useState([])
+  const [nonprofits,    setNonprofits]    = useState([])
+  const [npoLoading,    setNpoLoading]    = useState(false)
+  const [completedKeys, setCompletedKeys] = useState(new Set())
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
+      setCompletedKeys(new Set(stored.map(a => `${a.issueSlug}::${a.actionText}`)))
+    } catch {}
+  }, [])
 
   useEffect(() => {
     supabase.from("issues").select("*").eq("slug", params.slug).eq("is_published", true).single()
       .then(({ data }) => { if (data) setIssue(data); setLoading(false) })
   }, [params.slug])
 
+  function markDone(actionText) {
+    const key = `${params.slug}::${actionText}`
+    setCompletedKeys(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) {
+        next.delete(key)
+        try {
+          const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
+          localStorage.setItem("completedActions", JSON.stringify(stored.filter(a => !(a.issueSlug === params.slug && a.actionText === actionText))))
+        } catch {}
+      } else {
+        next.add(key)
+        try {
+          const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
+          stored.push({ issueSlug: params.slug, issueTitle: issue?.title || params.slug, actionText, timestamp: Date.now() })
+          localStorage.setItem("completedActions", JSON.stringify(stored))
+        } catch {}
+      }
+      return next
+    })
+  }
+
   useEffect(() => {
     if (!issue?.category) return
     supabase.from("news_cache").select("articles").eq("issue_slug", categoryKey(issue.category)).single()
       .then(({ data }) => { if (data?.articles) setNews(data.articles.slice(0, 5)) })
   }, [issue?.category])
+
+  useEffect(() => {
+    if (!issue?.title) return
+    const apiKey = process.env.NEXT_PUBLIC_EVERYORG_API_KEY
+    if (!apiKey) return
+    setNpoLoading(true)
+    fetch(`https://partners.every.org/v0.2/search/${encodeURIComponent(issue.title)}?apiKey=${apiKey}&take=3`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => {
+        const orgs = (data.nonprofits || []).slice(0, 3)
+        setNonprofits(orgs)
+      })
+      .catch(() => {})
+      .finally(() => setNpoLoading(false))
+  }, [issue?.title])
 
   if (loading) return <LoadingScreen />
   if (!issue)  return <NotFoundScreen />
@@ -349,7 +401,7 @@ export default function IssuePage() {
 
         {/* ── Severity panel ── */}
         <div style={{ ...S, borderColor: sev.accent + "33", marginBottom: 12 }}>
-          <p style={{ ...SH, marginBottom: 12 }}>Severity Rating</p>
+          <p style={{ ...SH, marginBottom: 12 }}>Impact Rating</p>
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
               <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1, color: sev.accent, letterSpacing: "-0.04em" }}>{issue.severity_score}</span>
@@ -365,8 +417,8 @@ export default function IssuePage() {
             <div style={{ width: `${issue.severity_score * 10}%`, height: "100%", background: sev.accent, borderRadius: 99, opacity: 0.8 }} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-            <span style={{ fontSize: 10, color: "#374151" }}>Low</span>
-            <span style={{ fontSize: 10, color: "#374151" }}>Severe</span>
+            <span style={{ fontSize: 10, color: "#374151" }}>Notable</span>
+            <span style={{ fontSize: 10, color: "#374151" }}>Critical</span>
           </div>
         </div>
 
@@ -397,31 +449,42 @@ export default function IssuePage() {
             <p style={SH}>What You Can Do</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {issue.actions.map((action, i) => {
-                const ef = effortConfig(action.effort)
+                const ef   = effortConfig(action.effort)
+                const done = completedKeys.has(`${params.slug}::${action.text}`)
+                const rowStyle = {
+                  display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
+                  borderRadius: 8, cursor: "pointer", textDecoration: "none",
+                  border:     `1px solid ${done ? "rgba(34,197,94,0.3)"  : "rgba(255,255,255,0.06)"}`,
+                  background: done ? "rgba(34,197,94,0.07)" : "rgba(255,255,255,0.02)",
+                  transition: "all 0.2s",
+                }
                 const inner = (
                   <>
                     <span style={{
                       fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
                       padding: "4px 9px", borderRadius: 5, flexShrink: 0,
-                      color: ef.color, background: ef.bg, border: `1px solid ${ef.border}`,
+                      color: done ? "#4ade80" : ef.color,
+                      background: done ? "rgba(34,197,94,0.1)" : ef.bg,
+                      border: `1px solid ${done ? "rgba(34,197,94,0.25)" : ef.border}`,
                     }}>{action.effort}</span>
-                    <span style={{ fontSize: 14, color: "#d1d5db", lineHeight: 1.5, flex: 1 }}>{action.text}</span>
-                    {action.url && (
+                    <span style={{ fontSize: 14, color: done ? "#6b7280" : "#d1d5db", lineHeight: 1.5, flex: 1,
+                      textDecoration: done ? "line-through" : "none" }}>
+                      {action.text}
+                    </span>
+                    {done ? (
+                      <span style={{ fontSize: 16, flexShrink: 0 }}>✓</span>
+                    ) : action.url ? (
                       <svg style={{ width: 14, height: 14, color: "#374151", flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
                       </svg>
-                    )}
+                    ) : null}
                   </>
                 )
-                const rowStyle = {
-                  display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-                  borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)",
-                  background: "rgba(255,255,255,0.02)", textDecoration: "none",
-                }
-                return action.url ? (
-                  <a key={i} href={action.url} target="_blank" rel="noopener noreferrer" style={rowStyle}>{inner}</a>
+                return action.url && !done ? (
+                  <a key={i} href={action.url} target="_blank" rel="noopener noreferrer"
+                    style={rowStyle} onClick={() => markDone(action.text)}>{inner}</a>
                 ) : (
-                  <div key={i} style={rowStyle}>{inner}</div>
+                  <div key={i} style={rowStyle} onClick={() => markDone(action.text)}>{inner}</div>
                 )
               })}
             </div>
@@ -476,6 +539,61 @@ export default function IssuePage() {
                 </a>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* ── Organizations Taking Action ── */}
+        {(npoLoading || nonprofits.length > 0) && (
+          <div style={S}>
+            <p style={SH}>Organizations Taking Action</p>
+            {npoLoading ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#374151", fontSize: 13 }}>
+                <svg style={{ animation: "spin 1s linear infinite", width: 14, height: 14 }} fill="none" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25"/>
+                  <path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                Loading…
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {nonprofits.map((org, i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
+                    padding: "14px 16px", borderRadius: 10,
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0", marginBottom: 4 }}>
+                        {org.name}
+                      </div>
+                      {org.description && (
+                        <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>
+                          {org.description.length > 100 ? org.description.slice(0, 100) + "…" : org.description}
+                        </div>
+                      )}
+                    </div>
+                    <a
+                      href={`https://www.every.org/${org.slug}#donate`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        flexShrink: 0,
+                        fontSize: 12, fontWeight: 700,
+                        padding: "7px 16px", borderRadius: 7,
+                        background: "rgba(59,130,246,0.15)",
+                        border: "1px solid rgba(59,130,246,0.3)",
+                        color: "#93c5fd",
+                        textDecoration: "none",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      Donate ↗
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
