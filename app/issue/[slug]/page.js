@@ -367,253 +367,272 @@ export default function IssuePage() {
   const hasSources = issue.sources?.length > 0
   const hasPlayers = issue.players?.length > 0
 
-  const S = { // shared section style
-    background: "#1a2236",
-    borderRadius: 12,
-    border: "1px solid rgba(255,255,255,0.07)",
+  // Light-mode section styles
+  const S = {
+    background: "#ffffff",
+    borderRadius: 14,
+    border: "1px solid #e5e7eb",
     padding: "22px 24px",
     marginBottom: 12,
+    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
   }
-  const SH = { // section heading
-    fontSize: 10, fontWeight: 700, color: "#374151",
+  const SH = {
+    fontSize: 10, fontWeight: 700, color: "#9ca3af",
     textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16,
+    margin: "0 0 16px",
   }
 
   return (
-    <div style={{ background: "#111827", minHeight: "100vh", color: "#e2e8f0", fontFamily: "'Inter', system-ui, sans-serif" }}>
-      <SiteHeader />
+    <div style={{ minHeight: "100vh", fontFamily: "'Inter', system-ui, sans-serif" }}>
 
-      <main style={{ maxWidth: 760, margin: "0 auto", padding: "32px 24px 80px" }}>
+      {/* Dark header section */}
+      <div style={{ background: "#111827", color: "#e2e8f0" }}>
+        <SiteHeader />
 
-        {/* ── Category + date ── */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-          <span style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-            color: sev.accent, background: sev.accent + "18",
-            padding: "4px 10px", borderRadius: 5, border: `1px solid ${sev.accent}30`,
-          }}>{issue.category}</span>
-          {issue.date && <span style={{ fontSize: 12, color: "#374151" }}>{issue.date}</span>}
-        </div>
-
-        {/* ── Title ── */}
-        <h1 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, color: "#f1f5f9", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: 24 }}>
-          {issue.title}
-        </h1>
-
-        {/* ── Severity panel ── */}
-        <div style={{ ...S, borderColor: sev.accent + "33", marginBottom: 12 }}>
-          <p style={{ ...SH, marginBottom: 12 }}>Impact Rating</p>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-              <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1, color: sev.accent, letterSpacing: "-0.04em" }}>{issue.severity_score}</span>
-              <span style={{ fontSize: 22, fontWeight: 600, color: "#374151" }}>/10</span>
+        {/* Dark hero with title + score */}
+        <div style={{ background: "linear-gradient(160deg, #1a2236 0%, #111827 100%)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", padding: "40px 24px 48px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+              <span style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+                color: sev.accent, background: sev.accent + "18",
+                padding: "4px 10px", borderRadius: 5, border: `1px solid ${sev.accent}30`,
+              }}>{issue.category}</span>
+              {issue.date && <span style={{ fontSize: 12, color: "#4b5563" }}>{issue.date}</span>}
             </div>
-            <span style={{
-              fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-              color: sev.accent, background: sev.accent + "15",
-              padding: "6px 14px", borderRadius: 99, border: `1px solid ${sev.accent}30`,
-            }}>{sev.label}</span>
-          </div>
-          <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 99, height: 6, overflow: "hidden" }}>
-            <div style={{ width: `${issue.severity_score * 10}%`, height: "100%", background: sev.accent, borderRadius: 99, opacity: 0.8 }} />
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-            <span style={{ fontSize: 10, color: "#374151" }}>Notable</span>
-            <span style={{ fontSize: 10, color: "#374151" }}>Critical</span>
-          </div>
-        </div>
 
-        {/* ── What is happening ── */}
-        <div style={S}>
-          <p style={SH}>What Is Happening</p>
-          <p style={{ color: "#9ca3af", lineHeight: 1.75, fontSize: 15, margin: 0 }}>{issue.description}</p>
-        </div>
-
-        {/* ── Key Players ── */}
-        {hasPlayers && (
-          <div style={{ ...S, padding: "22px 24px" }}>
-            <p style={SH}>Key Players</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {issue.players.map((player, i) => (
-                <PlayerCard key={i} player={player} />
-              ))}
-            </div>
-            <p style={{ fontSize: 11, color: "#1f2937", marginTop: 14, marginBottom: 0, lineHeight: 1.6 }}>
-              ⚡ = up for election in 2026 · Re-election odds sourced from Kalshi prediction markets · Contact links go directly to official government pages
-            </p>
-          </div>
-        )}
-
-        {/* ── What you can do ── */}
-        {hasActions && (
-          <div style={S}>
-            <p style={SH}>What You Can Do</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {issue.actions.map((action, i) => {
-                const ef   = effortConfig(action.effort)
-                const done = completedKeys.has(`${params.slug}::${action.text}`)
-                const rowStyle = {
-                  display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-                  borderRadius: 8, cursor: "pointer", textDecoration: "none",
-                  border:     `1px solid ${done ? "rgba(34,197,94,0.3)"  : "rgba(255,255,255,0.06)"}`,
-                  background: done ? "rgba(34,197,94,0.07)" : "rgba(255,255,255,0.02)",
-                  transition: "all 0.2s",
-                }
-                const inner = (
-                  <>
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-                      padding: "4px 9px", borderRadius: 5, flexShrink: 0,
-                      color: done ? "#4ade80" : ef.color,
-                      background: done ? "rgba(34,197,94,0.1)" : ef.bg,
-                      border: `1px solid ${done ? "rgba(34,197,94,0.25)" : ef.border}`,
-                    }}>{action.effort}</span>
-                    <span style={{ fontSize: 14, color: done ? "#6b7280" : "#d1d5db", lineHeight: 1.5, flex: 1,
-                      textDecoration: done ? "line-through" : "none" }}>
-                      {action.text}
-                    </span>
-                    {done ? (
-                      <span style={{ fontSize: 16, flexShrink: 0 }}>✓</span>
-                    ) : action.url ? (
-                      <svg style={{ width: 14, height: 14, color: "#374151", flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
-                      </svg>
-                    ) : null}
-                  </>
-                )
-                return action.url && !done ? (
-                  <a key={i} href={action.url} target="_blank" rel="noopener noreferrer"
-                    style={rowStyle} onClick={() => markDone(action.text)}>{inner}</a>
-                ) : (
-                  <div key={i} style={rowStyle} onClick={() => markDone(action.text)}>{inner}</div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* ── Sources ── */}
-        {hasSources && (
-          <div style={S}>
-            <p style={SH}>Sources</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {issue.sources.map((src, i) => (
-                <a key={i} href={src.url} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: 13, color: "#60a5fa", textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
-                  <svg style={{ width: 12, height: 12, flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
-                  </svg>
-                  {src.label}
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Latest News ── */}
-        {news.length > 0 && (
-          <div style={S}>
-            <p style={SH}>Latest News</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-              {news.map((article, i) => (
-                <a
-                  key={i}
-                  href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "block", textDecoration: "none", padding: "11px 0",
-                    borderBottom: i < news.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
-                  }}
-                >
-                  <div style={{ fontSize: 14, fontWeight: 500, color: "#cbd5e1", lineHeight: 1.45,
-                    marginBottom: 4, transition: "color 0.15s" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#f1f5f9"}
-                    onMouseLeave={e => e.currentTarget.style.color = "#cbd5e1"}>
-                    {article.title}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 11, color: "#4b5563", fontWeight: 600 }}>{article.source}</span>
-                    <span style={{ fontSize: 11, color: "#1f2937" }}>·</span>
-                    <span style={{ fontSize: 11, color: "#374151" }}>{relativeTime(article.publishedAt)}</span>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Organizations Taking Action ── */}
-        {(npoLoading || nonprofits.length > 0) && (
-          <div style={S}>
-            <p style={SH}>Organizations Taking Action</p>
-            {npoLoading ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#374151", fontSize: 13 }}>
-                <svg style={{ animation: "spin 1s linear infinite", width: 14, height: 14 }} fill="none" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25"/>
-                  <path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8v8z"/>
-                </svg>
-                Loading…
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20 }}>
+              <h1 style={{ fontSize: "clamp(22px, 4vw, 34px)", fontWeight: 800, color: "#f1f5f9", lineHeight: 1.2, letterSpacing: "-0.02em", margin: 0, flex: 1 }}>
+                {issue.title}
+              </h1>
+              <div style={{ textAlign: "center", flexShrink: 0 }}>
+                <div style={{
+                  width: 64, height: 64, borderRadius: 14,
+                  background: sev.accent + "18",
+                  border: `2px solid ${sev.accent}44`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 28, fontWeight: 900, color: sev.accent, letterSpacing: "-0.03em",
+                }}>{issue.severity_score}</div>
+                <div style={{ fontSize: 9, color: "#4b5563", marginTop: 6, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>{sev.label}</div>
               </div>
-            ) : (
+            </div>
+
+            {/* Score bar */}
+            <div style={{ marginTop: 24 }}>
+              <div style={{ background: "rgba(255,255,255,0.07)", borderRadius: 99, height: 4, overflow: "hidden" }}>
+                <div style={{ width: `${issue.severity_score * 10}%`, height: "100%", background: sev.accent, borderRadius: 99, opacity: 0.8 }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+                <span style={{ fontSize: 10, color: "#374151" }}>Low</span>
+                <span style={{ fontSize: 10, color: "#374151" }}>Critical</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Wave divider */}
+          <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg"
+            style={{ display: "block", width: "100%", marginBottom: -2 }}>
+            <path d="M0 40 L0 20 Q360 0 720 20 Q1080 40 1440 20 L1440 40 Z" fill="#f4f5f7"/>
+          </svg>
+        </div>
+      </div>
+
+      {/* Light content section */}
+      <div style={{ background: "#f4f5f7" }}>
+        <main style={{ maxWidth: 760, margin: "0 auto", padding: "20px 24px 80px" }}>
+
+          {/* ── What is happening ── */}
+          <div style={S}>
+            <p style={SH}>What Is Happening</p>
+            <p style={{ color: "#374151", lineHeight: 1.75, fontSize: 15, margin: 0 }}>{issue.description}</p>
+          </div>
+
+          {/* ── Key Players ── */}
+          {hasPlayers && (
+            <div style={S}>
+              <p style={SH}>Key Players</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {nonprofits.map((org, i) => (
-                  <div key={i} style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
-                    padding: "14px 16px", borderRadius: 10,
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(255,255,255,0.06)",
-                  }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0", marginBottom: 4 }}>
-                        {org.name}
-                      </div>
-                      {org.description && (
-                        <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>
-                          {org.description.length > 100 ? org.description.slice(0, 100) + "…" : org.description}
-                        </div>
-                      )}
-                    </div>
-                    <a
-                      href={`https://www.every.org/${org.slug}#donate`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        flexShrink: 0,
-                        fontSize: 12, fontWeight: 700,
-                        padding: "7px 16px", borderRadius: 7,
-                        background: "rgba(59,130,246,0.15)",
-                        border: "1px solid rgba(59,130,246,0.3)",
-                        color: "#93c5fd",
-                        textDecoration: "none",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Donate ↗
-                    </a>
-                  </div>
+                {issue.players.map((player, i) => (
+                  <PlayerCard key={i} player={player} />
                 ))}
               </div>
-            )}
+              <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 14, marginBottom: 0, lineHeight: 1.6 }}>
+                ⚡ = up for election in 2026 · Re-election odds sourced from Kalshi prediction markets · Contact links go directly to official government pages
+              </p>
+            </div>
+          )}
+
+          {/* ── What you can do ── */}
+          {hasActions && (
+            <div style={S}>
+              <p style={SH}>What You Can Do</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {issue.actions.map((action, i) => {
+                  const ef   = effortConfig(action.effort)
+                  const done = completedKeys.has(`${params.slug}::${action.text}`)
+                  const rowStyle = {
+                    display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
+                    borderRadius: 10, cursor: "pointer", textDecoration: "none",
+                    border:     `1px solid ${done ? "#86efac" : "#e5e7eb"}`,
+                    background: done ? "#f0fdf4" : "#fafafa",
+                    transition: "all 0.2s",
+                  }
+                  const inner = (
+                    <>
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+                        padding: "4px 9px", borderRadius: 5, flexShrink: 0,
+                        color: done ? "#16a34a" : ef.color,
+                        background: done ? "#dcfce7" : ef.bg,
+                        border: `1px solid ${done ? "#86efac" : ef.border}`,
+                      }}>{action.effort}</span>
+                      <span style={{ fontSize: 14, color: done ? "#9ca3af" : "#374151", lineHeight: 1.5, flex: 1,
+                        textDecoration: done ? "line-through" : "none" }}>
+                        {action.text}
+                      </span>
+                      {done ? (
+                        <span style={{ fontSize: 16, flexShrink: 0, color: "#16a34a" }}>✓</span>
+                      ) : action.url ? (
+                        <svg style={{ width: 14, height: 14, color: "#9ca3af", flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                        </svg>
+                      ) : null}
+                    </>
+                  )
+                  return action.url && !done ? (
+                    <a key={i} href={action.url} target="_blank" rel="noopener noreferrer"
+                      style={rowStyle} onClick={() => markDone(action.text)}>{inner}</a>
+                  ) : (
+                    <div key={i} style={rowStyle} onClick={() => markDone(action.text)}>{inner}</div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Sources ── */}
+          {hasSources && (
+            <div style={S}>
+              <p style={SH}>Sources</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {issue.sources.map((src, i) => (
+                  <a key={i} href={src.url} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize: 13, color: "#3b82f6", textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
+                    <svg style={{ width: 12, height: 12, flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                    </svg>
+                    {src.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Latest News ── */}
+          {news.length > 0 && (
+            <div style={S}>
+              <p style={SH}>Latest News</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                {news.map((article, i) => (
+                  <a
+                    key={i}
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "block", textDecoration: "none", padding: "11px 0",
+                      borderBottom: i < news.length - 1 ? "1px solid #f3f4f6" : "none",
+                    }}
+                  >
+                    <div style={{ fontSize: 14, fontWeight: 500, color: "#374151", lineHeight: 1.45,
+                      marginBottom: 4, transition: "color 0.15s" }}
+                      onMouseEnter={e => e.currentTarget.style.color = "#111827"}
+                      onMouseLeave={e => e.currentTarget.style.color = "#374151"}>
+                      {article.title}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 600 }}>{article.source}</span>
+                      <span style={{ fontSize: 11, color: "#d1d5db" }}>·</span>
+                      <span style={{ fontSize: 11, color: "#9ca3af" }}>{relativeTime(article.publishedAt)}</span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Organizations Taking Action ── */}
+          {(npoLoading || nonprofits.length > 0) && (
+            <div style={S}>
+              <p style={SH}>Organizations Taking Action</p>
+              {npoLoading ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#9ca3af", fontSize: 13 }}>
+                  <svg style={{ animation: "spin 1s linear infinite", width: 14, height: 14 }} fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25"/>
+                    <path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                  Loading…
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {nonprofits.map((org, i) => (
+                    <div key={i} style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
+                      padding: "14px 16px", borderRadius: 10,
+                      background: "#fafafa",
+                      border: "1px solid #e5e7eb",
+                    }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#111827", marginBottom: 4 }}>
+                          {org.name}
+                        </div>
+                        {org.description && (
+                          <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>
+                            {org.description.length > 100 ? org.description.slice(0, 100) + "…" : org.description}
+                          </div>
+                        )}
+                      </div>
+                      <a
+                        href={`https://www.every.org/${org.slug}#donate`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          flexShrink: 0,
+                          fontSize: 12, fontWeight: 700,
+                          padding: "7px 16px", borderRadius: 7,
+                          background: "#eff6ff",
+                          border: "1px solid #bfdbfe",
+                          color: "#1d4ed8",
+                          textDecoration: "none",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Donate ↗
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Back ── */}
+          <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#6b7280", textDecoration: "none", marginTop: 8, fontWeight: 500 }}>
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+            </svg>
+            Back to all issues
+          </Link>
+
+        </main>
+
+        <footer style={{ borderTop: "1px solid #e5e7eb", background: "#ffffff" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", padding: "28px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#d1d5db", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>How Bad Is It?</span>
+            <span style={{ fontSize: 11, color: "#9ca3af" }}>Not affiliated with any political party.</span>
           </div>
-        )}
-
-        {/* ── Back ── */}
-        <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#374151", textDecoration: "none", marginTop: 8, fontWeight: 500 }}>
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
-          </svg>
-          Back to all issues
-        </Link>
-
-      </main>
-
-      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)", marginTop: 40 }}>
-        <div style={{ maxWidth: 760, margin: "0 auto", padding: "28px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 11, color: "#1f2937", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>How Bad Is It?</span>
-          <span style={{ fontSize: 11, color: "#1f2937" }}>Not affiliated with any political party.</span>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   )
 }

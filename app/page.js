@@ -5,27 +5,14 @@ import Link from "next/link"
 
 const supabase = createClient("https://mwahckdqmiopkzrmdxyc.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13YWhja2RxbWlvcGt6cm1keHljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDgxMjgsImV4cCI6MjA4ODkyNDEyOH0.0Ua6sM8_zLzCdjJ8SGX-MVFkbbbyzDvrjtZuRoZVVxM")
 
-function barColor(s) {
-  if (s <= 3) return "#60a5fa"
-  if (s <= 5) return "#facc15"
-  if (s <= 7) return "#fb923c"
-  if (s <= 9) return "#f87171"
-  return "#ef4444"
+// Light-mode card colors (border, badge bg, badge text)
+function cardColor(s) {
+  if (s <= 4) return { border: "#3b82f6", bg: "#eff6ff", text: "#1d4ed8" }
+  if (s <= 6) return { border: "#f59e0b", bg: "#fffbeb", text: "#92400e" }
+  if (s <= 8) return { border: "#f97316", bg: "#fff7ed", text: "#9a3412" }
+  return              { border: "#ef4444", bg: "#fef2f2", text: "#991b1b" }
 }
-function badgeBg(s) {
-  if (s <= 3) return "rgba(96,165,250,0.09)"
-  if (s <= 5) return "rgba(234,179,8,0.09)"
-  if (s <= 7) return "rgba(249,115,22,0.09)"
-  if (s <= 9) return "rgba(248,113,113,0.09)"
-  return "rgba(239,68,68,0.11)"
-}
-function badgeText(s) {
-  if (s <= 3) return "#93c5fd"
-  if (s <= 5) return "#fde047"
-  if (s <= 7) return "#fdba74"
-  if (s <= 9) return "#fca5a5"
-  return "#f87171"
-}
+
 function impactLabel(s) {
   if (s <= 3) return "Low Impact"
   if (s <= 5) return "Worth Watching"
@@ -33,10 +20,11 @@ function impactLabel(s) {
   if (s <= 9) return "Major"
   return "Critical"
 }
+
 function effortStyle(e) {
-  if (e === "2 min")  return { bg: "rgba(14,116,144,0.12)",  color: "#67e8f9", border: "rgba(103,232,249,0.15)" }
-  if (e === "20 min") return { bg: "rgba(124,58,237,0.12)",  color: "#c4b5fd", border: "rgba(196,181,253,0.15)" }
-  return                     { bg: "rgba(15,118,110,0.12)",  color: "#5eead4", border: "rgba(94,234,212,0.15)"  }
+  if (e === "2 min")  return { bg: "#e0f2fe", color: "#0369a1", border: "#bae6fd" }
+  if (e === "20 min") return { bg: "#ede9fe", color: "#6d28d9", border: "#ddd6fe" }
+  return                     { bg: "#ccfbf1", color: "#0f766e", border: "#99f6e4" }
 }
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
@@ -47,9 +35,9 @@ function parseDate(d) {
 }
 
 const SORTS = [
-  { key: "recent",   label: "Most Recent" },
-  { key: "severity", label: "Severity"    },
-  { key: "az",       label: "A–Z"         },
+  { key: "severity", label: "Impact" },
+  { key: "recent",   label: "Recent"  },
+  { key: "az",       label: "A–Z"     },
 ]
 
 const CAT_ORDER = [
@@ -57,6 +45,20 @@ const CAT_ORDER = [
   "National Security", "Healthcare", "Environment", "Education & Science",
   "Immigration", "Media & Democracy",
 ]
+
+const CAT_EMOJI = {
+  "All":                "🗂️",
+  "Executive Power":    "⚡",
+  "Rule of Law":        "⚖️",
+  "Economy":            "📈",
+  "Civil Rights":       "✊",
+  "National Security":  "🛡️",
+  "Healthcare":         "🏥",
+  "Environment":        "🌍",
+  "Education & Science":"🔬",
+  "Immigration":        "🌐",
+  "Media & Democracy":  "📰",
+}
 
 const SCALE_WORDS = [
   { text: "Good",       color: "#22c55e", glow: "rgba(34,197,94,0.1)"   },
@@ -78,12 +80,9 @@ export default function Home() {
   const [scrolled,    setScrolled]    = useState(false)
   const [wordIdx,     setWordIdx]     = useState(4)
   const [wordVisible, setWordVisible] = useState(true)
-  // loading=true means "checking localStorage" — show blank screen until resolved.
-  // Plain useState(true) (not lazy) so both server and client start with true,
-  // ensuring the blank screen is the very first thing rendered — no flash.
-  const [loading, setLoading]   = useState(true)
-  const [prefs,   setPrefs]     = useState(null)
-  const [showAll, setShowAll]   = useState(false)
+  const [loading,     setLoading]     = useState(true)
+  const [prefs,       setPrefs]       = useState(null)
+  const [showAll,     setShowAll]     = useState(false)
 
   useEffect(() => {
     let parsed = null
@@ -94,7 +93,7 @@ export default function Home() {
 
     if (!parsed || !parsed.completedAt) {
       window.location.replace("/onboarding")
-      return // keep loading=true — blank screen persists while browser navigates
+      return
     }
 
     setPrefs(parsed)
@@ -128,8 +127,6 @@ export default function Home() {
   const existingCats = new Set(issues.map(i => i.category))
   const cats = CAT_ORDER.filter(c => c === "All" || existingCats.has(c))
 
-  // Personalized base: filter to user's chosen categories unless "See All" is active
-  // Category tab filter (cat) is applied on top
   const personalBase = isPersonal ? issues.filter(i => userCats.includes(i.category)) : issues
   const base     = cat === "All" ? personalBase : personalBase.filter(i => i.category === cat)
   const filtered = [...base].sort((a, b) => {
@@ -140,268 +137,312 @@ export default function Home() {
 
   const word = SCALE_WORDS[wordIdx]
 
+  const critCount  = issues.filter(i => i.severity_score >= 8).length
+  const majorCount = issues.filter(i => i.severity_score >= 6 && i.severity_score < 8).length
+  const totalActions = issues.reduce((acc, i) => acc + (i.actions?.length || 0), 0)
+
   return (
-    <div style={{ background: "linear-gradient(180deg, #111827 0%, #131e2e 100%)", minHeight: "100vh", color: "#e2e8f0", fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+    <div style={{ minHeight: "100vh", fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
 
-      {/* ── Nav ── */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 50,
-        background: scrolled ? "rgba(17,24,39,0.92)" : "rgba(17,24,39,0)",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
-        transition: "all 0.3s ease",
-      }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
-            <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>→ Politics & Governance</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-<Link href="/profile" style={{
-              fontSize: 12, fontWeight: 600, color: "#60a5fa",
-              textDecoration: "none", letterSpacing: "0.02em",
-            }}>My Impact</Link>
-            <Link href="/donate" style={{
-              fontSize: 12, fontWeight: 600, color: "#cbd5e1",
-              padding: "7px 16px", borderRadius: 6,
-              border: "1px solid rgba(255,255,255,0.1)",
-              background: "rgba(255,255,255,0.05)",
-              textDecoration: "none", letterSpacing: "0.02em",
-            }}>Support the project</Link>
-          </div>
-        </div>
-      </nav>
+      {/* ── Dark section ── */}
+      <div style={{ background: "#111827", color: "#e2e8f0" }}>
 
-      {/* ── Hero ── */}
-      <div style={{
-        position: "relative", overflow: "hidden",
-        background: "linear-gradient(160deg, #1a2236 0%, #111827 100%)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-      }}>
-        {/* Subtle grid */}
-        <div style={{
-          position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.4,
-          backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-        }} />
-
-        {/* Ambient glow */}
-        <div style={{
-          position: "absolute", top: -60, left: "25%",
-          width: 600, height: 400,
-          background: `radial-gradient(ellipse at center, ${word.glow} 0%, transparent 70%)`,
-          pointerEvents: "none",
-          transition: "background 0.8s ease",
-        }} />
-
-        <div style={{ position: "relative", maxWidth: 1200, margin: "0 auto", padding: "88px 32px 56px" }}>
-          {/* Eyebrow */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 36 }}>
-            <div style={{
-              display: "flex", alignItems: "center", gap: 7,
-              background: `${word.color}12`, border: `1px solid ${word.color}28`,
-              borderRadius: 99, padding: "5px 14px",
-              transition: "all 0.5s ease",
-            }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: word.color, animation: "pulse 2s infinite", transition: "background 0.5s" }} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: word.color, letterSpacing: "0.12em", textTransform: "uppercase", transition: "color 0.5s" }}>Live Tracker</span>
+        {/* Nav */}
+        <nav style={{
+          position: "sticky", top: 0, zIndex: 50,
+          background: scrolled ? "rgba(17,24,39,0.95)" : "rgba(17,24,39,0)",
+          backdropFilter: scrolled ? "blur(20px)" : "none",
+          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
+          transition: "all 0.3s ease",
+        }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", height: 60,
+            display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
+              <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>→ Politics & Governance</span>
             </div>
-            <span style={{ fontSize: 12, color: "#4b5563" }}>Updated {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+              <Link href="/profile" style={{ fontSize: 12, fontWeight: 600, color: "#60a5fa", textDecoration: "none" }}>My Impact</Link>
+              <Link href="/donate" style={{
+                fontSize: 12, fontWeight: 600, color: "#cbd5e1",
+                padding: "7px 16px", borderRadius: 6,
+                border: "1px solid rgba(255,255,255,0.1)",
+                background: "rgba(255,255,255,0.05)",
+                textDecoration: "none",
+              }}>Support the project</Link>
+            </div>
+          </div>
+        </nav>
+
+        {/* Hero */}
+        <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #1a2236 0%, #111827 100%)" }}>
+          {/* Subtle grid */}
+          <div style={{
+            position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.4,
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }} />
+          {/* Ambient glow */}
+          <div style={{
+            position: "absolute", top: -60, left: "25%",
+            width: 600, height: 400,
+            background: `radial-gradient(ellipse at center, ${word.glow} 0%, transparent 70%)`,
+            pointerEvents: "none",
+            transition: "background 0.8s ease",
+          }} />
+
+          <div style={{ position: "relative", maxWidth: 1200, margin: "0 auto", padding: "88px 32px 48px" }}>
+            {/* Eyebrow */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 36 }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 7,
+                background: `${word.color}12`, border: `1px solid ${word.color}28`,
+                borderRadius: 99, padding: "5px 14px",
+                transition: "all 0.5s ease",
+              }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: word.color, animation: "pulse 2s infinite", transition: "background 0.5s" }} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: word.color, letterSpacing: "0.12em", textTransform: "uppercase", transition: "color 0.5s" }}>Live Tracker</span>
+              </div>
+              <span style={{ fontSize: 12, color: "#4b5563" }}>Updated {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
+            </div>
+
+            {/* Title */}
+            <h1 style={{
+              display: "flex", alignItems: "baseline", flexWrap: "nowrap",
+              gap: "0.22em",
+              fontSize: "clamp(40px, 6.5vw, 80px)",
+              fontWeight: 800, lineHeight: 1,
+              letterSpacing: "-0.04em",
+              margin: "0 0 24px",
+            }}>
+              <span style={{ color: "#f1f5f9" }}>How</span>
+              <span style={{ display: "inline-block", overflow: "hidden", verticalAlign: "bottom", lineHeight: 1.05 }}>
+                <span style={{
+                  display: "inline-block",
+                  color: word.color,
+                  textShadow: `0 2px 40px ${word.color}33`,
+                  opacity: wordVisible ? 1 : 0,
+                  transform: wordVisible ? "translateY(0)" : "translateY(28px)",
+                  transition: "opacity 0.32s ease, transform 0.32s ease, color 0.4s ease, text-shadow 0.4s ease",
+                }}>{word.text}</span>
+              </span>
+              <span style={{ color: "#f1f5f9" }}>Is It?</span>
+            </h1>
+
+            <p style={{ fontSize: 16, color: "#6b7280", lineHeight: 1.7, maxWidth: 480, margin: "0 0 48px", fontWeight: 400 }}>
+              Connect with the issues you care about — understand what's happening, why it matters, and how you can make a difference.
+            </p>
+
+            {/* Category tabs in dark hero */}
+            <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2 }}>
+              {cats.map(c => {
+                const isActive = c === cat
+                return c === "All" ? (
+                  <button
+                    key={c}
+                    onClick={() => setCat("All")}
+                    style={{
+                      flexShrink: 0,
+                      display: "flex", alignItems: "center", gap: 6,
+                      padding: "8px 16px", borderRadius: 99,
+                      background: isActive ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
+                      border: isActive ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.08)",
+                      color: isActive ? "#f1f5f9" : "#6b7280",
+                      fontSize: 13, fontWeight: isActive ? 600 : 400,
+                      cursor: "pointer", transition: "all 0.15s",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <span>{CAT_EMOJI[c]}</span>
+                    <span>{c}</span>
+                  </button>
+                ) : (
+                  <Link
+                    key={c}
+                    href={`/category/${catSlug(c)}`}
+                    style={{
+                      flexShrink: 0,
+                      display: "flex", alignItems: "center", gap: 6,
+                      padding: "8px 16px", borderRadius: 99,
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      color: "#6b7280",
+                      fontSize: 13, fontWeight: 400,
+                      textDecoration: "none",
+                      whiteSpace: "nowrap",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    <span>{CAT_EMOJI[c]}</span>
+                    <span>{c}</span>
+                  </Link>
+                )
+              })}
+            </div>
           </div>
 
-          {/* Title — one horizontal line */}
-          <h1 style={{
-            display: "flex", alignItems: "baseline", flexWrap: "nowrap",
-            gap: "0.22em",
-            fontSize: "clamp(40px, 6.5vw, 80px)",
-            fontWeight: 800, lineHeight: 1,
-            letterSpacing: "-0.04em",
-            margin: "0 0 28px",
-          }}>
-            <span style={{ color: "#f1f5f9" }}>How</span>
-
-            <span style={{ display: "inline-block", overflow: "hidden", verticalAlign: "bottom", lineHeight: 1.05 }}>
-              <span style={{
-                display: "inline-block",
-                color: word.color,
-                textShadow: `0 2px 40px ${word.color}33`,
-                opacity: wordVisible ? 1 : 0,
-                transform: wordVisible ? "translateY(0)" : "translateY(28px)",
-                transition: "opacity 0.32s ease, transform 0.32s ease, color 0.4s ease, text-shadow 0.4s ease",
-              }}>{word.text}</span>
-            </span>
-
-            <span style={{ color: "#f1f5f9" }}>Is It?</span>
-          </h1>
-
-          {/* Subtitle */}
-          <p style={{ fontSize: 16, color: "#6b7280", lineHeight: 1.7, maxWidth: 480, margin: 0, fontWeight: 400 }}>
-            Connect with the issues you care about — understand what's happening, why it matters, and how you can make a difference.
-          </p>
+          {/* Wave divider */}
+          <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"
+            style={{ display: "block", width: "100%", marginBottom: -2 }}>
+            <path d="M0 60 L0 30 Q360 0 720 30 Q1080 60 1440 30 L1440 60 Z" fill="#f4f5f7"/>
+          </svg>
         </div>
       </div>
 
-      {/* ── Personalized feed banner ── */}
-      {isPersonal && (
-        <div style={{ background: "rgba(59,130,246,0.07)", borderBottom: "1px solid rgba(59,130,246,0.15)" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 32px",
-            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#60a5fa", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                Your Feed
-              </span>
-              <span style={{ fontSize: 12, color: "#374151" }}>
-                Showing issues in: {userCats.slice(0, 3).join(", ")}{userCats.length > 3 ? ` +${userCats.length - 3} more` : ""}
-              </span>
+      {/* ── Light section ── */}
+      <div style={{ background: "#f4f5f7", minHeight: "60vh" }}>
+
+        {/* Stats bar */}
+        <div style={{ background: "#ffffff", borderBottom: "1px solid #e5e7eb" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 0, height: 56 }}>
+              {[
+                { value: issues.length, label: "Issues Tracked" },
+                { value: critCount,     label: "Critical" },
+                { value: majorCount,    label: "Major" },
+                { value: totalActions,  label: "Actions Available" },
+              ].map((stat, i) => (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  paddingRight: 32, marginRight: 32,
+                  borderRight: i < 3 ? "1px solid #e5e7eb" : "none",
+                }}>
+                  <span style={{ fontSize: 22, fontWeight: 800, color: "#111827", letterSpacing: "-0.03em" }}>{stat.value}</span>
+                  <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 500 }}>{stat.label}</span>
+                </div>
+              ))}
+
+              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+                {/* Personalized feed toggle */}
+                {isPersonal && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 12, color: "#6b7280" }}>
+                      Your feed · {userCats.slice(0, 2).join(", ")}{userCats.length > 2 ? ` +${userCats.length - 2}` : ""}
+                    </span>
+                    <button onClick={() => setShowAll(true)} style={{
+                      fontSize: 12, color: "#3b82f6", background: "none", border: "none",
+                      cursor: "pointer", fontWeight: 600, padding: 0,
+                    }}>See all →</button>
+                  </div>
+                )}
+                {showAll && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 12, color: "#6b7280" }}>All issues</span>
+                    <button onClick={() => setShowAll(false)} style={{
+                      fontSize: 12, color: "#3b82f6", background: "none", border: "none",
+                      cursor: "pointer", fontWeight: 600, padding: 0,
+                    }}>← My feed</button>
+                  </div>
+                )}
+              </div>
             </div>
-            <button
-              onClick={() => setShowAll(true)}
-              style={{ fontSize: 12, color: "#4b5563", background: "none", border: "none",
-                cursor: "pointer", whiteSpace: "nowrap", textDecoration: "underline" }}>
-              See all issues
-            </button>
           </div>
         </div>
-      )}
-      {showAll && (
-        <div style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 32px",
-            display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 12, color: "#4b5563" }}>Showing all issues</span>
-            <button
-              onClick={() => setShowAll(false)}
-              style={{ fontSize: 12, color: "#60a5fa", background: "none", border: "none",
-                cursor: "pointer", textDecoration: "underline" }}>
-              ← Back to my feed
-            </button>
-          </div>
-        </div>
-      )}
 
-      {/* ── Filter / Sort bar ── */}
-      <div style={{
-        position: "sticky", top: 60, zIndex: 40,
-        background: "rgba(17,24,39,0.95)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-      }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px" }}>
-          <div style={{ display: "flex", gap: 0, overflowX: "auto", scrollbarWidth: "none", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-            {cats.map(c => {
-              const isAllActive = c === "All" && cat === "All"
-              const base = {
-                padding: "13px 16px",
-                border: "none",
-                borderBottom: isAllActive ? `2px solid ${word.color}` : "2px solid transparent",
-                background: "transparent",
-                color: isAllActive ? "#f1f5f9" : "#4b5563",
-                fontSize: 13, fontWeight: isAllActive ? 600 : 400,
-                whiteSpace: "nowrap", letterSpacing: "0.01em",
-                transition: "color 0.15s, border-color 0.4s",
-                marginBottom: -1, textDecoration: "none", display: "inline-block",
-              }
-              return c === "All" ? (
-                <button key={c} onClick={() => setCat("All")} style={{ ...base, cursor: "pointer" }}>{c}</button>
-              ) : (
-                <Link key={c} href={`/category/${catSlug(c)}`} style={base}>{c}</Link>
-              )
-            })}
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0" }}>
-            <span style={{ fontSize: 12, color: "#4b5563" }}>
-              <span style={{ color: "#6b7280", fontWeight: 600 }}>{filtered.length}</span>{" "}
-              {cat !== "All" ? `results in ${cat}` : isPersonal ? "issues in your feed" : "issues tracked"}
+        {/* Sort + count bar */}
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "20px 32px 0" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <span style={{ fontSize: 14, color: "#374151", fontWeight: 600 }}>
+              {filtered.length} {cat !== "All" ? `issues in ${cat}` : isPersonal ? "issues in your feed" : "issues tracked"}
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ fontSize: 11, color: "#374151", marginRight: 6, letterSpacing: "0.06em", textTransform: "uppercase" }}>Sort</span>
+              <span style={{ fontSize: 11, color: "#9ca3af", marginRight: 6, letterSpacing: "0.06em", textTransform: "uppercase" }}>Sort</span>
               {SORTS.map(s => (
                 <button key={s.key} onClick={() => setSort(s.key)} style={{
-                  padding: "5px 12px", borderRadius: 6,
-                  border: "1px solid " + (sort === s.key ? "rgba(255,255,255,0.1)" : "transparent"),
-                  background: sort === s.key ? "rgba(255,255,255,0.07)" : "transparent",
-                  color: sort === s.key ? "#e2e8f0" : "#4b5563",
+                  padding: "5px 14px", borderRadius: 99,
+                  border: "1px solid " + (sort === s.key ? "#d1d5db" : "transparent"),
+                  background: sort === s.key ? "#ffffff" : "transparent",
+                  color: sort === s.key ? "#111827" : "#9ca3af",
                   fontSize: 12, fontWeight: sort === s.key ? 600 : 400,
                   cursor: "pointer", transition: "all 0.15s",
+                  boxShadow: sort === s.key ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
                 }}>{s.label}</button>
               ))}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* ── Issue list ── */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "20px 32px 80px" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {filtered.map(issue => (
-            <Link href={"/issue/" + issue.slug} key={issue.id} style={{ textDecoration: "none", color: "inherit" }}>
-              <div
-                style={{
-                  background: "#1e2a3a",
-                  borderRadius: 12,
-                  padding: "20px 24px",
-                  cursor: "pointer",
-                  transition: "background 0.15s, transform 0.15s",
-                  border: "1px solid rgba(255,255,255,0.09)",
-                  borderLeft: "3px solid " + barColor(issue.severity_score),
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#243347"; e.currentTarget.style.transform = "translateY(-1px)" }}
-                onMouseLeave={e => { e.currentTarget.style.background = "#1e2a3a"; e.currentTarget.style.transform = "translateY(0)" }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                      <span style={{
-                        fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-                        color: badgeText(issue.severity_score),
-                        background: badgeBg(issue.severity_score),
-                        padding: "3px 8px", borderRadius: 4,
-                        border: `1px solid ${barColor(issue.severity_score)}22`,
-                      }}>{issue.category}</span>
-                      <span style={{ fontSize: 11, color: "#374151" }}>{issue.date}</span>
+          {/* Issue cards */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingBottom: 80 }}>
+            {filtered.map(issue => {
+              const cc = cardColor(issue.severity_score)
+              return (
+                <Link href={"/issue/" + issue.slug} key={issue.id} style={{ textDecoration: "none", color: "inherit" }}>
+                  <div
+                    style={{
+                      background: "#ffffff",
+                      borderRadius: 16,
+                      padding: "22px 24px",
+                      cursor: "pointer",
+                      transition: "box-shadow 0.15s, transform 0.15s",
+                      border: "1px solid #e5e7eb",
+                      borderLeft: `4px solid ${cc.border}`,
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.1)"; e.currentTarget.style.transform = "translateY(-1px)" }}
+                    onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.06)"; e.currentTarget.style.transform = "translateY(0)" }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                          <span style={{
+                            fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+                            color: cc.text, background: cc.bg,
+                            padding: "3px 8px", borderRadius: 4,
+                            border: `1px solid ${cc.border}33`,
+                          }}>{issue.category}</span>
+                          <span style={{ fontSize: 11, color: "#9ca3af" }}>{issue.date}</span>
+                        </div>
+                        <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 8px", color: "#111827", lineHeight: 1.4, letterSpacing: "-0.01em" }}>{issue.title}</h2>
+                        <p style={{ color: "#4b5563", fontSize: 14, lineHeight: 1.65, margin: "0 0 12px" }}>{issue.description}</p>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {issue.actions && issue.actions.map((a, i) => {
+                            const s = effortStyle(a.effort)
+                            return (
+                              <span key={i} style={{
+                                fontSize: 11, padding: "4px 12px", borderRadius: 99,
+                                background: s.bg, color: s.color,
+                                border: `1px solid ${s.border}`,
+                                fontWeight: 500,
+                              }}>{a.effort} — {a.text}</span>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      <div style={{ textAlign: "center", flexShrink: 0 }}>
+                        <div style={{
+                          width: 52, height: 52, borderRadius: 12,
+                          background: cc.bg,
+                          border: `2px solid ${cc.border}44`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 22, fontWeight: 800, color: cc.text,
+                          letterSpacing: "-0.02em",
+                        }}>{issue.severity_score}</div>
+                        <div style={{ fontSize: 9, color: "#9ca3af", marginTop: 5, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600 }}>
+                          {impactLabel(issue.severity_score)}
+                        </div>
+                      </div>
                     </div>
-                    <h2 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 7px", color: "#e2e8f0", lineHeight: 1.45, letterSpacing: "-0.01em" }}>{issue.title}</h2>
-                    <p style={{ color: "#8899aa", fontSize: 13, lineHeight: 1.65, margin: "0 0 12px" }}>{issue.description}</p>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      {issue.actions && issue.actions.map((a, i) => {
-                        const s = effortStyle(a.effort)
-                        return (
-                          <span key={i} style={{
-                            fontSize: 11, padding: "4px 10px", borderRadius: 5,
-                            background: s.bg, color: s.color,
-                            border: `1px solid ${s.border}`,
-                            fontWeight: 500,
-                          }}>{a.effort} — {a.text}</span>
-                        )
-                      })}
+
+                    <div style={{ width: "100%", background: "#f3f4f6", borderRadius: 99, height: 3, marginTop: 16 }}>
+                      <div style={{ width: issue.severity_score * 10 + "%", height: 3, borderRadius: 99, background: cc.border, opacity: 0.6 }} />
                     </div>
                   </div>
-
-                  <div style={{ textAlign: "center", flexShrink: 0 }}>
-                    <div style={{
-                      width: 48, height: 48, borderRadius: 10,
-                      background: badgeBg(issue.severity_score),
-                      border: `1px solid ${barColor(issue.severity_score)}33`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 20, fontWeight: 800, color: badgeText(issue.severity_score),
-                      letterSpacing: "-0.02em",
-                    }}>{issue.severity_score}</div>
-                    <div style={{ fontSize: 9, color: "#374151", marginTop: 5, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 500 }}>{impactLabel(issue.severity_score)}</div>
-                  </div>
-                </div>
-
-                <div style={{ width: "100%", background: "rgba(255,255,255,0.05)", borderRadius: 99, height: 2, marginTop: 14 }}>
-                  <div style={{ width: issue.severity_score * 10 + "%", height: 2, borderRadius: 99, background: barColor(issue.severity_score), opacity: 0.7 }} />
-                </div>
-              </div>
-            </Link>
-          ))}
+                </Link>
+              )
+            })}
+          </div>
         </div>
 
-        <div style={{ marginTop: 64, paddingTop: 32, borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 11, color: "#374151", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>How Bad Is It?</span>
-          <p style={{ fontSize: 12, color: "#374151", margin: 0, maxWidth: 500, textAlign: "right", lineHeight: 1.7 }}>
-            Impact ratings are editorial assessments based on institutional impact, scope, reversibility, and legal precedent. Not affiliated with any political party. Always verify with primary sources.
-          </p>
+        {/* Footer */}
+        <div style={{ borderTop: "1px solid #e5e7eb", background: "#ffffff" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px",
+            display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#d1d5db", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>How Bad Is It?</span>
+            <p style={{ fontSize: 12, color: "#9ca3af", margin: 0, maxWidth: 500, textAlign: "right", lineHeight: 1.7 }}>
+              Impact ratings are editorial assessments based on institutional impact, scope, reversibility, and legal precedent. Not affiliated with any political party. Always verify with primary sources.
+            </p>
+          </div>
         </div>
       </div>
 
