@@ -272,15 +272,39 @@ function NotFoundScreen() {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
+function categoryKey(cat) {
+  return "category-" + (cat || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+}
+
+function relativeTime(iso) {
+  if (!iso) return ""
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins  = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days  = Math.floor(diff / 86400000)
+  if (mins  <  1) return "just now"
+  if (mins  < 60) return `${mins}m ago`
+  if (hours < 24) return `${hours}h ago`
+  if (days  <  7) return `${days}d ago`
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
+
 export default function IssuePage() {
   const params            = useParams()
   const [issue, setIssue] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [news,    setNews]    = useState([])
 
   useEffect(() => {
     supabase.from("issues").select("*").eq("slug", params.slug).eq("is_published", true).single()
       .then(({ data }) => { if (data) setIssue(data); setLoading(false) })
   }, [params.slug])
+
+  useEffect(() => {
+    if (!issue?.category) return
+    supabase.from("news_cache").select("articles").eq("issue_slug", categoryKey(issue.category)).single()
+      .then(({ data }) => { if (data?.articles) setNews(data.articles.slice(0, 5)) })
+  }, [issue?.category])
 
   if (loading) return <LoadingScreen />
   if (!issue)  return <NotFoundScreen />
@@ -416,6 +440,39 @@ export default function IssuePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
                   </svg>
                   {src.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Latest News ── */}
+        {news.length > 0 && (
+          <div style={S}>
+            <p style={SH}>Latest News</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+              {news.map((article, i) => (
+                <a
+                  key={i}
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "block", textDecoration: "none", padding: "11px 0",
+                    borderBottom: i < news.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
+                  }}
+                >
+                  <div style={{ fontSize: 14, fontWeight: 500, color: "#cbd5e1", lineHeight: 1.45,
+                    marginBottom: 4, transition: "color 0.15s" }}
+                    onMouseEnter={e => e.currentTarget.style.color = "#f1f5f9"}
+                    onMouseLeave={e => e.currentTarget.style.color = "#cbd5e1"}>
+                    {article.title}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11, color: "#4b5563", fontWeight: 600 }}>{article.source}</span>
+                    <span style={{ fontSize: 11, color: "#1f2937" }}>·</span>
+                    <span style={{ fontSize: 11, color: "#374151" }}>{relativeTime(article.publishedAt)}</span>
+                  </div>
                 </a>
               ))}
             </div>

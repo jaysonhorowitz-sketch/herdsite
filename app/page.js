@@ -43,9 +43,9 @@ const SORTS = [
 ]
 
 const CAT_ORDER = [
-  "All", "Rule of Law", "Government", "Economy", "Military",
-  "Foreign Policy", "Healthcare", "Immigration", "Environment",
-  "Science", "Press Freedom", "Culture", "Corruption",
+  "All", "Executive Power", "Rule of Law", "Economy", "Civil Rights",
+  "National Security", "Healthcare", "Environment", "Education & Science",
+  "Immigration", "Media & Democracy",
 ]
 
 const SCALE_WORDS = [
@@ -57,10 +57,14 @@ const SCALE_WORDS = [
   { text: "Critical",   color: "#dc2626", glow: "rgba(220,38,38,0.14)"  },
 ]
 
+function catSlug(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+}
+
 export default function Home() {
   const [issues,      setIssues]      = useState([])
   const [cat,         setCat]         = useState("All")
-  const [sort,        setSort]        = useState("recent")
+  const [sort,        setSort]        = useState("severity")
   const [scrolled,    setScrolled]    = useState(false)
   const [wordIdx,     setWordIdx]     = useState(4)
   const [wordVisible, setWordVisible] = useState(true)
@@ -202,20 +206,25 @@ export default function Home() {
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px" }}>
           <div style={{ display: "flex", gap: 0, overflowX: "auto", scrollbarWidth: "none", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-            {cats.map(c => (
-              <button key={c} onClick={() => setCat(c)} style={{
+            {cats.map(c => {
+              const isAllActive = c === "All" && cat === "All"
+              const base = {
                 padding: "13px 16px",
                 border: "none",
-                borderBottom: cat === c ? `2px solid ${word.color}` : "2px solid transparent",
+                borderBottom: isAllActive ? `2px solid ${word.color}` : "2px solid transparent",
                 background: "transparent",
-                color: cat === c ? "#f1f5f9" : "#4b5563",
-                fontSize: 13, fontWeight: cat === c ? 600 : 400,
-                cursor: "pointer", whiteSpace: "nowrap",
-                letterSpacing: "0.01em",
+                color: isAllActive ? "#f1f5f9" : "#4b5563",
+                fontSize: 13, fontWeight: isAllActive ? 600 : 400,
+                whiteSpace: "nowrap", letterSpacing: "0.01em",
                 transition: "color 0.15s, border-color 0.4s",
-                marginBottom: -1,
-              }}>{c}</button>
-            ))}
+                marginBottom: -1, textDecoration: "none", display: "inline-block",
+              }
+              return c === "All" ? (
+                <button key={c} onClick={() => setCat("All")} style={{ ...base, cursor: "pointer" }}>{c}</button>
+              ) : (
+                <Link key={c} href={`/category/${catSlug(c)}`} style={base}>{c}</Link>
+              )
+            })}
           </div>
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0" }}>
