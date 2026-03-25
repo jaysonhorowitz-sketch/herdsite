@@ -75,9 +75,10 @@ export default function OnboardingPage() {
 
       {/* Top bar */}
       <div style={{ padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#374151" }}>
-          How Bad Is It?
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 20, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
+          <span style={{ fontSize: 11, color: "#6b7280" }}>→ Politics & Governance</span>
+        </div>
         {/* Step indicators */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {[1, 2, 3].map(n => (

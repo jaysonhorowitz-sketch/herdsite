@@ -142,13 +142,12 @@ export default function Home() {
         transition: "all 0.3s ease",
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <div style={{ width: 7, height: 7, borderRadius: "50%", background: word.color, boxShadow: `0 0 8px ${word.color}88`, transition: "all 0.5s ease" }} />
-            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#94a3b8" }}>How Bad Is It</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
+            <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>→ Politics & Governance</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <span style={{ fontSize: 12, color: "#4b5563", letterSpacing: "0.04em" }}>Civic Tracker · Stay Informed · Take Action</span>
-            <Link href="/profile" style={{
+<Link href="/profile" style={{
               fontSize: 12, fontWeight: 600, color: "#60a5fa",
               textDecoration: "none", letterSpacing: "0.02em",
             }}>My Impact</Link>

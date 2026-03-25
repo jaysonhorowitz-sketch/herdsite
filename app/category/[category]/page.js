@@ -116,12 +116,12 @@ export default function CategoryPage() {
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", height: 60,
           display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Link href="/" style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em",
-              textTransform: "uppercase", color: "#94a3b8", textDecoration: "none" }}>
-              How Bad Is It
+            <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
+              <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>→ Politics & Governance</span>
             </Link>
-            <span style={{ color: "#1f2937" }}>/</span>
-            <span style={{ fontSize: 13, color: "#f1f5f9", fontWeight: 600 }}>{catName}</span>
+            <span style={{ color: "#1f2937", fontSize: 14, marginLeft: 2 }}>/</span>
+            <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 500 }}>{catName}</span>
           </div>
           <Link href="/donate" style={{
             fontSize: 12, fontWeight: 600, color: "#cbd5e1",

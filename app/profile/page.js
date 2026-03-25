@@ -109,9 +109,9 @@ export default function ProfilePage() {
       }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px", height: 56,
           display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link href="/" style={{ fontSize: 13, fontWeight: 800, color: "#f1f5f9",
-            textDecoration: "none", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-            How Bad Is It?
+          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
+            <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>→ Politics & Governance</span>
           </Link>
           <Link href="/" style={{ fontSize: 13, color: "#4b5563", textDecoration: "none",
             display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
