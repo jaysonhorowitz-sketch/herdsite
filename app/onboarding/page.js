@@ -41,6 +41,7 @@ export default function OnboardingPage() {
   const [screen,     setScreen]     = useState(1)
   const [selected,   setSelected]   = useState([])   // category names
   const [actionPref, setActionPref] = useState(null)  // key
+  const [zipCode,    setZipCode]    = useState("")
   const [leaving,    setLeaving]    = useState(false)
 
   function toggleCat(name) {
@@ -57,8 +58,10 @@ export default function OnboardingPage() {
   }
 
   function finish() {
-    const prefs = { categories: selected, actionPref, completedAt: Date.now() }
+    localStorage.setItem('onboardingComplete', 'true')
+    const prefs = { categories: selected, actionPref }
     localStorage.setItem("howbadisite_prefs", JSON.stringify(prefs))
+    if (zipCode.trim()) localStorage.setItem("userZipCode", zipCode.trim())
     window.location.href = "/"
   }
 
@@ -81,7 +84,7 @@ export default function OnboardingPage() {
         </div>
         {/* Step indicators */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {[1, 2, 3].map(n => (
+          {[1, 2, 3, 4].map(n => (
             <div key={n} style={{
               width: n === screen ? 24 : 8, height: 8, borderRadius: 99,
               background: n < screen ? "#3b82f6" : n === screen ? "#60a5fa" : "rgba(255,255,255,0.1)",
@@ -90,7 +93,7 @@ export default function OnboardingPage() {
           ))}
         </div>
         <button
-          onClick={() => { localStorage.setItem("howbadisite_prefs", JSON.stringify({ categories: [], actionPref: "both", completedAt: Date.now(), skipped: true })); window.location.href = "/" }}
+          onClick={() => { localStorage.setItem('onboardingComplete', 'true'); localStorage.setItem("howbadisite_prefs", JSON.stringify({ categories: [], actionPref: "both", skipped: true })); window.location.href = "/" }}
           style={{ background: "none", border: "none", color: "#374151", fontSize: 12, cursor: "pointer" }}>
           Skip →
         </button>
@@ -109,7 +112,7 @@ export default function OnboardingPage() {
           <div style={{ width: "100%", maxWidth: 720 }}>
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-                color: "#3b82f6", marginBottom: 12 }}>Step 1 of 3</div>
+                color: "#3b82f6", marginBottom: 12 }}>Step 1 of 4</div>
               <h1 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 800, color: "#f1f5f9",
                 letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px" }}>
                 What issues do you care about?
@@ -177,7 +180,7 @@ export default function OnboardingPage() {
           <div style={{ width: "100%", maxWidth: 560 }}>
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-                color: "#3b82f6", marginBottom: 12 }}>Step 2 of 3</div>
+                color: "#3b82f6", marginBottom: 12 }}>Step 2 of 4</div>
               <h1 style={{ fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 800, color: "#f1f5f9",
                 letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px" }}>
                 How do you want to engage?
@@ -237,11 +240,65 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* ── Screen 3: Summary ── */}
+        {/* ── Screen 3: Zip code ── */}
         {screen === 3 && (
+          <div style={{ width: "100%", maxWidth: 480 }}>
+            <div style={{ textAlign: "center", marginBottom: 40 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+                color: "#3b82f6", marginBottom: 12 }}>Step 3 of 4</div>
+              <h1 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 800, color: "#f1f5f9",
+                letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px" }}>
+                Where are you located?
+              </h1>
+              <p style={{ fontSize: 15, color: "#4b5563", margin: 0 }}>
+                We'll show you how issues affect your area and connect you with your local representatives.
+              </p>
+            </div>
+
+            <div style={{ marginBottom: 32 }}>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={5}
+                value={zipCode}
+                onChange={e => setZipCode(e.target.value.replace(/\D/g, "").slice(0, 5))}
+                placeholder="Enter your zip code"
+                style={{
+                  width: "100%", boxSizing: "border-box",
+                  padding: "16px 20px", borderRadius: 12, fontSize: 22, fontWeight: 700,
+                  background: "#1a2236", border: "1px solid rgba(255,255,255,0.12)",
+                  color: "#f1f5f9", outline: "none", textAlign: "center",
+                  letterSpacing: "0.1em", caretColor: "#3b82f6",
+                }}
+                onFocus={e => e.target.style.borderColor = "rgba(59,130,246,0.6)"}
+                onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"}
+              />
+              <p style={{ fontSize: 12, color: "#374151", textAlign: "center", marginTop: 10 }}>
+                Optional — you can skip this step
+              </p>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
+              <button onClick={() => goToScreen(2)}
+                style={{ padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600,
+                  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+                  color: "#94a3b8", cursor: "pointer" }}>← Back</button>
+              <button onClick={() => goToScreen(4)}
+                style={{ padding: "12px 32px", borderRadius: 8, fontSize: 14, fontWeight: 700,
+                  background: "#3b82f6", border: "none", color: "#fff", cursor: "pointer",
+                  transition: "all 0.2s" }}>
+                {zipCode.length === 5 ? "Continue →" : "Skip →"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Screen 4: Summary ── */}
+        {screen === 4 && (
           <div style={{ width: "100%", maxWidth: 560, textAlign: "center" }}>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-              color: "#3b82f6", marginBottom: 20 }}>You're all set</div>
+              color: "#3b82f6", marginBottom: 20 }}>Step 4 of 4 · You're all set</div>
 
             {/* Big summary card */}
             <div style={{ background: "linear-gradient(135deg, #1a2236 0%, #0f172a 100%)",
@@ -282,7 +339,7 @@ export default function OnboardingPage() {
             </div>
 
             <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-              <button onClick={() => goToScreen(2)}
+              <button onClick={() => goToScreen(3)}
                 style={{ padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600,
                   background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
                   color: "#94a3b8", cursor: "pointer" }}>← Back</button>

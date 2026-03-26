@@ -2,32 +2,14 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 
-function computeStreak(actions) {
-  if (!actions.length) return 0
-  // Get unique calendar days (local time) that have at least one action
-  const days = new Set(
-    actions.map(a => new Date(a.timestamp).toLocaleDateString("en-CA")) // YYYY-MM-DD
-  )
-  let streak = 0
-  const today = new Date()
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(today)
-    d.setDate(today.getDate() - i)
-    if (days.has(d.toLocaleDateString("en-CA"))) {
-      streak++
-    } else if (i > 0) {
-      break // gap found
-    }
-  }
-  return streak
-}
-
-function actionsThisMonth(actions) {
-  const now = new Date()
-  return actions.filter(a => {
-    const d = new Date(a.timestamp)
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-  }).length
+// Parse "slug-actionIndex" strings from localStorage
+// The slug may contain hyphens, so split on the LAST hyphen segment that is a digit
+function parseActionKey(key) {
+  const lastDash = key.lastIndexOf("-")
+  if (lastDash === -1) return null
+  const idx = parseInt(key.slice(lastDash + 1), 10)
+  if (isNaN(idx)) return null
+  return { slug: key.slice(0, lastDash), actionIndex: idx }
 }
 
 // Fake percentile — purely motivational, not real data
@@ -39,54 +21,44 @@ function percentile(n) {
   return 40
 }
 
-function motivatingLine(monthly) {
-  if (monthly === 0) return "Take your first action below to start your streak."
-  const pct = percentile(monthly)
-  return `You've taken ${monthly} action${monthly !== 1 ? "s" : ""} this month — that's more than ${pct}% of users.`
-}
-
-function timeAgo(ts) {
-  const diff  = Date.now() - ts
-  const mins  = Math.floor(diff / 60000)
-  const hours = Math.floor(diff / 3600000)
-  const days  = Math.floor(diff / 86400000)
-  if (mins  <  1) return "just now"
-  if (mins  < 60) return `${mins}m ago`
-  if (hours < 24) return `${hours}h ago`
-  if (days  <  7) return `${days}d ago`
-  return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-}
-
 export default function ProfilePage() {
-  const [actions, setActions] = useState(null) // null = loading
+  const [keys,    setKeys]    = useState(null) // null = loading; array of strings when loaded
+  const [issues,  setIssues]  = useState({})  // slug → { title } fetched lazily
 
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
-      setActions(stored.sort((a, b) => b.timestamp - a.timestamp))
+      // Accept both new format (strings) and old format (objects) gracefully
+      const normalized = stored.map(item =>
+        typeof item === "string" ? item : `${item.issueSlug}-${item.actionIndex ?? 0}`
+      ).filter(Boolean)
+      setKeys(normalized)
     } catch {
-      setActions([])
+      setKeys([])
     }
   }, [])
 
-  if (actions === null) {
+  // Group by slug
+  const bySlug = {}
+  if (keys) {
+    for (const key of keys) {
+      const parsed = parseActionKey(key)
+      if (!parsed) continue
+      if (!bySlug[parsed.slug]) bySlug[parsed.slug] = []
+      bySlug[parsed.slug].push(parsed.actionIndex)
+    }
+  }
+
+  const total = keys?.length ?? 0
+  const slugCount = Object.keys(bySlug).length
+
+  if (keys === null) {
     return (
       <div style={{ background: "#111827", minHeight: "100vh", display: "flex", alignItems: "center",
         justifyContent: "center", color: "#374151", fontFamily: "'Inter', system-ui, sans-serif" }}>
         Loading…
       </div>
     )
-  }
-
-  const streak  = computeStreak(actions)
-  const monthly = actionsThisMonth(actions)
-  const total   = actions.length
-
-  // Group by issue
-  const byIssue = {}
-  for (const a of actions) {
-    if (!byIssue[a.issueSlug]) byIssue[a.issueSlug] = { title: a.issueTitle || a.issueSlug, items: [] }
-    byIssue[a.issueSlug].items.push(a)
   }
 
   const S = {
@@ -134,50 +106,28 @@ export default function ProfilePage() {
             {total === 0 ? "Start making a difference" : "You're making a difference"}
           </h1>
           <p style={{ fontSize: 15, color: "#6b7280", margin: 0, lineHeight: 1.6 }}>
-            {motivatingLine(monthly)}
+            {total === 0
+              ? "Click any action item on an issue page to mark it done and track it here."
+              : `You've completed ${total} action${total !== 1 ? "s" : ""} across ${slugCount} issue${slugCount !== 1 ? "s" : ""} — that's more than ${percentile(total)}% of readers.`}
           </p>
         </div>
 
         {/* Stats row */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 24 }}>
           {[
-            { label: "Total Actions",   value: total,  unit: "",        color: "#60a5fa" },
-            { label: "This Month",      value: monthly, unit: "",       color: "#a78bfa" },
-            { label: "Day Streak",      value: streak,  unit: streak === 1 ? " day" : " days", color: "#4ade80" },
+            { label: "Total Actions",    value: total,      color: "#60a5fa" },
+            { label: "Issues Acted On",  value: slugCount,  color: "#4ade80" },
           ].map(stat => (
             <div key={stat.label} style={{ ...S, textAlign: "center", padding: "20px 16px" }}>
-              <div style={{ fontSize: 38, fontWeight: 900, color: stat.color,
+              <div style={{ fontSize: 48, fontWeight: 900, color: stat.color,
                 letterSpacing: "-0.04em", lineHeight: 1, marginBottom: 6 }}>
-                {stat.value}{stat.unit}
+                {stat.value}
               </div>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#374151",
                 textTransform: "uppercase", letterSpacing: "0.1em" }}>{stat.label}</div>
             </div>
           ))}
         </div>
-
-        {/* Streak bar */}
-        {streak > 0 && (
-          <div style={{ ...S, marginBottom: 24 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0" }}>
-                🔥 {streak}-day streak
-              </span>
-              <span style={{ fontSize: 11, color: "#374151" }}>
-                Keep it going — take an action today
-              </span>
-            </div>
-            <div style={{ display: "flex", gap: 4 }}>
-              {Array.from({ length: Math.min(streak, 14) }, (_, i) => (
-                <div key={i} style={{
-                  flex: 1, height: 6, borderRadius: 99,
-                  background: i < streak ? "#4ade80" : "rgba(255,255,255,0.05)",
-                  opacity: 0.6 + (i / Math.max(streak - 1, 1)) * 0.4,
-                }} />
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Actions list */}
         {total === 0 ? (
@@ -199,33 +149,43 @@ export default function ProfilePage() {
         ) : (
           <div style={S}>
             <p style={{ fontSize: 10, fontWeight: 700, color: "#374151", textTransform: "uppercase",
-              letterSpacing: "0.1em", marginBottom: 16, margin: "0 0 16px" }}>
-              Completed Actions
+              letterSpacing: "0.1em", margin: "0 0 16px" }}>
+              Completed Actions by Issue
             </p>
-            {Object.entries(byIssue).map(([slug, group]) => (
+            {Object.entries(bySlug).map(([slug, indices]) => (
               <div key={slug} style={{ marginBottom: 20 }}>
                 <Link href={`/issue/${slug}`} style={{ fontSize: 13, fontWeight: 700, color: "#93c5fd",
                   textDecoration: "none", display: "block", marginBottom: 8 }}>
-                  {group.title} ↗
+                  {slug} ↗
                 </Link>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {group.items.map((a, i) => (
-                    <div key={i} style={{
-                      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
-                      padding: "10px 14px", borderRadius: 8,
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {indices.map(idx => (
+                    <div key={idx} style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      padding: "8px 12px", borderRadius: 8,
                       background: "rgba(34,197,94,0.06)",
                       border: "1px solid rgba(34,197,94,0.15)",
                     }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: 14, color: "#4ade80", flexShrink: 0 }}>✓</span>
-                        <span style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.4 }}>{a.actionText}</span>
-                      </div>
-                      <span style={{ fontSize: 11, color: "#374151", flexShrink: 0 }}>{timeAgo(a.timestamp)}</span>
+                      <span style={{ fontSize: 13, color: "#4ade80" }}>✓</span>
+                      <span style={{ fontSize: 12, color: "#9ca3af" }}>Action {idx + 1}</span>
                     </div>
                   ))}
                 </div>
               </div>
             ))}
+
+            <button
+              onClick={() => {
+                localStorage.removeItem("completedActions")
+                setKeys([])
+              }}
+              style={{
+                marginTop: 8, fontSize: 12, color: "#374151", background: "none",
+                border: "none", cursor: "pointer", textDecoration: "underline", padding: 0,
+              }}
+            >
+              Clear all
+            </button>
           </div>
         )}
 
@@ -239,8 +199,6 @@ export default function ProfilePage() {
           <span style={{ fontSize: 11, color: "#1f2937" }}>Not affiliated with any political party.</span>
         </div>
       </footer>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </div>
   )
 }

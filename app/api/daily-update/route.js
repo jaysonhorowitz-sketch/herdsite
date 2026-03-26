@@ -25,17 +25,17 @@ const CATEGORIES = [
   "Immigration", "Media & Democracy",
 ]
 
-const CLAUDE_PROMPT = `You are a bold, nonpartisan political editor. Given these news headlines, identify exactly 10 significant policy stories happening today. Be aggressive — if there is a war, a constitutional crisis, a major economic shock, or a political scandal, rate it high. Do not be timid.
+const CLAUDE_PROMPT = `You are a nonpartisan policy editor producing a civic tracker. Given these news headlines, identify exactly 10 significant policy stories happening today.
 
 Rules:
 - Generate EXACTLY 10 issues, no more, no fewer
-- Be factual and nonpartisan — no partisan framing, no loaded language
-- impact_score: 1-3 = routine (NOTABLE), 4-6 = notable policy shift (SIGNIFICANT), 7-8 = major institutional impact (MAJOR), 9-10 = constitutional/crisis level (CRITICAL) — USE THE FULL RANGE
+- TITLE: Describe the policy event or situation, not the political actor. Write as a news headline about what is happening — not about who caused it. Bad: "Trump administration faces military defeat in Iran". Good: "U.S. Military Struggles in Iran Conflict". Bad: "Biden signs executive order on climate". Good: "New Executive Order Expands Climate Regulations". Focus on the ISSUE, not the person or party.
+- DESCRIPTION: 2-3 sentences. State the facts of what is happening and why it matters institutionally. Do not assign blame, use partisan language, or characterize motivations. Describe impacts on people and institutions, not on political figures. No loaded words like "controversial", "radical", "dangerous", "assault on", "threat to".
+- impact_score: 1-3 = routine (NOTABLE), 4-6 = notable policy shift (SIGNIFICANT), 7-8 = major institutional impact (MAJOR), 9-10 = constitutional/crisis level (CRITICAL) — use the full range
 - impact_label must be exactly one of: "NOTABLE", "SIGNIFICANT", "MAJOR", "CRITICAL"
 - category must be exactly one of: ${CATEGORIES.join(", ")}
-- slug: lowercase, hyphens only, descriptive, unique (e.g. "senate-budget-vote-mar-2026")
-- description: 2-3 sentences, factual, nonpartisan
-- actions: exactly 3 per issue, each with effort ("2 min", "20 min", or "ongoing") and a concrete citizen action
+- slug: lowercase, hyphens only, topic-focused not actor-focused (e.g. "senate-budget-vote-mar-2026" not "trump-budget-cut-mar-2026")
+- actions: exactly 3 per issue, each with effort ("2 min", "20 min", or "ongoing") and a concrete civic action any citizen can take regardless of political affiliation
 - sources: array of {label, url} from the articles that informed this issue
 - date: current month and year like "Mar 2026"
 
@@ -44,16 +44,16 @@ Return ONLY a valid JSON array of exactly 10 issue objects. No markdown, no expl
 Example shape (do not copy values, only structure):
 [
   {
-    "title": "Senate Passes Continuing Resolution to Avoid Shutdown",
-    "slug": "senate-continuing-resolution-mar-2026",
+    "title": "Congress Considers Short-Term Spending Bill to Avoid Shutdown",
+    "slug": "congress-spending-bill-mar-2026",
     "category": "Economy",
     "impact_score": 6,
     "impact_label": "SIGNIFICANT",
-    "description": "The Senate passed a short-term spending bill...",
+    "description": "Congress is debating a continuing resolution to fund the government through the end of the fiscal year after appropriations talks stalled. Without passage, federal agencies would face a partial shutdown affecting services relied on by millions of Americans.",
     "actions": [
-      { "effort": "2 min", "text": "Call your senator to express your position" },
-      { "effort": "20 min", "text": "Read the full text on congress.gov" },
-      { "effort": "ongoing", "text": "Track the budget negotiations via the appropriations committee" }
+      { "effort": "2 min", "text": "Call your representative to express your position on government funding" },
+      { "effort": "20 min", "text": "Read the bill summary on congress.gov" },
+      { "effort": "ongoing", "text": "Track appropriations committee hearings for updates" }
     ],
     "date": "Mar 2026",
     "sources": [

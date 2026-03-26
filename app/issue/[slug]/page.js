@@ -295,6 +295,20 @@ function relativeTime(iso) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
+const CALL_RE     = /\b(call|contact|write|email|reach out)\b.{0,40}\b(senator|representative|congress|rep\b|member|official|lawmaker)/i
+const PETITION_RE = /\b(petition|sign)\b/i
+const DONATE_RE   = /\bdonate\b/i
+const LEARN_RE    = /\b(read|review|learn|track|research|follow|understand|explore)\b/i
+
+function getActionUrl(actionText, issueTitle) {
+  const t = actionText
+  if (CALL_RE.test(t))     return "https://5calls.org"
+  if (PETITION_RE.test(t)) return `https://www.change.org/search?q=${encodeURIComponent(issueTitle)}`
+  if (DONATE_RE.test(t))   return "#nonprofits"
+  if (LEARN_RE.test(t))    return `https://www.google.com/search?q=${encodeURIComponent(actionText + " " + issueTitle)}`
+  return "https://5calls.org" // default
+}
+
 export default function IssuePage() {
   const params            = useParams()
   const [issue, setIssue] = useState(null)
@@ -303,37 +317,74 @@ export default function IssuePage() {
   const [nonprofits,    setNonprofits]    = useState([])
   const [npoLoading,    setNpoLoading]    = useState(false)
   const [completedKeys, setCompletedKeys] = useState(new Set())
+  const [weekCount,     setWeekCount]     = useState(null) // null = not loaded yet
+  const [zipCode,       setZipCode]       = useState("")
 
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
-      setCompletedKeys(new Set(stored.map(a => `${a.issueSlug}::${a.actionText}`)))
+      setCompletedKeys(new Set(stored.filter(s => typeof s === "string")))
+    } catch {}
+    try {
+      const z = localStorage.getItem("userZipCode")
+      if (z) setZipCode(z)
     } catch {}
   }, [])
+
+  // Fetch weekly action count for this issue
+  useEffect(() => {
+    if (!params.slug) return
+    const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
+    supabase
+      .from("action_clicks")
+      .select("issue_slug", { count: "exact", head: true })
+      .eq("issue_slug", params.slug)
+      .gte("clicked_at", since)
+      .then(({ count }) => { if (count !== null) setWeekCount(count) })
+      .catch(() => {})
+  }, [params.slug])
 
   useEffect(() => {
     supabase.from("issues").select("*").eq("slug", params.slug).eq("is_published", true).single()
       .then(({ data }) => { if (data) setIssue(data); setLoading(false) })
   }, [params.slug])
 
-  function markDone(actionText) {
-    const key = `${params.slug}::${actionText}`
+  function handleAction(actionIndex, url) {
+    const key = `${params.slug}-${actionIndex}`
+    const isDone = completedKeys.has(key)
+
+    if (isDone) {
+      // Undo: remove from state and localStorage, no link open
+      setCompletedKeys(prev => { const next = new Set(prev); next.delete(key); return next })
+      try {
+        const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
+        localStorage.setItem("completedActions", JSON.stringify(stored.filter(k => k !== key)))
+      } catch {}
+      return
+    }
+
+    // Not done yet — open link first (synchronous, avoids popup blockers) then mark complete
+    if (url) {
+      if (url.startsWith("#")) {
+        document.getElementById(url.slice(1))?.scrollIntoView({ behavior: "smooth" })
+      } else {
+        window.open(url, "_blank", "noopener,noreferrer")
+      }
+    }
+
     setCompletedKeys(prev => {
       const next = new Set(prev)
-      if (next.has(key)) {
-        next.delete(key)
-        try {
-          const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
-          localStorage.setItem("completedActions", JSON.stringify(stored.filter(a => !(a.issueSlug === params.slug && a.actionText === actionText))))
-        } catch {}
-      } else {
-        next.add(key)
-        try {
-          const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
-          stored.push({ issueSlug: params.slug, issueTitle: issue?.title || params.slug, actionText, timestamp: Date.now() })
+      next.add(key)
+      try {
+        const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
+        if (!stored.includes(key)) {
+          stored.push(key)
           localStorage.setItem("completedActions", JSON.stringify(stored))
-        } catch {}
-      }
+        }
+      } catch {}
+      supabase.from("action_clicks").insert({
+        issue_slug: params.slug, action_index: actionIndex, clicked_at: new Date().toISOString(),
+      }).then(() => setWeekCount(c => (c || 0) + 1)).catch(() => {})
       return next
     })
   }
@@ -465,20 +516,65 @@ export default function IssuePage() {
           {/* ── What you can do ── */}
           {hasActions && (
             <div style={S}>
-              <p style={SH}>What You Can Do</p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <p style={{ ...SH, marginBottom: 0 }}>What You Can Do</p>
+                {weekCount !== null && weekCount > 0 && (
+                  <span style={{ fontSize: 12, color: "#6b7280", display: "flex", alignItems: "center", gap: 5 }}>
+                    <span style={{ color: "#22c55e" }}>●</span>
+                    <strong style={{ color: "#374151" }}>{weekCount}</strong>&nbsp;{weekCount === 1 ? "person" : "people"} took action this week
+                  </span>
+                )}
+              </div>
+
+              {/* 5calls.org banner */}
+              {issue.actions.some(a => CALL_RE.test(a.text)) && (
+                <a
+                  href="https://5calls.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 14,
+                    padding: "14px 18px", borderRadius: 12, marginBottom: 14,
+                    background: "linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)",
+                    border: "1px solid #bfdbfe",
+                    textDecoration: "none",
+                    transition: "border-color 0.15s",
+                  }}
+                >
+                  <span style={{ fontSize: 28, flexShrink: 0 }}>📞</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#1d4ed8", marginBottom: 3 }}>
+                      Call Your Rep Now via 5Calls
+                    </div>
+                    <div style={{ fontSize: 12, color: "#4b5563", lineHeight: 1.5 }}>
+                      5Calls connects you directly to your representative's office in under 2 minutes — they provide a script and your local number.
+                    </div>
+                  </div>
+                  <svg style={{ width: 16, height: 16, color: "#3b82f6", flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                  </svg>
+                </a>
+              )}
+
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {issue.actions.map((action, i) => {
-                  const ef   = effortConfig(action.effort)
-                  const done = completedKeys.has(`${params.slug}::${action.text}`)
-                  const rowStyle = {
-                    display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-                    borderRadius: 10, cursor: "pointer", textDecoration: "none",
-                    border:     `1px solid ${done ? "#86efac" : "#e5e7eb"}`,
-                    background: done ? "#f0fdf4" : "#fafafa",
-                    transition: "all 0.2s",
-                  }
-                  const inner = (
-                    <>
+                  const ef         = effortConfig(action.effort)
+                  const done       = completedKeys.has(`${params.slug}-${i}`)
+                  const isCallItem = CALL_RE.test(action.text)
+                  const actionUrl  = getActionUrl(action.text, issue.title)
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => handleAction(i, actionUrl)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
+                        borderRadius: 10, cursor: "pointer", width: "100%", textAlign: "left",
+                        border:     `1px solid ${done ? "#86efac" : isCallItem ? "#bfdbfe" : "#e5e7eb"}`,
+                        background: done ? "#f0fdf4" : isCallItem ? "#eff6ff" : "#fafafa",
+                        transition: "background 0.15s, border-color 0.15s",
+                        fontFamily: "inherit",
+                      }}
+                    >
                       <span style={{
                         fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
                         padding: "4px 9px", borderRadius: 5, flexShrink: 0,
@@ -486,24 +582,30 @@ export default function IssuePage() {
                         background: done ? "#dcfce7" : ef.bg,
                         border: `1px solid ${done ? "#86efac" : ef.border}`,
                       }}>{action.effort}</span>
-                      <span style={{ fontSize: 14, color: done ? "#9ca3af" : "#374151", lineHeight: 1.5, flex: 1,
-                        textDecoration: done ? "line-through" : "none" }}>
-                        {action.text}
+
+                      <span style={{
+                        fontSize: 14, lineHeight: 1.5, flex: 1,
+                        color: done ? "#9ca3af" : isCallItem ? "#1d4ed8" : "#374151",
+                        textDecoration: done ? "line-through" : "none",
+                        fontWeight: isCallItem && !done ? 500 : 400,
+                      }}>
+                        {isCallItem && !done ? "📞 " : ""}{action.text}
+                        {isCallItem && !done && <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 400 }}> — via 5Calls ↗</span>}
                       </span>
+
                       {done ? (
-                        <span style={{ fontSize: 16, flexShrink: 0, color: "#16a34a" }}>✓</span>
-                      ) : action.url ? (
+                        <span style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                          <span style={{ fontSize: 15, color: "#16a34a" }}>✓</span>
+                          <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 500, textDecoration: "none" }}>undo</span>
+                        </span>
+                      ) : actionUrl ? (
                         <svg style={{ width: 14, height: 14, color: "#9ca3af", flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
                         </svg>
-                      ) : null}
-                    </>
-                  )
-                  return action.url && !done ? (
-                    <a key={i} href={action.url} target="_blank" rel="noopener noreferrer"
-                      style={rowStyle} onClick={() => markDone(action.text)}>{inner}</a>
-                  ) : (
-                    <div key={i} style={rowStyle} onClick={() => markDone(action.text)}>{inner}</div>
+                      ) : (
+                        <span style={{ fontSize: 18, color: "#d1d5db", flexShrink: 0 }}>○</span>
+                      )}
+                    </button>
                   )
                 })}
               </div>
@@ -563,7 +665,7 @@ export default function IssuePage() {
 
           {/* ── Organizations Taking Action ── */}
           {(npoLoading || nonprofits.length > 0) && (
-            <div style={S}>
+            <div id="nonprofits" style={S}>
               <p style={SH}>Organizations Taking Action</p>
               {npoLoading ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#9ca3af", fontSize: 13 }}>
@@ -613,6 +715,37 @@ export default function IssuePage() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ── In Your Area ── */}
+          {zipCode && (
+            <div style={S}>
+              <p style={SH}>In Your Area</p>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ flex: 1, minWidth: 200 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: "#111827", marginBottom: 6 }}>
+                    See how this affects zip code {zipCode}
+                  </div>
+                  <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6 }}>
+                    Find your local representatives and call them directly about this issue — pre-filled with your location.
+                  </div>
+                </div>
+                <a
+                  href={`https://5calls.org/?address=${encodeURIComponent(zipCode)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "12px 20px", borderRadius: 10, flexShrink: 0,
+                    background: "#111827", color: "#ffffff",
+                    fontSize: 14, fontWeight: 700, textDecoration: "none",
+                    transition: "opacity 0.15s",
+                  }}
+                >
+                  📞 Call My Rep
+                </a>
+              </div>
             </div>
           )}
 

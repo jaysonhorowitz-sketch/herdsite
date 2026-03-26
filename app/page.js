@@ -1,11 +1,10 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { createClient } from "@supabase/supabase-js"
 import Link from "next/link"
 
 const supabase = createClient("https://mwahckdqmiopkzrmdxyc.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13YWhja2RxbWlvcGt6cm1keHljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDgxMjgsImV4cCI6MjA4ODkyNDEyOH0.0Ua6sM8_zLzCdjJ8SGX-MVFkbbbyzDvrjtZuRoZVVxM")
 
-// Light-mode card colors (border, badge bg, badge text)
 function cardColor(s) {
   if (s <= 4) return { border: "#3b82f6", bg: "#eff6ff", text: "#1d4ed8" }
   if (s <= 6) return { border: "#f59e0b", bg: "#fffbeb", text: "#92400e" }
@@ -74,35 +73,67 @@ function catSlug(name) {
 }
 
 export default function Home() {
-  const [issues,      setIssues]      = useState([])
-  const [cat,         setCat]         = useState("All")
-  const [sort,        setSort]        = useState("severity")
-  const [scrolled,    setScrolled]    = useState(false)
-  const [wordIdx,     setWordIdx]     = useState(4)
-  const [wordVisible, setWordVisible] = useState(true)
-  const [loading,     setLoading]     = useState(true)
-  const [prefs,       setPrefs]       = useState(null)
-  const [showAll,     setShowAll]     = useState(false)
+  const [issues,        setIssues]        = useState([])
+  const [cat,           setCat]           = useState("All")
+  const [sort,          setSort]          = useState("recent")
+  const [scrolled,      setScrolled]      = useState(false)
+  const [wordIdx,       setWordIdx]       = useState(4)
+  const [wordVisible,   setWordVisible]   = useState(true)
+  const [loading,       setLoading]       = useState(true)
+  const [prefs,         setPrefs]         = useState(null)
+  const [showAll,       setShowAll]       = useState(false)
+  const [expandedSlug,  setExpandedSlug]  = useState(null)
+  const [actionCounts,  setActionCounts]  = useState({})   // slug → weekly count
+  const [completedKeys, setCompletedKeys] = useState(new Set())
 
   useEffect(() => {
-    let parsed = null
+    if (typeof window !== 'undefined') {
+      const done = localStorage.getItem('onboardingComplete')
+      if (!done) {
+        window.location.href = '/onboarding'
+        return
+      }
+    }
     try {
       const raw = localStorage.getItem("howbadisite_prefs")
-      if (raw) parsed = JSON.parse(raw)
+      if (raw) setPrefs(JSON.parse(raw))
     } catch {}
-
-    if (!parsed || !parsed.completedAt) {
-      window.location.replace("/onboarding")
-      return
-    }
-
-    setPrefs(parsed)
     setLoading(false)
   }, [])
 
   useEffect(() => {
     supabase.from("issues").select("*").eq("is_published", true)
       .then(({ data }) => { if (data) setIssues(data) })
+  }, [])
+
+  // Load completed actions from localStorage
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
+      // Normalize: accept both new string format and old object format
+      const keys = stored.map(item =>
+        typeof item === "string" ? item : `${item.issueSlug}-${item.actionIndex ?? 0}`
+      ).filter(Boolean)
+      setCompletedKeys(new Set(keys))
+    } catch {}
+  }, [])
+
+  // Fetch weekly action counts from Supabase
+  useEffect(() => {
+    const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
+    supabase
+      .from("action_clicks")
+      .select("issue_slug")
+      .gte("clicked_at", since)
+      .then(({ data }) => {
+        if (!data) return
+        const counts = {}
+        for (const row of data) {
+          counts[row.issue_slug] = (counts[row.issue_slug] || 0) + 1
+        }
+        setActionCounts(counts)
+      })
+      .catch(() => {}) // table may not exist yet
   }, [])
 
   useEffect(() => {
@@ -117,6 +148,38 @@ export default function Home() {
       setTimeout(() => { setWordIdx(i => (i + 1) % SCALE_WORDS.length); setWordVisible(true) }, 350)
     }, 2200)
     return () => clearInterval(id)
+  }, [])
+
+  const handleActionClick = useCallback((issueSlug, actionIndex) => {
+    const key = `${issueSlug}-${actionIndex}`
+
+    setCompletedKeys(prev => {
+      if (prev.has(key)) {
+        // Toggle off
+        const next = new Set(prev)
+        next.delete(key)
+        try {
+          const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
+          localStorage.setItem("completedActions", JSON.stringify(stored.filter(k => k !== key)))
+        } catch {}
+        return next
+      }
+      // Mark complete
+      const next = new Set(prev)
+      next.add(key)
+      try {
+        const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
+        if (!stored.includes(key)) {
+          stored.push(key)
+          localStorage.setItem("completedActions", JSON.stringify(stored))
+        }
+      } catch {}
+      // Record in Supabase (fire-and-forget)
+      supabase.from("action_clicks").insert({
+        issue_slug: issueSlug, action_index: actionIndex, clicked_at: new Date().toISOString(),
+      }).then(() => setActionCounts(prev => ({ ...prev, [issueSlug]: (prev[issueSlug] || 0) + 1 }))).catch(() => {})
+      return next
+    })
   }, [])
 
   if (loading) return <div style={{ background: "#111827", minHeight: "100vh" }} />
@@ -137,8 +200,8 @@ export default function Home() {
 
   const word = SCALE_WORDS[wordIdx]
 
-  const critCount  = issues.filter(i => i.severity_score >= 8).length
-  const majorCount = issues.filter(i => i.severity_score >= 6 && i.severity_score < 8).length
+  const critCount    = issues.filter(i => i.severity_score >= 8).length
+  const majorCount   = issues.filter(i => i.severity_score >= 6 && i.severity_score < 8).length
   const totalActions = issues.reduce((acc, i) => acc + (i.actions?.length || 0), 0)
 
   return (
@@ -176,13 +239,11 @@ export default function Home() {
 
         {/* Hero */}
         <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #1a2236 0%, #111827 100%)" }}>
-          {/* Subtle grid */}
           <div style={{
             position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.4,
             backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
           }} />
-          {/* Ambient glow */}
           <div style={{
             position: "absolute", top: -60, left: "25%",
             width: 600, height: 400,
@@ -192,13 +253,11 @@ export default function Home() {
           }} />
 
           <div style={{ position: "relative", maxWidth: 1200, margin: "0 auto", padding: "88px 32px 48px" }}>
-            {/* Eyebrow */}
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 36 }}>
               <div style={{
                 display: "flex", alignItems: "center", gap: 7,
                 background: `${word.color}12`, border: `1px solid ${word.color}28`,
-                borderRadius: 99, padding: "5px 14px",
-                transition: "all 0.5s ease",
+                borderRadius: 99, padding: "5px 14px", transition: "all 0.5s ease",
               }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: word.color, animation: "pulse 2s infinite", transition: "background 0.5s" }} />
                 <span style={{ fontSize: 11, fontWeight: 600, color: word.color, letterSpacing: "0.12em", textTransform: "uppercase", transition: "color 0.5s" }}>Live Tracker</span>
@@ -206,20 +265,15 @@ export default function Home() {
               <span style={{ fontSize: 12, color: "#4b5563" }}>Updated {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
             </div>
 
-            {/* Title */}
             <h1 style={{
               display: "flex", alignItems: "baseline", flexWrap: "nowrap",
-              gap: "0.22em",
-              fontSize: "clamp(40px, 6.5vw, 80px)",
-              fontWeight: 800, lineHeight: 1,
-              letterSpacing: "-0.04em",
-              margin: "0 0 24px",
+              gap: "0.22em", fontSize: "clamp(40px, 6.5vw, 80px)",
+              fontWeight: 800, lineHeight: 1, letterSpacing: "-0.04em", margin: "0 0 24px",
             }}>
               <span style={{ color: "#f1f5f9" }}>How</span>
               <span style={{ display: "inline-block", overflow: "hidden", verticalAlign: "bottom", lineHeight: 1.05 }}>
                 <span style={{
-                  display: "inline-block",
-                  color: word.color,
+                  display: "inline-block", color: word.color,
                   textShadow: `0 2px 40px ${word.color}33`,
                   opacity: wordVisible ? 1 : 0,
                   transform: wordVisible ? "translateY(0)" : "translateY(28px)",
@@ -233,55 +287,38 @@ export default function Home() {
               Connect with the issues you care about — understand what's happening, why it matters, and how you can make a difference.
             </p>
 
-            {/* Category tabs in dark hero */}
+            {/* Category tabs */}
             <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2 }}>
               {cats.map(c => {
                 const isActive = c === cat
                 return c === "All" ? (
-                  <button
-                    key={c}
-                    onClick={() => setCat("All")}
-                    style={{
-                      flexShrink: 0,
-                      display: "flex", alignItems: "center", gap: 6,
-                      padding: "8px 16px", borderRadius: 99,
-                      background: isActive ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
-                      border: isActive ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.08)",
-                      color: isActive ? "#f1f5f9" : "#6b7280",
-                      fontSize: 13, fontWeight: isActive ? 600 : 400,
-                      cursor: "pointer", transition: "all 0.15s",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    <span>{CAT_EMOJI[c]}</span>
-                    <span>{c}</span>
+                  <button key={c} onClick={() => setCat("All")} style={{
+                    flexShrink: 0, display: "flex", alignItems: "center", gap: 6,
+                    padding: "8px 16px", borderRadius: 99,
+                    background: isActive ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
+                    border: isActive ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.08)",
+                    color: isActive ? "#f1f5f9" : "#6b7280",
+                    fontSize: 13, fontWeight: isActive ? 600 : 400,
+                    cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap",
+                  }}>
+                    <span>{CAT_EMOJI[c]}</span><span>{c}</span>
                   </button>
                 ) : (
-                  <Link
-                    key={c}
-                    href={`/category/${catSlug(c)}`}
-                    style={{
-                      flexShrink: 0,
-                      display: "flex", alignItems: "center", gap: 6,
-                      padding: "8px 16px", borderRadius: 99,
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      color: "#6b7280",
-                      fontSize: 13, fontWeight: 400,
-                      textDecoration: "none",
-                      whiteSpace: "nowrap",
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    <span>{CAT_EMOJI[c]}</span>
-                    <span>{c}</span>
+                  <Link key={c} href={`/category/${catSlug(c)}`} style={{
+                    flexShrink: 0, display: "flex", alignItems: "center", gap: 6,
+                    padding: "8px 16px", borderRadius: 99,
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "#6b7280", fontSize: 13, fontWeight: 400,
+                    textDecoration: "none", whiteSpace: "nowrap", transition: "all 0.15s",
+                  }}>
+                    <span>{CAT_EMOJI[c]}</span><span>{c}</span>
                   </Link>
                 )
               })}
             </div>
           </div>
 
-          {/* Wave divider */}
           <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"
             style={{ display: "block", width: "100%", marginBottom: -2 }}>
             <path d="M0 60 L0 30 Q360 0 720 30 Q1080 60 1440 30 L1440 60 Z" fill="#f4f5f7"/>
@@ -295,7 +332,7 @@ export default function Home() {
         {/* Stats bar */}
         <div style={{ background: "#ffffff", borderBottom: "1px solid #e5e7eb" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 0, height: 56 }}>
+            <div style={{ display: "flex", alignItems: "center", height: 56 }}>
               {[
                 { value: issues.length, label: "Issues Tracked" },
                 { value: critCount,     label: "Critical" },
@@ -311,11 +348,9 @@ export default function Home() {
                   <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 500 }}>{stat.label}</span>
                 </div>
               ))}
-
-              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
-                {/* Personalized feed toggle */}
+              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
                 {isPersonal && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <>
                     <span style={{ fontSize: 12, color: "#6b7280" }}>
                       Your feed · {userCats.slice(0, 2).join(", ")}{userCats.length > 2 ? ` +${userCats.length - 2}` : ""}
                     </span>
@@ -323,16 +358,16 @@ export default function Home() {
                       fontSize: 12, color: "#3b82f6", background: "none", border: "none",
                       cursor: "pointer", fontWeight: 600, padding: 0,
                     }}>See all →</button>
-                  </div>
+                  </>
                 )}
                 {showAll && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <>
                     <span style={{ fontSize: 12, color: "#6b7280" }}>All issues</span>
                     <button onClick={() => setShowAll(false)} style={{
                       fontSize: 12, color: "#3b82f6", background: "none", border: "none",
                       cursor: "pointer", fontWeight: 600, padding: 0,
                     }}>← My feed</button>
-                  </div>
+                  </>
                 )}
               </div>
             </div>
@@ -364,71 +399,148 @@ export default function Home() {
           {/* Issue cards */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingBottom: 80 }}>
             {filtered.map(issue => {
-              const cc = cardColor(issue.severity_score)
+              const cc       = cardColor(issue.severity_score)
+              const isExpanded = expandedSlug === issue.slug
+              const weekCount  = actionCounts[issue.slug] || 0
+
               return (
-                <Link href={"/issue/" + issue.slug} key={issue.id} style={{ textDecoration: "none", color: "inherit" }}>
-                  <div
-                    style={{
-                      background: "#ffffff",
-                      borderRadius: 16,
-                      padding: "22px 24px",
-                      cursor: "pointer",
-                      transition: "box-shadow 0.15s, transform 0.15s",
-                      border: "1px solid #e5e7eb",
-                      borderLeft: `4px solid ${cc.border}`,
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.1)"; e.currentTarget.style.transform = "translateY(-1px)" }}
-                    onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.06)"; e.currentTarget.style.transform = "translateY(0)" }}
-                  >
+                <div key={issue.id} style={{
+                  background: "#ffffff",
+                  borderRadius: 16,
+                  border: "1px solid #e5e7eb",
+                  borderLeft: `4px solid ${cc.border}`,
+                  boxShadow: isExpanded ? "0 4px 20px rgba(0,0,0,0.1)" : "0 1px 4px rgba(0,0,0,0.06)",
+                  transition: "box-shadow 0.2s",
+                  overflow: "hidden",
+                }}>
+                  {/* Clickable area → issue page */}
+                  <Link href={"/issue/" + issue.slug} style={{ textDecoration: "none", color: "inherit", display: "block", padding: "22px 24px 0" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                           <span style={{
                             fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-                            color: cc.text, background: cc.bg,
-                            padding: "3px 8px", borderRadius: 4,
+                            color: cc.text, background: cc.bg, padding: "3px 8px", borderRadius: 4,
                             border: `1px solid ${cc.border}33`,
                           }}>{issue.category}</span>
                           <span style={{ fontSize: 11, color: "#9ca3af" }}>{issue.date}</span>
                         </div>
                         <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 8px", color: "#111827", lineHeight: 1.4, letterSpacing: "-0.01em" }}>{issue.title}</h2>
-                        <p style={{ color: "#4b5563", fontSize: 14, lineHeight: 1.65, margin: "0 0 12px" }}>{issue.description}</p>
-                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                          {issue.actions && issue.actions.map((a, i) => {
-                            const s = effortStyle(a.effort)
-                            return (
-                              <span key={i} style={{
-                                fontSize: 11, padding: "4px 12px", borderRadius: 99,
-                                background: s.bg, color: s.color,
-                                border: `1px solid ${s.border}`,
-                                fontWeight: 500,
-                              }}>{a.effort} — {a.text}</span>
-                            )
-                          })}
-                        </div>
+                        <p style={{ color: "#4b5563", fontSize: 14, lineHeight: 1.65, margin: 0 }}>{issue.description}</p>
                       </div>
-
                       <div style={{ textAlign: "center", flexShrink: 0 }}>
                         <div style={{
                           width: 52, height: 52, borderRadius: 12,
-                          background: cc.bg,
-                          border: `2px solid ${cc.border}44`,
+                          background: cc.bg, border: `2px solid ${cc.border}44`,
                           display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 22, fontWeight: 800, color: cc.text,
-                          letterSpacing: "-0.02em",
+                          fontSize: 22, fontWeight: 800, color: cc.text, letterSpacing: "-0.02em",
                         }}>{issue.severity_score}</div>
                         <div style={{ fontSize: 9, color: "#9ca3af", marginTop: 5, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600 }}>
                           {impactLabel(issue.severity_score)}
                         </div>
                       </div>
                     </div>
+                  </Link>
 
-                    <div style={{ width: "100%", background: "#f3f4f6", borderRadius: 99, height: 3, marginTop: 16 }}>
-                      <div style={{ width: issue.severity_score * 10 + "%", height: 3, borderRadius: 99, background: cc.border, opacity: 0.6 }} />
+                  {/* Bottom bar: social proof + Take Action button */}
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "14px 24px 16px", gap: 12,
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      {weekCount > 0 && (
+                        <span style={{
+                          fontSize: 12, color: "#6b7280",
+                          display: "flex", alignItems: "center", gap: 5,
+                        }}>
+                          <span style={{ color: "#22c55e", fontSize: 14 }}>●</span>
+                          <span><strong style={{ color: "#374151" }}>{weekCount}</strong> {weekCount === 1 ? "person" : "people"} took action this week</span>
+                        </span>
+                      )}
                     </div>
+                    <button
+                      onClick={e => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setExpandedSlug(s => s === issue.slug ? null : issue.slug)
+                      }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        padding: "8px 18px", borderRadius: 8,
+                        background: isExpanded ? "#f3f4f6" : "#111827",
+                        border: isExpanded ? "1px solid #d1d5db" : "1px solid #111827",
+                        color: isExpanded ? "#374151" : "#ffffff",
+                        fontSize: 13, fontWeight: 700, cursor: "pointer",
+                        transition: "all 0.15s", whiteSpace: "nowrap", flexShrink: 0,
+                      }}
+                    >
+                      {isExpanded ? "Hide ↑" : "Take Action →"}
+                    </button>
                   </div>
-                </Link>
+
+                  {/* Progress bar */}
+                  <div style={{ height: 3, background: "#f3f4f6" }}>
+                    <div style={{ width: issue.severity_score * 10 + "%", height: 3, background: cc.border, opacity: 0.5 }} />
+                  </div>
+
+                  {/* ── Expanded actions panel ── */}
+                  {isExpanded && (
+                    <div
+                      onClick={e => { e.preventDefault(); e.stopPropagation() }}
+                      style={{
+                        borderTop: "1px solid #f3f4f6",
+                        padding: "20px 24px 24px",
+                        background: "#fafafa",
+                      }}
+                    >
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>
+                        What You Can Do
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+                        {(issue.actions || []).map((a, i) => {
+                          const s    = effortStyle(a.effort)
+                          const done = completedKeys.has(`${issue.slug}-${i}`)
+                          return (
+                            <div
+                              key={i}
+                              onClick={() => handleActionClick(issue.slug, i)}
+                              style={{
+                                display: "flex", alignItems: "center", gap: 12,
+                                padding: "11px 14px", borderRadius: 10,
+                                background: done ? "#f0fdf4" : "#ffffff",
+                                border: `1px solid ${done ? "#86efac" : "#e5e7eb"}`,
+                                cursor: "pointer", transition: "all 0.15s",
+                              }}
+                            >
+                              <span style={{
+                                fontSize: 10, fontWeight: 700, letterSpacing: "0.08em",
+                                textTransform: "uppercase", padding: "4px 9px", borderRadius: 5,
+                                flexShrink: 0,
+                                color: done ? "#16a34a" : s.color,
+                                background: done ? "#dcfce7" : s.bg,
+                                border: `1px solid ${done ? "#86efac" : s.border}`,
+                              }}>{a.effort}</span>
+                              <span style={{
+                                fontSize: 14, color: done ? "#9ca3af" : "#374151",
+                                lineHeight: 1.5, flex: 1,
+                                textDecoration: done ? "line-through" : "none",
+                              }}>{a.text}</span>
+                              <span style={{ fontSize: 16, flexShrink: 0, color: done ? "#16a34a" : "#d1d5db" }}>
+                                {done ? "✓" : "○"}
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                      <Link href={"/issue/" + issue.slug} style={{
+                        fontSize: 13, color: "#3b82f6", fontWeight: 600,
+                        textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4,
+                      }}>
+                        Full issue details ↗
+                      </Link>
+                    </div>
+                  )}
+                </div>
               )
             })}
           </div>
