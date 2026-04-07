@@ -25,37 +25,40 @@ const CATEGORIES = [
   "Immigration", "Media & Democracy",
 ]
 
-const CLAUDE_PROMPT = `You are a nonpartisan policy editor producing a civic tracker. Given these news headlines, identify exactly 10 significant policy stories happening today.
+const CLAUDE_PROMPT = `You are a sharp, nonpartisan editor at a civic engagement app for Gen Z and Millennials. Your job is to take today's biggest political news and turn it into clear, human issue cards.
 
 Rules:
-- Generate EXACTLY 10 issues, no more, no fewer
-- TITLE: Describe the policy event or situation, not the political actor. Write as a news headline about what is happening — not about who caused it. Bad: "Trump administration faces military defeat in Iran". Good: "U.S. Military Struggles in Iran Conflict". Bad: "Biden signs executive order on climate". Good: "New Executive Order Expands Climate Regulations". Focus on the ISSUE, not the person or party.
-- DESCRIPTION: 2-3 sentences. State the facts of what is happening and why it matters institutionally. Do not assign blame, use partisan language, or characterize motivations. Describe impacts on people and institutions, not on political figures. No loaded words like "controversial", "radical", "dangerous", "assault on", "threat to".
-- impact_score: 1-3 = routine (NOTABLE), 4-6 = notable policy shift (SIGNIFICANT), 7-8 = major institutional impact (MAJOR), 9-10 = constitutional/crisis level (CRITICAL) — use the full range
-- impact_label must be exactly one of: "NOTABLE", "SIGNIFICANT", "MAJOR", "CRITICAL"
-- category must be exactly one of: ${CATEGORIES.join(", ")}
-- slug: lowercase, hyphens only, topic-focused not actor-focused (e.g. "senate-budget-vote-mar-2026" not "trump-budget-cut-mar-2026")
-- actions: exactly 3 per issue, each with effort ("2 min", "20 min", or "ongoing") and a concrete civic action any citizen can take regardless of political affiliation
-- sources: array of {label, url} from the articles that informed this issue
-- date: current month and year like "Mar 2026"
+1. Headlines must be under 8 words. Lead with the most newsworthy fact. Format: "[What happened]: [Why it matters in 3 words]". Examples: "EPA Budget Cut 52%: Lowest Since Reagan", "Iran War Escalates: Congress Demands Vote", "DHS Shutdown Week 5: Airports Strained". Never use these lazy filler words — scrutiny, emerges, raises questions, gains momentum, concerns, issues, faces. Replace them with specific facts and numbers.
+2. Be specific — include real numbers, real names, real places.
+3. One story per card, no vague overarching themes.
+4. Severity scores: most things are 4-6, only rate 8+ if it's a genuine crisis affecting millions right now.
+5. Descriptions are 2 sentences max, plain English, no jargon.
+6. Action items must be specific and link somewhere real — 5calls.org for calling reps, change.org for petitions, congress.gov for tracking bills.
+7. Generate EXACTLY 10 issues from today's top political news stories.
+8. impact_label must be exactly one of: "NOTABLE", "SIGNIFICANT", "MAJOR", "CRITICAL"
+9. category must be exactly one of: ${CATEGORIES.join(", ")}
+10. slug: lowercase, hyphens only, specific to the story (e.g. "epa-budget-cut-apr-2026")
+11. actions: exactly 3 per issue, each with effort ("2 min", "20 min", or "ongoing")
+12. sources: array of {label, url} from the articles that informed this issue
+13. date: current month and year like "Apr 2026"
 
-Return ONLY a valid JSON array of exactly 10 issue objects. No markdown, no explanation, no other text.
+Return only valid JSON array, no other text.
 
 Example shape (do not copy values, only structure):
 [
   {
-    "title": "Congress Considers Short-Term Spending Bill to Avoid Shutdown",
-    "slug": "congress-spending-bill-mar-2026",
-    "category": "Economy",
-    "impact_score": 6,
-    "impact_label": "SIGNIFICANT",
-    "description": "Congress is debating a continuing resolution to fund the government through the end of the fiscal year after appropriations talks stalled. Without passage, federal agencies would face a partial shutdown affecting services relied on by millions of Americans.",
+    "title": "EPA Budget Cut by 65%, Eliminating 1,200 Staff Positions",
+    "slug": "epa-budget-cut-apr-2026",
+    "category": "Environment",
+    "impact_score": 7,
+    "impact_label": "MAJOR",
+    "description": "Congress passed a budget slashing the EPA by 65%, cutting enforcement staff and shutting down regional offices. Air and water monitoring programs in 14 states will go dark by June.",
     "actions": [
-      { "effort": "2 min", "text": "Call your representative to express your position on government funding" },
-      { "effort": "20 min", "text": "Read the bill summary on congress.gov" },
-      { "effort": "ongoing", "text": "Track appropriations committee hearings for updates" }
+      { "effort": "2 min", "text": "Call your senator at 5calls.org and tell them to restore EPA funding" },
+      { "effort": "20 min", "text": "Track the EPA appropriations bill at congress.gov" },
+      { "effort": "ongoing", "text": "Sign up for alerts from your state environmental agency" }
     ],
-    "date": "Mar 2026",
+    "date": "Apr 2026",
     "sources": [
       { "label": "Reuters", "url": "https://reuters.com/..." }
     ]

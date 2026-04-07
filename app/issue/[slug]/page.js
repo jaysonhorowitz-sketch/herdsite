@@ -14,9 +14,9 @@ function getSev(score) {
 }
 
 function effortConfig(effort) {
-  if (effort === "2 min")  return { color: "#67e8f9", bg: "rgba(14,116,144,0.15)",  border: "rgba(103,232,249,0.2)" }
-  if (effort === "20 min") return { color: "#c4b5fd", bg: "rgba(124,58,237,0.15)",  border: "rgba(196,181,253,0.2)" }
-  return                          { color: "#5eead4", bg: "rgba(15,118,110,0.15)",  border: "rgba(94,234,212,0.2)"  }
+  if (effort === "2 min")  return { color: "#0891b2", bg: "rgba(8,145,178,0.08)",   border: "rgba(8,145,178,0.25)"   }
+  if (effort === "20 min") return { color: "#7c3aed", bg: "rgba(124,58,237,0.08)",  border: "rgba(124,58,237,0.25)"  }
+  return                          { color: "#0f766e", bg: "rgba(15,118,110,0.08)",  border: "rgba(15,118,110,0.25)"  }
 }
 
 function partyColor(p) {
@@ -223,7 +223,7 @@ function SiteHeader() {
       borderBottom: "1px solid rgba(255,255,255,0.06)",
       position: "sticky", top: 0, zIndex: 30,
     }}>
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ maxWidth: 1120, margin: "0 auto", padding: "0 40px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
           <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>→ Politics & Governance</span>
@@ -276,49 +276,264 @@ function NotFoundScreen() {
   )
 }
 
+// ─── Hardcoded resources by category ─────────────────────────────────────────
+
+// Pick n random items from an array (no repeats)
+function pick(arr, n) {
+  const copy = [...arr]
+  const out = []
+  while (out.length < n && copy.length) {
+    const i = Math.floor(Math.random() * copy.length)
+    out.push(copy.splice(i, 1)[0])
+  }
+  return out
+}
+
+const NL_MAINSTREAM = {
+  "Executive Power": [
+    { name: "Politico Playbook", description: "The essential morning read for Washington insiders and policy watchers.", url: "https://www.politico.com/newsletter/playbook" },
+    { name: "Axios AM", description: "Smart brevity on the biggest political stories of the day.", url: "https://www.axios.com/newsletters/axios-am" },
+    { name: "The Hill Morning Report", description: "Daily digest of the top stories from Capitol Hill and the White House.", url: "https://thehill.com/newsletter" },
+    { name: "Washington Post The 6", description: "Six essential political stories every morning from the Post's newsroom.", url: "https://www.washingtonpost.com" },
+  ],
+  "Rule of Law": [
+    { name: "SCOTUSblog", description: "Plain-language coverage of the Supreme Court and federal courts.", url: "https://www.scotusblog.com" },
+    { name: "Just Security", description: "Analysis of law and policy at the intersection of national security and rights.", url: "https://www.justsecurity.org" },
+    { name: "Law360", description: "Breaking legal news and analysis across every major practice area.", url: "https://www.law360.com" },
+    { name: "Above the Law", description: "News and commentary on the legal industry, courts, and legal policy.", url: "https://abovethelaw.com" },
+  ],
+  "Economy": [
+    { name: "WSJ The 10-Point", description: "Ten must-read stories each morning from the Wall Street Journal.", url: "https://www.wsj.com" },
+    { name: "Axios Markets", description: "Data-driven daily briefing on markets, business, and economic policy.", url: "https://www.axios.com/newsletters/axios-markets" },
+    { name: "Bloomberg Evening Briefing", description: "The day's biggest economic and financial stories, distilled.", url: "https://www.bloomberg.com" },
+    { name: "FT FirstFT", description: "Financial Times' morning digest of global economic news.", url: "https://www.ft.com" },
+  ],
+  "Civil Rights": [
+    { name: "The 19th", description: "Nonprofit newsroom covering gender, politics, and policy.", url: "https://19thnews.org" },
+    { name: "The Appeal", description: "Reporting on criminal legal reform and civil rights enforcement.", url: "https://theappeal.org" },
+    { name: "ACLU Newsletter", description: "Updates on civil liberties cases, legislation, and actions from the ACLU.", url: "https://www.aclu.org/news" },
+    { name: "ProPublica", description: "Investigative journalism on civil rights, inequality, and accountability.", url: "https://www.propublica.org" },
+  ],
+  "National Security": [
+    { name: "Defense One", description: "Essential coverage of U.S. defense policy, the military, and global security.", url: "https://www.defenseone.com" },
+    { name: "War on the Rocks", description: "Analysis of national security, defense strategy, and foreign policy.", url: "https://warontherocks.com" },
+    { name: "Lawfare", description: "Rigorous legal and policy analysis on national security issues.", url: "https://www.lawfaremedia.org" },
+    { name: "Foreign Policy", description: "Global affairs reporting and analysis from Washington and abroad.", url: "https://foreignpolicy.com" },
+  ],
+  "Healthcare": [
+    { name: "STAT News", description: "Authoritative journalism on health, medicine, and the life sciences.", url: "https://www.statnews.com" },
+    { name: "Kaiser Health News", description: "Nonprofit newsroom covering health policy, insurance, and public health.", url: "https://kff.org/health-news" },
+    { name: "Axios Vitals", description: "Daily briefing on the health care industry and health policy.", url: "https://www.axios.com" },
+    { name: "Modern Healthcare", description: "Business and policy news for health care executives and policymakers.", url: "https://www.modernhealthcare.com" },
+  ],
+  "Environment": [
+    { name: "NYT Climate Forward", description: "The New York Times' guide to the latest on climate change and policy.", url: "https://www.nytimes.com/newsletters/climate-change" },
+    { name: "Inside Climate News", description: "Award-winning nonprofit journalism on climate and the environment.", url: "https://insideclimatenews.org" },
+    { name: "E&E News", description: "Definitive source for energy and environment policy coverage in Washington.", url: "https://www.eenews.net" },
+    { name: "Yale Environment 360", description: "Opinion, analysis, and reporting on the environment from Yale.", url: "https://e360.yale.edu" },
+  ],
+  "Education & Science": [
+    { name: "Chronicle of Higher Education", description: "News and analysis on colleges, universities, and higher ed policy.", url: "https://www.chronicle.com" },
+    { name: "Science News", description: "Accessible coverage of scientific research, discoveries, and funding.", url: "https://www.sciencenews.org" },
+    { name: "Inside Higher Ed", description: "Daily news on higher education policy, faculty, and campus life.", url: "https://www.insidehighered.com" },
+    { name: "Nature News", description: "Research news and policy analysis from one of science's top journals.", url: "https://www.nature.com/news" },
+  ],
+  "Immigration": [
+    { name: "The Marshall Project", description: "Nonpartisan journalism covering immigration enforcement and policy.", url: "https://www.themarshallproject.org" },
+    { name: "Immigration Impact", description: "News and analysis from the American Immigration Council.", url: "https://immigrationimpact.com" },
+    { name: "Documented", description: "Journalism for and about immigrants navigating U.S. policy.", url: "https://documentedny.com" },
+    { name: "Border Report", description: "On-the-ground coverage of the U.S.–Mexico border and immigration.", url: "https://www.bordereport.com" },
+  ],
+  "Media & Democracy": [
+    { name: "Columbia Journalism Review", description: "Critical analysis of the press, media ethics, and journalism's future.", url: "https://www.cjr.org" },
+    { name: "Nieman Lab", description: "Researching the future of journalism at Harvard's Nieman Foundation.", url: "https://www.niemanlab.org" },
+    { name: "Press Gazette", description: "News about the news industry, media trends, and press freedom.", url: "https://pressgazette.co.uk" },
+    { name: "Poynter", description: "Journalism ethics, fact-checking, and media industry news.", url: "https://www.poynter.org" },
+  ],
+}
+
+const NL_SUBSTACK = {
+  "Executive Power": [
+    { name: "Popular Information", description: "Judd Legum's accountability journalism on corporate and political power.", url: "https://popular.info" },
+    { name: "Letters from an American", description: "Heather Cox Richardson's daily historical context on American politics.", url: "https://heathercoxrichardson.substack.com" },
+    { name: "Robert Reich", description: "Former Labor Secretary Robert Reich on democracy, inequality, and power.", url: "https://robertreich.substack.com" },
+    { name: "The Bulwark", description: "Center-right commentary on democracy, accountability, and the GOP.", url: "https://www.thebulwark.com" },
+    { name: "HEATED", description: "Emily Atkin on how the powerful shape politics and policy.", url: "https://heatedblog.substack.com" },
+  ],
+  "Rule of Law": [
+    { name: "Lawfare", description: "Deep legal analysis of national security law and constitutional questions.", url: "https://www.lawfaremedia.org" },
+    { name: "The Contrarian", description: "Independent legal analysis pushing back on conventional wisdom.", url: "https://thecontrarian.substack.com" },
+    { name: "Election Law Blog", description: "Rick Hasen's authoritative coverage of voting rights and election law.", url: "https://electionlawblog.org" },
+    { name: "Steve Vladeck", description: "National security law professor on courts, the military, and the Constitution.", url: "https://vladeck.substack.com" },
+    { name: "The Law and Policy Brief", description: "Accessible breakdowns of consequential legal and regulatory decisions.", url: "https://lawpolicyblog.substack.com" },
+  ],
+  "Economy": [
+    { name: "The Overshoot", description: "Matthew Klein on macroeconomics, trade, and global financial flows.", url: "https://theovershoot.co" },
+    { name: "Noahpinion", description: "Noah Smith's accessible takes on economics, technology, and policy.", url: "https://noahpinion.substack.com" },
+    { name: "Doomberg", description: "Anonymous energy and commodity experts on markets and geopolitics.", url: "https://doomberg.substack.com" },
+    { name: "Money Stuff", description: "Matt Levine's witty and incisive daily newsletter on Wall Street.", url: "https://www.bloomberg.com/account/newsletters/money-stuff" },
+    { name: "Apricitas Economics", description: "Data-driven analysis of U.S. economic policy and labor markets.", url: "https://apricitas.substack.com" },
+  ],
+  "Civil Rights": [
+    { name: "The Ink", description: "Anand Giridharadas on power, inequality, and who gets to shape America.", url: "https://the.ink" },
+    { name: "Momentum", description: "Analysis and strategy for the progressive movement and civil rights work.", url: "https://momentum.substack.com" },
+    { name: "Radically Possible", description: "Optimistic takes on social change, civil rights, and movement building.", url: "https://radicallypossible.substack.com" },
+    { name: "The Reframe", description: "Roxane Gay on culture, politics, and the ongoing struggle for equity.", url: "https://roxanegay.substack.com" },
+    { name: "Shakesville", description: "Long-running feminist political commentary and civil rights analysis.", url: "https://shakesville.substack.com" },
+  ],
+  "National Security": [
+    { name: "Situation Report", description: "Inside-the-Beltway reporting on defense policy and national security.", url: "https://sitrep.substack.com" },
+    { name: "The Intercept", description: "Adversarial journalism on surveillance, military power, and civil liberties.", url: "https://theintercept.com" },
+    { name: "Tom Nichols", description: "Former Naval War College professor on democracy, defense, and expertise.", url: "https://tom-nichols.substack.com" },
+    { name: "Shashank Joshi", description: "The Economist's defence editor on military strategy and global security.", url: "https://shashankjoshi.substack.com" },
+    { name: "Phillips P. O'Brien", description: "Military historian on modern warfare, strategy, and defense policy.", url: "https://phillipsobrien.substack.com" },
+  ],
+  "Healthcare": [
+    { name: "The Health Care Blog", description: "Practitioner and policy perspectives on health care reform and delivery.", url: "https://thehealthcareblog.com" },
+    { name: "Absolutely Maybe", description: "Hilda Bastian on evidence-based medicine, research integrity, and health policy.", url: "https://hildabastian.substack.com" },
+    { name: "Topher Spiro", description: "Health policy expert on drug pricing, insurance reform, and the ACA.", url: "https://topherspiro.substack.com" },
+    { name: "Health Affairs Forefront", description: "Timely health policy commentary from leading researchers and practitioners.", url: "https://www.healthaffairs.org" },
+    { name: "American Diagnosis", description: "Making sense of U.S. health care policy for a general audience.", url: "https://americandiagnosis.substack.com" },
+  ],
+  "Environment": [
+    { name: "HEATED", description: "Emily Atkin's sharp accountability journalism on climate and fossil fuel politics.", url: "https://heatedblog.substack.com" },
+    { name: "Volts", description: "David Roberts' deep dives into clean energy, climate policy, and politics.", url: "https://www.volts.wtf" },
+    { name: "The Crucial Years", description: "Bill McKibben on climate urgency, activism, and the path forward.", url: "https://billmckibben.substack.com" },
+    { name: "Climate Psychologist", description: "The psychology of climate change and how we respond to it.", url: "https://climatepsychologist.substack.com" },
+    { name: "Heatmap News", description: "The energy transition and climate politics, explained.", url: "https://heatmap.news" },
+  ],
+  "Education & Science": [
+    { name: "The Experimentalist", description: "How scientific research actually works — and what's going wrong.", url: "https://experimentalist.substack.com" },
+    { name: "Aftermath", description: "Bryan Alexander on the future of higher education and learning.", url: "https://bryantalexander.substack.com" },
+    { name: "Lenny's Newsletter", description: "Lenny Rachitsky on product, growth, and how organizations learn.", url: "https://www.lennysnewsletter.com" },
+    { name: "One Useful Thing", description: "Ethan Mollick on AI, education, and the science of learning.", url: "https://www.oneusefulthing.org" },
+    { name: "ScienceAlert", description: "Breaking science news and research explained for curious readers.", url: "https://www.sciencealert.com" },
+  ],
+  "Immigration": [
+    { name: "Immigration Uncovered", description: "Clear-eyed analysis of immigration law, enforcement, and policy.", url: "https://immigrationuncovered.substack.com" },
+    { name: "The Dispatch", description: "Center-right reporting and commentary including immigration policy analysis.", url: "https://thedispatch.com" },
+    { name: "Dara Lind", description: "ProPublica immigration reporter's analysis of policy and enforcement.", url: "https://daralind.substack.com" },
+    { name: "Cato at Liberty", description: "Libertarian policy analysis on immigration reform and open borders.", url: "https://www.cato.org/blog" },
+    { name: "Roberto Suro", description: "USC professor and veteran immigration journalist on policy and politics.", url: "https://robertosuro.substack.com" },
+  ],
+  "Media & Democracy": [
+    { name: "Press Run", description: "Eric Boehlert on media failures, press accountability, and political journalism.", url: "https://pressrun.media" },
+    { name: "The Present Age", description: "Parker Molloy on media, politics, and the information ecosystem.", url: "https://present.substack.com" },
+    { name: "Platformer", description: "Casey Newton's essential newsletter on big tech and its political influence.", url: "https://www.platformer.news" },
+    { name: "Garbage Day", description: "Ryan Broderick on internet culture, viral media, and online politics.", url: "https://www.garbageday.email" },
+    { name: "Puck News", description: "Inside-the-room reporting on media, power, and Washington politics.", url: "https://puck.news" },
+  ],
+}
+
+const NONPROFITS = {
+  "Executive Power": [
+    { name: "Common Cause", description: "Holds power accountable through nonpartisan government oversight and transparency advocacy.", url: "https://www.commoncause.org/donate/" },
+    { name: "Brennan Center for Justice", description: "Researches and litigates on executive authority, voting rights, and constitutional limits.", url: "https://www.brennancenter.org/donate" },
+    { name: "Campaign Legal Center", description: "Advances democracy through litigation and policy work on campaign finance and ethics.", url: "https://campaignlegal.org/donate" },
+  ],
+  "Rule of Law": [
+    { name: "ACLU", description: "Defends individual rights and liberties in courts and legislatures nationwide.", url: "https://action.aclu.org/donate-aclu" },
+    { name: "Brennan Center for Justice", description: "Works to reform and protect American democratic institutions and rule of law.", url: "https://www.brennancenter.org/donate" },
+    { name: "Project on Government Oversight", description: "Investigates and exposes government abuses to advance accountability.", url: "https://www.pogo.org/donate" },
+  ],
+  "Economy": [
+    { name: "Economic Policy Institute", description: "Research and policy advocacy to improve economic conditions for low- and middle-income workers.", url: "https://www.epi.org/donate/" },
+    { name: "Center on Budget and Policy Priorities", description: "Analyzes federal and state budget policies and their effects on low-income households.", url: "https://www.cbpp.org/donate" },
+    { name: "Demos", description: "Advocates for economic opportunity, democracy, and an inclusive society.", url: "https://www.demos.org/donate" },
+  ],
+  "Civil Rights": [
+    { name: "ACLU", description: "Defends civil liberties and civil rights through litigation, advocacy, and education.", url: "https://action.aclu.org/donate-aclu" },
+    { name: "NAACP Legal Defense Fund", description: "Litigates to achieve racial justice and advance civil rights in America.", url: "https://www.naacpldf.org/donate/" },
+    { name: "Southern Poverty Law Center", description: "Monitors hate groups and pursues civil rights litigation across the South.", url: "https://www.splcenter.org/donate" },
+  ],
+  "National Security": [
+    { name: "Arms Control Association", description: "Advocates for arms control and disarmament to reduce global security threats.", url: "https://www.armscontrol.org/contribute" },
+    { name: "Project on Government Oversight", description: "Oversees Pentagon and intelligence community spending and accountability.", url: "https://www.pogo.org/donate" },
+    { name: "Human Rights Watch", description: "Investigates and exposes human rights abuses linked to military and security operations.", url: "https://www.hrw.org/donate" },
+  ],
+  "Healthcare": [
+    { name: "Families USA", description: "National advocacy organization working to achieve high-quality, affordable healthcare.", url: "https://familiesusa.org/donate/" },
+    { name: "National Patient Advocate Foundation", description: "Helps patients access and afford the health care they need.", url: "https://www.npaf.org/donate/" },
+    { name: "Doctors Without Borders", description: "Delivers emergency medical care in health crises regardless of politics.", url: "https://donate.doctorswithoutborders.org/" },
+  ],
+  "Environment": [
+    { name: "Sierra Club", description: "America's oldest and largest grassroots environmental organization.", url: "https://www.sierraclub.org/donate" },
+    { name: "Natural Resources Defense Council", description: "Uses law, science, and advocacy to protect the environment and public health.", url: "https://www.nrdc.org/donate" },
+    { name: "Environmental Defense Fund", description: "Finds practical, nonpartisan solutions to environmental challenges.", url: "https://www.edf.org/donate" },
+  ],
+  "Education & Science": [
+    { name: "National Education Association Foundation", description: "Supports public education through grants, scholarships, and advocacy.", url: "https://www.neafoundation.org/donate/" },
+    { name: "Union of Concerned Scientists", description: "Uses science to protect our health, safety, and the environment from political interference.", url: "https://www.ucsusa.org/donate" },
+    { name: "PEN America", description: "Defends free expression, including academic freedom and science communication.", url: "https://pen.org/donate/" },
+  ],
+  "Immigration": [
+    { name: "RAICES", description: "Provides legal services and advocates for immigrant families and asylum seekers.", url: "https://www.raicestexas.org/donate/" },
+    { name: "National Immigration Law Center", description: "Defends and advances the rights of low-income immigrants through litigation and policy.", url: "https://www.nilc.org/donate/" },
+    { name: "International Rescue Committee", description: "Helps refugees and displaced people rebuild their lives in safety and dignity.", url: "https://www.rescue.org/donate" },
+  ],
+  "Media & Democracy": [
+    { name: "Committee to Protect Journalists", description: "Defends journalists and press freedom around the world.", url: "https://cpj.org/donate/" },
+    { name: "Reporters Without Borders", description: "Advocates for freedom of the press and information worldwide.", url: "https://rsf.org/en/donate" },
+    { name: "PEN America", description: "Champions free expression and fights censorship of writers and journalists.", url: "https://pen.org/donate/" },
+  ],
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-function categoryKey(cat) {
-  return "category-" + (cat || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
-}
+const CALL_RE      = /\b(call|contact|write|email|reach out)\b/i
+const CIVIC_RE     = /\b(senator|representative|congress(man|woman|person)?|rep\b|member of congress|official|lawmaker|commerce department|state department|white house)\b/i
+const PETITION_RE  = /\b(petition|sign a? ?petition)\b/i
+const DONATE_RE    = /\bdonate\b/i
+const ATTEND_RE    = /\b(attend|join|volunteer)\b/i
+const GOVT_RE      = /\b(committee|hearing|bill|legislation|congress|senate|house|federal|agency|regulation|foia|vote|voting)\b/i
 
-function relativeTime(iso) {
-  if (!iso) return ""
-  const diff = Date.now() - new Date(iso).getTime()
-  const mins  = Math.floor(diff / 60000)
-  const hours = Math.floor(diff / 3600000)
-  const days  = Math.floor(diff / 86400000)
-  if (mins  <  1) return "just now"
-  if (mins  < 60) return `${mins}m ago`
-  if (hours < 24) return `${hours}h ago`
-  if (days  <  7) return `${days}d ago`
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-}
-
-const CALL_RE     = /\b(call|contact|write|email|reach out)\b.{0,40}\b(senator|representative|congress|rep\b|member|official|lawmaker)/i
-const PETITION_RE = /\b(petition|sign)\b/i
-const DONATE_RE   = /\bdonate\b/i
-const LEARN_RE    = /\b(read|review|learn|track|research|follow|understand|explore)\b/i
+// Source patterns — if the action text names a known outlet, link there directly
+const SOURCE_PATTERNS = [
+  { re: /\bcongress\.gov\b/i,          url: t => `https://congress.gov/search?q=${encodeURIComponent(t)}` },
+  { re: /\bopensecrets\b/i,            url: () => "https://www.opensecrets.org" },
+  { re: /\bgovtrack\b/i,               url: t => `https://www.govtrack.us/search?q=${encodeURIComponent(t)}` },
+  { re: /\bscotus\b|supreme court\b/i, url: () => "https://www.supremecourt.gov" },
+  { re: /\bfec\.gov\b|federal election commission\b/i, url: () => "https://www.fec.gov" },
+  { re: /\busa\.gov\b/i,               url: () => "https://www.usa.gov" },
+]
 
 function getActionUrl(actionText, issueTitle) {
   const t = actionText
-  if (CALL_RE.test(t))     return "https://5calls.org"
+
+  // Contact / call your rep
+  if (CALL_RE.test(t) || CIVIC_RE.test(t)) return "https://5calls.org"
+
+  // Petition / sign
   if (PETITION_RE.test(t)) return `https://www.change.org/search?q=${encodeURIComponent(issueTitle)}`
-  if (DONATE_RE.test(t))   return "#nonprofits"
-  if (LEARN_RE.test(t))    return `https://www.google.com/search?q=${encodeURIComponent(actionText + " " + issueTitle)}`
-  return "https://5calls.org" // default
+
+  // Donate → scroll to nonprofits section
+  if (DONATE_RE.test(t)) return "#take-action"
+
+  // Attend / join / volunteer
+  if (ATTEND_RE.test(t)) return `https://www.volunteermatch.org/search?k=${encodeURIComponent(issueTitle)}`
+
+  // Research / read / track / monitor / follow — check for named sources first
+  if (/\b(read|review|research|track|monitor|follow|learn|understand|explore)\b/i.test(t)) {
+    for (const { re, url } of SOURCE_PATTERNS) {
+      if (re.test(t)) return url(issueTitle)
+    }
+    // Government-related → congress.gov search
+    if (GOVT_RE.test(t)) return `https://congress.gov/search?q=${encodeURIComponent(issueTitle)}`
+    // Generic research — congress.gov is still more useful than Google for civic actions
+    return `https://congress.gov/search?q=${encodeURIComponent(issueTitle)}`
+  }
+
+  return "https://5calls.org"
 }
 
 export default function IssuePage() {
   const params            = useParams()
   const [issue, setIssue] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [news,       setNews]       = useState([])
-  const [nonprofits,    setNonprofits]    = useState([])
-  const [npoLoading,    setNpoLoading]    = useState(false)
-  const [completedKeys, setCompletedKeys] = useState(new Set())
-  const [weekCount,     setWeekCount]     = useState(null) // null = not loaded yet
-  const [zipCode,       setZipCode]       = useState("")
+  const [completedKeys,   setCompletedKeys]   = useState(new Set())
+  const [weekCount,       setWeekCount]       = useState(null)
+  const [zipCode,         setZipCode]         = useState("")
+  const [pickedNL,        setPickedNL]        = useState(null) // set once on mount
 
   useEffect(() => {
     try {
@@ -330,6 +545,14 @@ export default function IssuePage() {
       if (z) setZipCode(z)
     } catch {}
   }, [])
+
+  // Pick newsletters once after issue loads (category is needed)
+  useEffect(() => {
+    if (!issue?.category || pickedNL) return
+    const mainstream = pick(NL_MAINSTREAM[issue.category] || [], 2)
+    const substack   = pick(NL_SUBSTACK[issue.category]   || [], 2)
+    setPickedNL([...mainstream, ...substack])
+  }, [issue?.category])
 
   // Fetch weekly action count for this issue
   useEffect(() => {
@@ -389,383 +612,303 @@ export default function IssuePage() {
     })
   }
 
-  useEffect(() => {
-    if (!issue?.category) return
-    supabase.from("news_cache").select("articles").eq("issue_slug", categoryKey(issue.category)).single()
-      .then(({ data }) => { if (data?.articles) setNews(data.articles.slice(0, 5)) })
-  }, [issue?.category])
-
-  useEffect(() => {
-    if (!issue?.title) return
-    const apiKey = process.env.NEXT_PUBLIC_EVERYORG_API_KEY
-    if (!apiKey) return
-    setNpoLoading(true)
-    fetch(`https://partners.every.org/v0.2/search/${encodeURIComponent(issue.title)}?apiKey=${apiKey}&take=3`)
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(data => {
-        const orgs = (data.nonprofits || []).slice(0, 3)
-        setNonprofits(orgs)
-      })
-      .catch(() => {})
-      .finally(() => setNpoLoading(false))
-  }, [issue?.title])
-
   if (loading) return <LoadingScreen />
   if (!issue)  return <NotFoundScreen />
 
   const sev        = getSev(issue.severity_score)
   const hasActions = issue.actions?.length > 0
-  const hasSources = issue.sources?.length > 0
   const hasPlayers = issue.players?.length > 0
 
-  // Light-mode section styles
-  const S = {
-    background: "#ffffff",
-    borderRadius: 14,
-    border: "1px solid #e5e7eb",
-    padding: "22px 24px",
-    marginBottom: 12,
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-  }
   const SH = {
     fontSize: 10, fontWeight: 700, color: "#9ca3af",
-    textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16,
-    margin: "0 0 16px",
+    textTransform: "uppercase", letterSpacing: "0.12em",
+    margin: "0 0 20px",
   }
 
+  const newsletters = pickedNL || []
+  const nonprofits  = NONPROFITS[issue.category] || []
+
   return (
-    <div style={{ minHeight: "100vh", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", fontFamily: "'Inter', system-ui, sans-serif", background: "#ffffff" }}>
 
-      {/* Dark header section */}
-      <div style={{ background: "#111827", color: "#e2e8f0" }}>
+      {/* ── Dark hero ── */}
+      <div style={{ background: "#111827" }}>
         <SiteHeader />
-
-        {/* Dark hero with title + score */}
-        <div style={{ background: "linear-gradient(160deg, #1a2236 0%, #111827 100%)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", padding: "40px 24px 48px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+        <div style={{ background: "linear-gradient(160deg, #1a2236 0%, #111827 100%)" }}>
+          <div style={{ maxWidth: 1120, margin: "0 auto", padding: "44px 40px 52px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
               <span style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
                 color: sev.accent, background: sev.accent + "18",
                 padding: "4px 10px", borderRadius: 5, border: `1px solid ${sev.accent}30`,
               }}>{issue.category}</span>
               {issue.date && <span style={{ fontSize: 12, color: "#4b5563" }}>{issue.date}</span>}
             </div>
-
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20 }}>
-              <h1 style={{ fontSize: "clamp(22px, 4vw, 34px)", fontWeight: 800, color: "#f1f5f9", lineHeight: 1.2, letterSpacing: "-0.02em", margin: 0, flex: 1 }}>
-                {issue.title}
-              </h1>
-              <div style={{ textAlign: "center", flexShrink: 0 }}>
-                <div style={{
-                  width: 64, height: 64, borderRadius: 14,
-                  background: sev.accent + "18",
-                  border: `2px solid ${sev.accent}44`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 28, fontWeight: 900, color: sev.accent, letterSpacing: "-0.03em",
-                }}>{issue.severity_score}</div>
-                <div style={{ fontSize: 9, color: "#4b5563", marginTop: 6, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>{sev.label}</div>
-              </div>
-            </div>
-
-            {/* Score bar */}
-            <div style={{ marginTop: 24 }}>
-              <div style={{ background: "rgba(255,255,255,0.07)", borderRadius: 99, height: 4, overflow: "hidden" }}>
-                <div style={{ width: `${issue.severity_score * 10}%`, height: "100%", background: sev.accent, borderRadius: 99, opacity: 0.8 }} />
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-                <span style={{ fontSize: 10, color: "#374151" }}>Low</span>
-                <span style={{ fontSize: 10, color: "#374151" }}>Critical</span>
-              </div>
-            </div>
+            <h1 style={{
+              fontSize: "clamp(24px, 4vw, 42px)", fontWeight: 800, color: "#f1f5f9",
+              lineHeight: 1.15, letterSpacing: "-0.025em", margin: 0, maxWidth: 720,
+            }}>
+              {issue.title}
+            </h1>
           </div>
-
-          {/* Wave divider */}
-          <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg"
-            style={{ display: "block", width: "100%", marginBottom: -2 }}>
-            <path d="M0 40 L0 20 Q360 0 720 20 Q1080 40 1440 20 L1440 40 Z" fill="#f4f5f7"/>
+          {/* Wave */}
+          <svg viewBox="0 0 1440 36" fill="none" style={{ display: "block", width: "100%", marginBottom: -2 }}>
+            <path d="M0 36 L0 18 Q360 0 720 18 Q1080 36 1440 18 L1440 36 Z" fill="#ffffff"/>
           </svg>
         </div>
       </div>
 
-      {/* Light content section */}
-      <div style={{ background: "#f4f5f7" }}>
-        <main style={{ maxWidth: 760, margin: "0 auto", padding: "20px 24px 80px" }}>
+      {/* ── Two-column content ── */}
+      <main style={{ maxWidth: 1120, margin: "0 auto", padding: "52px 40px 100px" }}>
+        <div style={{ display: "flex", gap: 64, alignItems: "flex-start" }}>
 
-          {/* ── What is happening ── */}
-          <div style={S}>
-            <p style={SH}>What Is Happening</p>
-            <p style={{ color: "#374151", lineHeight: 1.75, fontSize: 15, margin: 0 }}>{issue.description}</p>
-          </div>
+          {/* ════ LEFT COLUMN ════ */}
+          <div style={{ flex: "1 1 0", minWidth: 0 }}>
 
-          {/* ── Key Players ── */}
-          {hasPlayers && (
-            <div style={S}>
-              <p style={SH}>Key Players</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {issue.players.map((player, i) => (
-                  <PlayerCard key={i} player={player} />
-                ))}
-              </div>
-              <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 14, marginBottom: 0, lineHeight: 1.6 }}>
-                ⚡ = up for election in 2026 · Re-election odds sourced from Kalshi prediction markets · Contact links go directly to official government pages
+            {/* What Is Happening */}
+            <section style={{ marginBottom: 52 }}>
+              <p style={SH}>What Is Happening</p>
+              <p style={{ color: "#111827", lineHeight: 1.85, fontSize: 18, margin: 0, fontWeight: 400, letterSpacing: "-0.01em" }}>
+                {issue.description}
               </p>
-            </div>
-          )}
+            </section>
 
-          {/* ── What you can do ── */}
-          {hasActions && (
-            <div style={S}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <p style={{ ...SH, marginBottom: 0 }}>What You Can Do</p>
-                {weekCount !== null && weekCount > 0 && (
-                  <span style={{ fontSize: 12, color: "#6b7280", display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ color: "#22c55e" }}>●</span>
-                    <strong style={{ color: "#374151" }}>{weekCount}</strong>&nbsp;{weekCount === 1 ? "person" : "people"} took action this week
-                  </span>
-                )}
-              </div>
-
-              {/* 5calls.org banner */}
-              {issue.actions.some(a => CALL_RE.test(a.text)) && (
-                <a
-                  href="https://5calls.org"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "flex", alignItems: "center", gap: 14,
-                    padding: "14px 18px", borderRadius: 12, marginBottom: 14,
-                    background: "linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)",
-                    border: "1px solid #bfdbfe",
-                    textDecoration: "none",
-                    transition: "border-color 0.15s",
-                  }}
-                >
-                  <span style={{ fontSize: 28, flexShrink: 0 }}>📞</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#1d4ed8", marginBottom: 3 }}>
-                      Call Your Rep Now via 5Calls
-                    </div>
-                    <div style={{ fontSize: 12, color: "#4b5563", lineHeight: 1.5 }}>
-                      5Calls connects you directly to your representative's office in under 2 minutes — they provide a script and your local number.
-                    </div>
-                  </div>
-                  <svg style={{ width: 16, height: 16, color: "#3b82f6", flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
-                  </svg>
-                </a>
-              )}
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {issue.actions.map((action, i) => {
-                  const ef         = effortConfig(action.effort)
-                  const done       = completedKeys.has(`${params.slug}-${i}`)
-                  const isCallItem = CALL_RE.test(action.text)
-                  const actionUrl  = getActionUrl(action.text, issue.title)
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => handleAction(i, actionUrl)}
-                      style={{
-                        display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-                        borderRadius: 10, cursor: "pointer", width: "100%", textAlign: "left",
-                        border:     `1px solid ${done ? "#86efac" : isCallItem ? "#bfdbfe" : "#e5e7eb"}`,
-                        background: done ? "#f0fdf4" : isCallItem ? "#eff6ff" : "#fafafa",
-                        transition: "background 0.15s, border-color 0.15s",
-                        fontFamily: "inherit",
-                      }}
-                    >
-                      <span style={{
-                        fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-                        padding: "4px 9px", borderRadius: 5, flexShrink: 0,
-                        color: done ? "#16a34a" : ef.color,
-                        background: done ? "#dcfce7" : ef.bg,
-                        border: `1px solid ${done ? "#86efac" : ef.border}`,
-                      }}>{action.effort}</span>
-
-                      <span style={{
-                        fontSize: 14, lineHeight: 1.5, flex: 1,
-                        color: done ? "#9ca3af" : isCallItem ? "#1d4ed8" : "#374151",
-                        textDecoration: done ? "line-through" : "none",
-                        fontWeight: isCallItem && !done ? 500 : 400,
-                      }}>
-                        {isCallItem && !done ? "📞 " : ""}{action.text}
-                        {isCallItem && !done && <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 400 }}> — via 5Calls ↗</span>}
-                      </span>
-
-                      {done ? (
-                        <span style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                          <span style={{ fontSize: 15, color: "#16a34a" }}>✓</span>
-                          <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 500, textDecoration: "none" }}>undo</span>
-                        </span>
-                      ) : actionUrl ? (
-                        <svg style={{ width: 14, height: 14, color: "#9ca3af", flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
-                        </svg>
-                      ) : (
-                        <span style={{ fontSize: 18, color: "#d1d5db", flexShrink: 0 }}>○</span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* ── Sources ── */}
-          {hasSources && (
-            <div style={S}>
-              <p style={SH}>Sources</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {issue.sources.map((src, i) => (
-                  <a key={i} href={src.url} target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize: 13, color: "#3b82f6", textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
-                    <svg style={{ width: 12, height: 12, flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
-                    </svg>
-                    {src.label}
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── Latest News ── */}
-          {news.length > 0 && (
-            <div style={S}>
-              <p style={SH}>Latest News</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                {news.map((article, i) => (
-                  <a
-                    key={i}
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "block", textDecoration: "none", padding: "11px 0",
-                      borderBottom: i < news.length - 1 ? "1px solid #f3f4f6" : "none",
-                    }}
-                  >
-                    <div style={{ fontSize: 14, fontWeight: 500, color: "#374151", lineHeight: 1.45,
-                      marginBottom: 4, transition: "color 0.15s" }}
-                      onMouseEnter={e => e.currentTarget.style.color = "#111827"}
-                      onMouseLeave={e => e.currentTarget.style.color = "#374151"}>
-                      {article.title}
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 600 }}>{article.source}</span>
-                      <span style={{ fontSize: 11, color: "#d1d5db" }}>·</span>
-                      <span style={{ fontSize: 11, color: "#9ca3af" }}>{relativeTime(article.publishedAt)}</span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── Organizations Taking Action ── */}
-          {(npoLoading || nonprofits.length > 0) && (
-            <div id="nonprofits" style={S}>
-              <p style={SH}>Organizations Taking Action</p>
-              {npoLoading ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#9ca3af", fontSize: 13 }}>
-                  <svg style={{ animation: "spin 1s linear infinite", width: 14, height: 14 }} fill="none" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25"/>
-                    <path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8v8z"/>
-                  </svg>
-                  Loading…
-                </div>
-              ) : (
+            {/* Key Players */}
+            {hasPlayers && (
+              <section style={{ marginBottom: 52 }}>
+                <p style={SH}>Key Players</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {nonprofits.map((org, i) => (
-                    <div key={i} style={{
-                      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
-                      padding: "14px 16px", borderRadius: 10,
-                      background: "#fafafa",
-                      border: "1px solid #e5e7eb",
-                    }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "#111827", marginBottom: 4 }}>
-                          {org.name}
-                        </div>
-                        {org.description && (
-                          <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>
-                            {org.description.length > 100 ? org.description.slice(0, 100) + "…" : org.description}
-                          </div>
-                        )}
-                      </div>
-                      <a
-                        href={`https://www.every.org/${org.slug}#donate`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          flexShrink: 0,
-                          fontSize: 12, fontWeight: 700,
-                          padding: "7px 16px", borderRadius: 7,
-                          background: "#eff6ff",
-                          border: "1px solid #bfdbfe",
-                          color: "#1d4ed8",
-                          textDecoration: "none",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Donate ↗
-                      </a>
-                    </div>
+                  {issue.players.map((player, i) => (
+                    <PlayerCard key={i} player={player} />
                   ))}
                 </div>
-              )}
-            </div>
-          )}
+                <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 14, marginBottom: 0, lineHeight: 1.6 }}>
+                  ⚡ = up for election in 2026 · Re-election odds via Kalshi prediction markets
+                </p>
+              </section>
+            )}
 
-          {/* ── In Your Area ── */}
-          {zipCode && (
-            <div style={S}>
-              <p style={SH}>In Your Area</p>
-              <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-                <div style={{ flex: 1, minWidth: 200 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "#111827", marginBottom: 6 }}>
-                    See how this affects zip code {zipCode}
-                  </div>
-                  <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6 }}>
-                    Find your local representatives and call them directly about this issue — pre-filled with your location.
+            {/* What You Can Do */}
+            {hasActions && (
+              <section style={{ marginBottom: 52 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                  <p style={{ ...SH, marginBottom: 0 }}>What You Can Do</p>
+                  {weekCount !== null && weekCount > 0 && (
+                    <span style={{ fontSize: 12, color: "#6b7280", display: "flex", alignItems: "center", gap: 5 }}>
+                      <span style={{ color: "#22c55e", fontSize: 8 }}>●</span>
+                      <strong style={{ color: "#374151" }}>{weekCount}</strong>&nbsp;{weekCount === 1 ? "person" : "people"} took action this week
+                    </span>
+                  )}
+                </div>
+                <div>
+                  {issue.actions.map((action, i) => {
+                    const ef         = effortConfig(action.effort)
+                    const done       = completedKeys.has(`${params.slug}-${i}`)
+                    const isCallItem = CALL_RE.test(action.text)
+                    const actionUrl  = getActionUrl(action.text, issue.title)
+                    return (
+                      <div key={i} style={{ borderTop: i === 0 ? "1px solid #f3f4f6" : "none", borderBottom: "1px solid #f3f4f6" }}>
+                        <button
+                          onClick={() => handleAction(i, actionUrl)}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 16, padding: "16px 4px",
+                            cursor: "pointer", width: "100%", textAlign: "left",
+                            background: done ? "#f9fafb" : "transparent",
+                            border: "none", fontFamily: "inherit",
+                            transition: "background 0.15s",
+                          }}
+                        >
+                          <span style={{
+                            fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+                            padding: "4px 9px", borderRadius: 5, flexShrink: 0, whiteSpace: "nowrap",
+                            color: done ? "#16a34a" : ef.color,
+                            background: done ? "#dcfce7" : ef.bg,
+                            border: `1px solid ${done ? "#86efac" : ef.border}`,
+                          }}>{action.effort}</span>
+
+                          <span style={{
+                            fontSize: 15, lineHeight: 1.55, flex: 1,
+                            color: done ? "#9ca3af" : "#1a1a1a",
+                            textDecoration: done ? "line-through" : "none",
+                          }}>
+                            {isCallItem && !done ? "📞 " : ""}{action.text}
+                            {isCallItem && !done && (
+                              <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 400 }}> — via 5Calls ↗</span>
+                            )}
+                          </span>
+
+                          {done ? (
+                            <span style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+                              <span style={{ fontSize: 14, color: "#16a34a" }}>✓</span>
+                              <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 500 }}>undo</span>
+                            </span>
+                          ) : (
+                            <svg style={{ width: 13, height: 13, color: "#d1d5db", flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* Stay Informed */}
+            {newsletters.length > 0 && (
+              <section style={{ marginBottom: 52 }}>
+                <p style={SH}>Stay Informed</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  {newsletters.map((nl, i) => {
+                    const isSubstack = NL_SUBSTACK[issue.category]?.some(s => s.name === nl.name)
+                    return (
+                      <div key={i} style={{
+                        padding: "20px", borderRadius: 12, border: "1px solid #e5e7eb",
+                        display: "flex", flexDirection: "column",
+                      }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#111827", lineHeight: 1.3 }}>{nl.name}</div>
+                          <span style={{
+                            fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+                            padding: "2px 7px", borderRadius: 4, flexShrink: 0,
+                            background: isSubstack ? "rgba(255,102,0,0.08)" : "rgba(59,130,246,0.08)",
+                            color:      isSubstack ? "#c2410c"              : "#1d4ed8",
+                            border:     `1px solid ${isSubstack ? "rgba(255,102,0,0.2)" : "rgba(59,130,246,0.2)"}`,
+                          }}>{isSubstack ? "Substack" : "Newsletter"}</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.6, flex: 1 }}>{nl.description}</div>
+                        <a
+                          href={nl.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            marginTop: 14, fontSize: 12, fontWeight: 700,
+                            color: "#059669", textDecoration: "none",
+                            display: "inline-flex", alignItems: "center", gap: 4,
+                          }}
+                        >Subscribe →</a>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
+            <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#9ca3af", textDecoration: "none", fontWeight: 500 }}>
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+              </svg>
+              All issues
+            </Link>
+          </div>
+
+          {/* ════ RIGHT COLUMN ════ */}
+          <div style={{ width: 292, flexShrink: 0 }}>
+            <div style={{ position: "sticky", top: 72, display: "flex", flexDirection: "column", gap: 28 }}>
+
+              {/* Impact Score */}
+              <div style={{
+                borderRadius: 16, border: "1px solid #e5e7eb",
+                padding: "28px 24px 24px", textAlign: "center",
+                background: "#fafafa",
+              }}>
+                <p style={{ ...SH, textAlign: "center", marginBottom: 16 }}>Impact Score</p>
+                <div style={{
+                  fontSize: 80, fontWeight: 900, color: sev.accent,
+                  letterSpacing: "-0.06em", lineHeight: 1, marginBottom: 6,
+                }}>{issue.severity_score}</div>
+                <div style={{
+                  display: "inline-block",
+                  fontSize: 11, fontWeight: 700, color: sev.accent,
+                  textTransform: "uppercase", letterSpacing: "0.12em",
+                  background: sev.accent + "12",
+                  padding: "3px 10px", borderRadius: 99,
+                  marginBottom: 20,
+                }}>{sev.label}</div>
+                <div style={{ background: "#e5e7eb", borderRadius: 99, height: 5, overflow: "hidden", marginBottom: 6 }}>
+                  <div style={{ width: `${issue.severity_score * 10}%`, height: "100%", background: sev.accent, borderRadius: 99, transition: "width 0.6s ease" }} />
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 10, color: "#9ca3af" }}>Low</span>
+                  <span style={{ fontSize: 10, color: "#9ca3af" }}>Critical</span>
+                </div>
+              </div>
+
+              {/* Call My Rep */}
+              <a
+                href={zipCode ? `https://5calls.org/?address=${encodeURIComponent(zipCode)}` : "https://5calls.org"}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                  padding: "16px 20px", borderRadius: 12,
+                  background: "#059669", color: "#ffffff",
+                  fontSize: 15, fontWeight: 700, textDecoration: "none",
+                  letterSpacing: "-0.01em",
+                  boxShadow: "0 4px 12px rgba(5,150,105,0.25)",
+                }}
+              >
+                📞 Call My Rep
+              </a>
+              {zipCode && (
+                <p style={{ margin: "-16px 0 0", fontSize: 11, color: "#9ca3af", textAlign: "center", lineHeight: 1.5 }}>
+                  Pre-filled for zip code {zipCode}
+                </p>
+              )}
+
+              {/* Take Action With Your Money */}
+              {nonprofits.length > 0 && (
+                <div id="take-action">
+                  <p style={SH}>Take Action With Your Money</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {nonprofits.map((org, i) => (
+                      <div key={i} style={{
+                        padding: "16px 18px", borderRadius: 12,
+                        border: "1px solid #e5e7eb", background: "#fafafa",
+                      }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 5 }}>{org.name}</div>
+                        <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.55, marginBottom: 14 }}>{org.description}</div>
+                        <a
+                          href={org.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: "block", textAlign: "center",
+                            fontSize: 12, fontWeight: 700,
+                            padding: "8px 0", borderRadius: 8,
+                            background: "#eff6ff", border: "1px solid #bfdbfe",
+                            color: "#1d4ed8", textDecoration: "none",
+                          }}
+                        >Donate →</a>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <a
-                  href={`https://5calls.org/?address=${encodeURIComponent(zipCode)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "12px 20px", borderRadius: 10, flexShrink: 0,
-                    background: "#111827", color: "#ffffff",
-                    fontSize: 14, fontWeight: 700, textDecoration: "none",
-                    transition: "opacity 0.15s",
-                  }}
-                >
-                  📞 Call My Rep
-                </a>
-              </div>
+              )}
+
+              {/* In Your Area */}
+              {zipCode && (
+                <div>
+                  <p style={SH}>In Your Area</p>
+                  <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.65, margin: 0 }}>
+                    Showing resources for <strong style={{ color: "#111827" }}>{zipCode}</strong>. The Call My Rep button above is pre-filled with your location so you can reach your representatives directly.
+                  </p>
+                </div>
+              )}
+
             </div>
-          )}
-
-          {/* ── Back ── */}
-          <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#6b7280", textDecoration: "none", marginTop: 8, fontWeight: 500 }}>
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
-            </svg>
-            Back to all issues
-          </Link>
-
-        </main>
-
-        <footer style={{ borderTop: "1px solid #e5e7eb", background: "#ffffff" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", padding: "28px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: "#d1d5db", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>How Bad Is It?</span>
-            <span style={{ fontSize: 11, color: "#9ca3af" }}>Not affiliated with any political party.</span>
           </div>
-        </footer>
-      </div>
+
+        </div>
+      </main>
+
+      <footer style={{ borderTop: "1px solid #f3f4f6" }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto", padding: "28px 40px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 11, color: "#d1d5db", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>How Bad Is It?</span>
+          <span style={{ fontSize: 11, color: "#d1d5db" }}>Not affiliated with any political party.</span>
+        </div>
+      </footer>
     </div>
   )
 }
