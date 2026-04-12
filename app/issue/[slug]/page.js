@@ -897,6 +897,52 @@ export default function IssuePage() {
                 </div>
               )}
 
+              {/* Volunteer Near You */}
+              {(() => {
+                const VOLUNTEER_KEYWORDS = {
+                  "Environment":        "environment",
+                  "Civil Rights":       "civil-rights",
+                  "Economy":            "economic-justice",
+                  "National Security":  "veterans",
+                  "Healthcare":         "health",
+                  "Immigration":        "immigration",
+                  "Education & Science":"education",
+                  "Media & Democracy":  "democracy",
+                  "Executive Power":    "civic-engagement",
+                  "Rule of Law":        "justice",
+                }
+                const keyword = VOLUNTEER_KEYWORDS[issue.category] || "civic-engagement"
+                const idealistUrl = zipCode
+                  ? `https://www.idealist.org/en/volunteer?q=${keyword}&location=${encodeURIComponent(zipCode)}`
+                  : null
+                return (
+                  <div>
+                    <p style={SH}>Volunteer Near You</p>
+                    {idealistUrl ? (
+                      <a
+                        href={idealistUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+                          padding: "14px 16px", borderRadius: 12,
+                          border: "1px solid #e5e7eb", background: "#fafafa",
+                          fontSize: 13, fontWeight: 700, color: "#111827",
+                          textDecoration: "none",
+                        }}
+                      >
+                        <span>Find Volunteer Opportunities Near You</span>
+                        <span style={{ color: "#6b7280" }}>→</span>
+                      </a>
+                    ) : (
+                      <p style={{ fontSize: 12, color: "#9ca3af", lineHeight: 1.6, margin: 0 }}>
+                        Add your location in settings to find local opportunities.
+                      </p>
+                    )}
+                  </div>
+                )
+              })()}
+
             </div>
           </div>
 
