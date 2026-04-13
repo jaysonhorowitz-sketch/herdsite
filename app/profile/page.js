@@ -1,18 +1,8 @@
 "use client"
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { createClient } from "@/utils/supabase/client"
 
-// Parse "slug-actionIndex" strings from localStorage
-// The slug may contain hyphens, so split on the LAST hyphen segment that is a digit
-function parseActionKey(key) {
-  const lastDash = key.lastIndexOf("-")
-  if (lastDash === -1) return null
-  const idx = parseInt(key.slice(lastDash + 1), 10)
-  if (isNaN(idx)) return null
-  return { slug: key.slice(0, lastDash), actionIndex: idx }
-}
-
-// Fake percentile — purely motivational, not real data
 function percentile(n) {
   if (n >= 20) return 97
   if (n >= 10) return 89
@@ -22,37 +12,68 @@ function percentile(n) {
 }
 
 export default function ProfilePage() {
-  const [keys,    setKeys]    = useState(null) // null = loading; array of strings when loaded
-  const [issues,  setIssues]  = useState({})  // slug → { title } fetched lazily
+  const [loading,  setLoading]  = useState(true)
+  const [user,     setUser]     = useState(null)
+  const [bySlug,   setBySlug]   = useState({}) // slug → { indices: [], title }
+  const [total,    setTotal]    = useState(0)
 
   useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
-      // Accept both new format (strings) and old format (objects) gracefully
-      const normalized = stored.map(item =>
-        typeof item === "string" ? item : `${item.issueSlug}-${item.actionIndex ?? 0}`
-      ).filter(Boolean)
-      setKeys(normalized)
-    } catch {
-      setKeys([])
+    async function load() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      setUser(user)
+
+      // Fetch completed actions for this user
+      const { data: actions } = await supabase
+        .from("user_actions")
+        .select("issue_slug, action_index")
+        .eq("user_id", user.id)
+        .order("completed_at", { ascending: false })
+
+      if (!actions || actions.length === 0) {
+        setLoading(false)
+        return
+      }
+
+      // Group by slug
+      const grouped = {}
+      for (const row of actions) {
+        if (!grouped[row.issue_slug]) grouped[row.issue_slug] = { indices: [], title: null }
+        grouped[row.issue_slug].indices.push(row.action_index)
+      }
+
+      // Fetch issue titles for all slugs
+      const slugs = Object.keys(grouped)
+      const { data: issues } = await supabase
+        .from("issues")
+        .select("slug, title")
+        .in("slug", slugs)
+
+      if (issues) {
+        for (const issue of issues) {
+          if (grouped[issue.slug]) grouped[issue.slug].title = issue.title
+        }
+      }
+
+      setBySlug(grouped)
+      setTotal(actions.length)
+      setLoading(false)
     }
+    load()
   }, [])
 
-  // Group by slug
-  const bySlug = {}
-  if (keys) {
-    for (const key of keys) {
-      const parsed = parseActionKey(key)
-      if (!parsed) continue
-      if (!bySlug[parsed.slug]) bySlug[parsed.slug] = []
-      bySlug[parsed.slug].push(parsed.actionIndex)
-    }
-  }
-
-  const total = keys?.length ?? 0
   const slugCount = Object.keys(bySlug).length
 
-  if (keys === null) {
+  const S = {
+    background: "#1a2236",
+    borderRadius: 12,
+    border: "1px solid rgba(255,255,255,0.07)",
+    padding: "22px 24px",
+    marginBottom: 12,
+  }
+
+  if (loading) {
     return (
       <div style={{ background: "#111827", minHeight: "100vh", display: "flex", alignItems: "center",
         justifyContent: "center", color: "#374151", fontFamily: "'Inter', system-ui, sans-serif" }}>
@@ -61,12 +82,10 @@ export default function ProfilePage() {
     )
   }
 
-  const S = {
-    background: "#1a2236",
-    borderRadius: 12,
-    border: "1px solid rgba(255,255,255,0.07)",
-    padding: "22px 24px",
-    marginBottom: 12,
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    window.location.href = "/login"
   }
 
   return (
@@ -85,13 +104,22 @@ export default function ProfilePage() {
             <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
             <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>→ Politics & Governance</span>
           </Link>
-          <Link href="/" style={{ fontSize: 13, color: "#4b5563", textDecoration: "none",
-            display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
-            </svg>
-            All issues
-          </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            <Link href="/" style={{ fontSize: 13, color: "#4b5563", textDecoration: "none",
+              display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+              </svg>
+              All issues
+            </Link>
+            <button
+              onClick={handleSignOut}
+              style={{ fontSize: 12, fontWeight: 500, color: "#374151",
+                background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
 
@@ -99,6 +127,10 @@ export default function ProfilePage() {
 
         {/* Heading */}
         <div style={{ marginBottom: 32 }}>
+          {user?.email && (
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+              color: "#374151", marginBottom: 8 }}>{user.email}</div>
+          )}
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
             color: "#3b82f6", marginBottom: 10 }}>Your Impact</div>
           <h1 style={{ fontSize: "clamp(28px, 5vw, 40px)", fontWeight: 800, color: "#f1f5f9",
@@ -115,8 +147,8 @@ export default function ProfilePage() {
         {/* Stats row */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 24 }}>
           {[
-            { label: "Total Actions",    value: total,      color: "#60a5fa" },
-            { label: "Issues Acted On",  value: slugCount,  color: "#4ade80" },
+            { label: "Total Actions",   value: total,      color: "#60a5fa" },
+            { label: "Issues Acted On", value: slugCount,  color: "#4ade80" },
           ].map(stat => (
             <div key={stat.label} style={{ ...S, textAlign: "center", padding: "20px 16px" }}>
               <div style={{ fontSize: 48, fontWeight: 900, color: stat.color,
@@ -152,11 +184,11 @@ export default function ProfilePage() {
               letterSpacing: "0.1em", margin: "0 0 16px" }}>
               Completed Actions by Issue
             </p>
-            {Object.entries(bySlug).map(([slug, indices]) => (
+            {Object.entries(bySlug).map(([slug, { indices, title }]) => (
               <div key={slug} style={{ marginBottom: 20 }}>
                 <Link href={`/issue/${slug}`} style={{ fontSize: 13, fontWeight: 700, color: "#93c5fd",
                   textDecoration: "none", display: "block", marginBottom: 8 }}>
-                  {slug} ↗
+                  {title || slug} ↗
                 </Link>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {indices.map(idx => (
@@ -173,19 +205,6 @@ export default function ProfilePage() {
                 </div>
               </div>
             ))}
-
-            <button
-              onClick={() => {
-                localStorage.removeItem("completedActions")
-                setKeys([])
-              }}
-              style={{
-                marginTop: 8, fontSize: 12, color: "#374151", background: "none",
-                border: "none", cursor: "pointer", textDecoration: "underline", padding: 0,
-              }}
-            >
-              Clear all
-            </button>
           </div>
         )}
 
