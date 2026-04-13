@@ -5,11 +5,6 @@ import Link from "next/link"
 
 const supabase = createClient("https://mwahckdqmiopkzrmdxyc.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13YWhja2RxbWlvcGt6cm1keHljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDgxMjgsImV4cCI6MjA4ODkyNDEyOH0.0Ua6sM8_zLzCdjJ8SGX-MVFkbbbyzDvrjtZuRoZVVxM")
 
-function scoreColor(s) {
-  if (s >= 8) return "#ef4444"
-  if (s >= 5) return "#f97316"
-  return "#eab308"
-}
 
 // ─── Action URL derivation (mirrors issue detail page logic) ──────────────────
 const CALL_RE     = /\b(call|contact|write|email|reach out)\b/i
@@ -174,7 +169,7 @@ function TickerLine({ topics, critWeekCount, activeCat, catCounts }) {
     )
   }
 
-  // Multi-topic rotation
+  // Multi-topic rotation — only number + category fade, frame stays static
   const current  = topics[idx % topics.length]
   const catColor = CAT_COLOR[current?.name] || "#94a3b8"
   const count    = catCounts[current?.name] ?? 0
@@ -182,10 +177,15 @@ function TickerLine({ topics, critWeekCount, activeCat, catCounts }) {
     <div
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      style={{ ...baseStyle, opacity: visible ? 1 : 0 }}
+      style={baseStyle}
     >
       <span style={{ color: ACCENT, fontSize: 9 }}>●</span>
-      <span>Now showing: <strong style={{ color: "#94a3b8", fontWeight: 600 }}>{count}</strong> issues in <strong style={{ color: catColor, fontWeight: 600 }}>{current?.name}</strong></span>
+      <span>
+        Now showing:{" "}
+        <strong style={{ color: "#94a3b8", fontWeight: 600, opacity: visible ? 1 : 0, transition: "opacity 0.3s ease", display: "inline-block" }}>{count}</strong>
+        {" "}issues in{" "}
+        <strong style={{ color: catColor, fontWeight: 600, opacity: visible ? 1 : 0, transition: "opacity 0.3s ease", display: "inline-block" }}>{current?.name}</strong>
+      </span>
     </div>
   )
 }
@@ -248,10 +248,17 @@ function ActionCard({ card }) {
   )
 }
 
+// ─── Severity tier ────────────────────────────────────────────────────────────
+function severityTier(s) {
+  if (s >= 9) return { label: "severe impact",  color: "#ef4444", bar: "rgba(220,38,38,0.6)"    }
+  if (s >= 7) return { label: "major impact",   color: "#fb923c", bar: "rgba(234,88,12,0.6)"    }
+  if (s >= 4) return { label: "notable impact", color: "#fbbf24", bar: "rgba(217,119,6,0.6)"    }
+  return             { label: "worth watching", color: "#94a3b8", bar: "rgba(100,116,139,0.6)"  }
+}
+
 // ─── IssueCard ────────────────────────────────────────────────────────────────
 function IssueCard({ issue, weekCount }) {
-  const sc       = scoreColor(issue.severity_score)
-  const catColor = CAT_COLOR[issue.category] || "#94a3b8"
+  const tier = severityTier(issue.severity_score)
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -266,50 +273,38 @@ function IssueCard({ issue, weekCount }) {
         background: hovered ? "rgba(255,255,255,0.02)" : "transparent",
       }}
     >
-      <div style={{ padding: "24px 0 0", display: "flex", alignItems: "flex-start", gap: 18 }}>
-        <div style={{ flexShrink: 0, width: 64, paddingTop: 2 }}>
-          <span style={{
-            fontSize: 56, fontWeight: 800, color: "#F5F1E8",
-            lineHeight: 1, letterSpacing: "-0.04em", display: "block",
-          }}>{issue.severity_score}</span>
+      <div style={{ padding: "20px 0 0" }}>
+        {/* Category + date */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,241,232,0.5)" }}>{issue.category}</span>
+          <span style={{ fontSize: 10, color: "rgba(245,241,232,0.45)", letterSpacing: "0.04em" }}>{issue.date}</span>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-            <span style={{
-              fontSize: 10, fontWeight: 700,
-              letterSpacing: "0.14em", textTransform: "uppercase",
-              color: catColor,
-            }}>{issue.category}</span>
-            <span style={{ fontSize: 10, color: "#374151", letterSpacing: "0.04em" }}>{issue.date}</span>
-          </div>
-          <h2 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 6px", color: "#F5F1E8", lineHeight: 1.3, letterSpacing: "-0.01em" }}>{issue.title}</h2>
-          <p style={{ color: "#4b5563", fontSize: 13, lineHeight: 1.6, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{issue.description}</p>
-        </div>
+        {/* Headline */}
+        <h2 style={{ fontSize: 17, fontWeight: 500, margin: "0 0 6px", color: "#F5F1E8", lineHeight: 1.35, letterSpacing: "-0.01em" }}>{issue.title}</h2>
+        {/* Description */}
+        <p style={{ color: "rgba(245,241,232,0.55)", fontSize: 13, lineHeight: 1.6, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{issue.description}</p>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0 20px 82px", gap: 12 }}>
-        <div>
+      {/* Bottom row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0 16px", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: tier.color, transform: "translateY(5px)", display: "inline-block" }}>{tier.label}</span>
           {weekCount > 0 && (
-            <span style={{ fontSize: 11, color: "#374151", display: "flex", alignItems: "center", gap: 5 }}>
+            <span style={{ fontSize: 11, color: "#374151", display: "flex", alignItems: "center", gap: 4 }}>
               <span style={{ color: "#22c55e", fontSize: 7 }}>●</span>
-              <span><strong style={{ color: "#4b5563", fontWeight: 600 }}>{weekCount}</strong> {weekCount === 1 ? "person" : "people"} took action this week</span>
+              <span><strong style={{ color: "#4b5563", fontWeight: 600 }}>{weekCount}</strong> took action</span>
             </span>
           )}
         </div>
         <span style={{
-          display: "inline-flex", alignItems: "center", gap: 6,
+          display: "inline-flex", alignItems: "center",
           padding: "5px 14px", borderRadius: 3,
-          background: "rgba(255,255,255,0.88)",
-          border: "1px solid rgba(255,255,255,0.88)",
-          color: "#111827",
-          fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
+          background: "rgba(255,255,255,0.88)", border: "1px solid rgba(255,255,255,0.88)",
+          color: "#111827", fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
           whiteSpace: "nowrap", textTransform: "uppercase",
         }}>Take Action →</span>
       </div>
-
-      <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }}>
-        <div style={{ width: `${issue.severity_score * 10}%`, height: 1, background: sc, opacity: 0.3 }} />
-      </div>
+      <div style={{ height: 2, background: tier.bar }} />
     </Link>
   )
 }

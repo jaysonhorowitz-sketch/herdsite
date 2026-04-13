@@ -61,11 +61,11 @@ function parseDate(d) {
   return (parseInt(yr) || 0) * 12 + (MONTHS.indexOf(mon) ?? 0)
 }
 
-function cardColor(s) {
-  if (s <= 4) return { border: "#3b82f6", bg: "#eff6ff", text: "#1d4ed8" }
-  if (s <= 6) return { border: "#f59e0b", bg: "#fffbeb", text: "#92400e" }
-  if (s <= 8) return { border: "#f97316", bg: "#fff7ed", text: "#9a3412" }
-  return              { border: "#ef4444", bg: "#fef2f2", text: "#991b1b" }
+function severityTier(s) {
+  if (s >= 9) return { label: "severe impact",  color: "#ef4444", bar: "rgba(220,38,38,0.6)"   }
+  if (s >= 7) return { label: "major impact",   color: "#ea580c", bar: "rgba(234,88,12,0.6)"   }
+  if (s >= 4) return { label: "notable impact", color: "#d97706", bar: "rgba(217,119,6,0.6)"   }
+  return             { label: "worth watching", color: "#64748b", bar: "rgba(100,116,139,0.6)" }
 }
 
 function effortStyle(e) {
@@ -78,84 +78,56 @@ function catSlug(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
 }
 
-function IssueCard({ issue, expanded, onToggle, completedKeys, onAction, weekCount }) {
-  const cc = cardColor(issue.severity_score)
+function IssueCard({ issue, weekCount }) {
+  const tier = severityTier(issue.severity_score)
+  const [hovered, setHovered] = useState(false)
   return (
-    <div style={{
-      background: "#ffffff", borderRadius: 16,
-      border: "1px solid #e5e7eb", borderLeft: `4px solid ${cc.border}`,
-      boxShadow: expanded ? "0 4px 20px rgba(0,0,0,0.1)" : "0 1px 4px rgba(0,0,0,0.06)",
-      transition: "box-shadow 0.2s", overflow: "hidden",
-    }}>
-      <Link href={"/issue/" + issue.slug} style={{ textDecoration: "none", color: "inherit", display: "block", padding: "14px 16px 0" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
-              <span style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-                color: cc.text, background: cc.bg, padding: "2px 6px", borderRadius: 4, border: `1px solid ${cc.border}33`,
-              }}>{issue.category}</span>
-              <span style={{ fontSize: 10, color: "#9ca3af" }}>{issue.date}</span>
-            </div>
-            <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 5px", color: "#111827", lineHeight: 1.35, letterSpacing: "-0.01em" }}>{issue.title}</h2>
-            <p style={{ color: "#6b7280", fontSize: 13, lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{issue.description}</p>
-          </div>
-          <div style={{ textAlign: "center", flexShrink: 0 }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 9,
-              background: cc.bg, border: `2px solid ${cc.border}44`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 17, fontWeight: 800, color: cc.text, letterSpacing: "-0.02em",
-            }}>{issue.severity_score}</div>
-          </div>
+    <Link
+      href={"/issue/" + issue.slug}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        textDecoration: "none", color: "inherit", display: "block",
+        background: hovered ? "#f9fafb" : "#ffffff",
+        borderRadius: 12, border: "1px solid #e5e7eb",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+        overflow: "hidden", transition: "background 0.15s",
+      }}
+    >
+      <div style={{ padding: "14px 16px 0" }}>
+        {/* Category + date */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#6b7280" }}>{issue.category}</span>
+          <span style={{ fontSize: 10, color: "#9ca3af" }}>{issue.date}</span>
         </div>
-      </Link>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px 12px", gap: 12 }}>
-        <div>
+        {/* Headline */}
+        <h2 style={{ fontSize: 17, fontWeight: 500, margin: "0 0 5px", color: "#111827", lineHeight: 1.35, letterSpacing: "-0.01em" }}>{issue.title}</h2>
+        {/* Description */}
+        <p style={{ color: "#6b7280", fontSize: 13, lineHeight: 1.55, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{issue.description}</p>
+      </div>
+
+      {/* Bottom row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px 14px", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: tier.color, transform: "translateY(5px)", display: "inline-block" }}>{tier.label}</span>
           {weekCount > 0 && (
-            <span style={{ fontSize: 12, color: "#6b7280", display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ color: "#22c55e", fontSize: 14 }}>●</span>
-              <span><strong style={{ color: "#374151" }}>{weekCount}</strong> {weekCount === 1 ? "person" : "people"} took action this week</span>
+            <span style={{ fontSize: 11, color: "#9ca3af", display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ color: "#22c55e", fontSize: 7 }}>●</span>
+              <strong style={{ color: "#6b7280", fontWeight: 600 }}>{weekCount}</strong>&nbsp;took action
             </span>
           )}
         </div>
-        <button onClick={e => { e.preventDefault(); e.stopPropagation(); onToggle() }} style={{
-          display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 7,
-          background: expanded ? "#f3f4f6" : "#111827",
-          border: expanded ? "1px solid #d1d5db" : "1px solid #111827",
-          color: expanded ? "#374151" : "#ffffff",
-          fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap",
-        }}>{expanded ? "Hide ↑" : "Take Action →"}</button>
+        <span style={{
+          fontSize: 12, fontWeight: 700, color: "#ffffff",
+          background: "#111827", border: "1px solid #111827",
+          padding: "6px 14px", borderRadius: 7,
+          whiteSpace: "nowrap",
+        }}>Take Action →</span>
       </div>
-      <div style={{ height: 3, background: "#f3f4f6" }}>
-        <div style={{ width: `${issue.severity_score * 10}%`, height: 3, background: cc.border, opacity: 0.5 }} />
-      </div>
-      {expanded && (
-        <div onClick={e => { e.preventDefault(); e.stopPropagation() }} style={{ borderTop: "1px solid #f3f4f6", padding: "20px 24px 24px", background: "#fafafa" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>What You Can Do</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
-            {(issue.actions || []).map((a, i) => {
-              const s = effortStyle(a.effort)
-              const done = completedKeys.has(`${issue.slug}-${i}`)
-              return (
-                <div key={i} onClick={() => onAction(issue.slug, i)} style={{
-                  display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderRadius: 10,
-                  background: done ? "#f0fdf4" : "#ffffff", border: `1px solid ${done ? "#86efac" : "#e5e7eb"}`,
-                  cursor: "pointer", transition: "all 0.15s",
-                }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 9px", borderRadius: 5, flexShrink: 0, color: done ? "#16a34a" : s.color, background: done ? "#dcfce7" : s.bg, border: `1px solid ${done ? "#86efac" : s.border}` }}>{a.effort}</span>
-                  <span style={{ fontSize: 14, color: done ? "#9ca3af" : "#374151", lineHeight: 1.5, flex: 1, textDecoration: done ? "line-through" : "none" }}>{a.text}</span>
-                  <span style={{ fontSize: 16, flexShrink: 0, color: done ? "#16a34a" : "#d1d5db" }}>{done ? "✓" : "○"}</span>
-                </div>
-              )
-            })}
-          </div>
-          <Link href={"/issue/" + issue.slug} style={{ fontSize: 13, color: "#3b82f6", fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
-            Full issue details ↗
-          </Link>
-        </div>
-      )}
-    </div>
+
+      {/* Tier bar */}
+      <div style={{ height: 2, background: tier.bar }} />
+    </Link>
   )
 }
 
@@ -419,39 +391,14 @@ export default function CategoryPage() {
             <>
               {/* Featured card */}
               {featured && (
-                <IssueCard
-                  issue={featured}
-                  expanded={expandedSlug === featured.slug}
-                  onToggle={() => setExpandedSlug(s => s === featured.slug ? null : featured.slug)}
-                  completedKeys={completedKeys}
-                  onAction={handleActionClick}
-                  weekCount={actionCounts[featured.slug] || 0}
-                />
+                <IssueCard issue={featured} weekCount={actionCounts[featured.slug] || 0} />
               )}
 
               {/* Two small cards */}
               {(smallA || smallB) && (
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
-                  {smallA && (
-                    <IssueCard
-                      issue={smallA}
-                      expanded={expandedSlug === smallA.slug}
-                      onToggle={() => setExpandedSlug(s => s === smallA.slug ? null : smallA.slug)}
-                      completedKeys={completedKeys}
-                      onAction={handleActionClick}
-                      weekCount={actionCounts[smallA.slug] || 0}
-                    />
-                  )}
-                  {smallB && (
-                    <IssueCard
-                      issue={smallB}
-                      expanded={expandedSlug === smallB.slug}
-                      onToggle={() => setExpandedSlug(s => s === smallB.slug ? null : smallB.slug)}
-                      completedKeys={completedKeys}
-                      onAction={handleActionClick}
-                      weekCount={actionCounts[smallB.slug] || 0}
-                    />
-                  )}
+                  {smallA && <IssueCard issue={smallA} weekCount={actionCounts[smallA.slug] || 0} />}
+                  {smallB && <IssueCard issue={smallB} weekCount={actionCounts[smallB.slug] || 0} />}
                 </div>
               )}
 
@@ -538,15 +485,7 @@ export default function CategoryPage() {
                   {showRest && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 12 }}>
                       {expandIssues.map(issue => (
-                        <IssueCard
-                          key={issue.id}
-                          issue={issue}
-                          expanded={expandedSlug === issue.slug}
-                          onToggle={() => setExpandedSlug(s => s === issue.slug ? null : issue.slug)}
-                          completedKeys={completedKeys}
-                          onAction={handleActionClick}
-                          weekCount={actionCounts[issue.slug] || 0}
-                        />
+                        <IssueCard key={issue.id} issue={issue} weekCount={actionCounts[issue.slug] || 0} />
                       ))}
                     </div>
                   )}
