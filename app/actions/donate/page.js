@@ -28,23 +28,23 @@ function NonprofitCard({ org }) {
 
   return (
     <div style={{
-      background: "#1e293b",
-      border: "1px solid #1e293b",
+      background: "#111827",
+      border: "1px solid rgba(255,255,255,0.07)",
       borderRadius: 12,
       padding: "20px",
       display: "flex",
       flexDirection: "column",
       gap: 12,
-      transition: "border-color 0.2s",
+      transition: "background 0.15s, border-color 0.15s",
     }}
-    onMouseEnter={e => e.currentTarget.style.borderColor = "#334155"}
-    onMouseLeave={e => e.currentTarget.style.borderColor = "#1e293b"}
+    onMouseEnter={e => { e.currentTarget.style.background = "#1F2937"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)" }}
+    onMouseLeave={e => { e.currentTarget.style.background = "#111827"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)" }}
     >
       {/* Header: logo + name */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{
           width: 40, height: 40, borderRadius: 8,
-          background: "#0f172a",
+          background: "#0B1120",
           border: "1px solid #334155",
           display: "flex", alignItems: "center", justifyContent: "center",
           overflow: "hidden", flexShrink: 0,
@@ -63,7 +63,7 @@ function NonprofitCard({ org }) {
           )}
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", lineHeight: 1.3 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#F5F1E8", lineHeight: 1.3 }}>
             {org.name}
           </div>
           {org.verified && (
@@ -215,9 +215,9 @@ export default function DonatePage() {
   const chipStyle = (active) => ({
     padding: "6px 14px",
     borderRadius: 20,
-    border: `1px solid ${active ? "#475569" : "#1e293b"}`,
-    background: active ? "#1e293b" : "transparent",
-    color: active ? "#f1f5f9" : "#64748b",
+    border: `1px solid ${active ? "#475569" : "rgba(255,255,255,0.07)"}`,
+    background: active ? "#111827" : "transparent",
+    color: active ? "#F5F1E8" : "#64748b",
     fontSize: 12,
     fontWeight: 600,
     cursor: "pointer",
@@ -227,7 +227,7 @@ export default function DonatePage() {
   })
 
   return (
-    <div style={{ minHeight: "100vh", background: "#111827", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#0B1120", fontFamily: "'Inter', system-ui, sans-serif" }}>
       <style>{`
         .np-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         @media (max-width: 1000px) { .np-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -254,7 +254,7 @@ export default function DonatePage() {
           <h1 style={{
             fontSize: "clamp(28px, 5vw, 40px)",
             fontWeight: 800,
-            color: "#f1f5f9",
+            color: "#F5F1E8",
             fontFamily: "Georgia, 'Times New Roman', serif",
             margin: "0 0 10px",
             letterSpacing: "-0.02em",
@@ -275,7 +275,7 @@ export default function DonatePage() {
                 fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
                 color: "#475569", textTransform: "uppercase",
               }}>For You</span>
-              <div style={{ flex: 1, height: 1, background: "#1e293b" }} />
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
               {/* Carousel arrows */}
               {!loading && forYouPool.length > 2 && (
                 <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
@@ -284,8 +284,8 @@ export default function DonatePage() {
                     disabled={carouselIdx === 0}
                     style={{
                       width: 28, height: 28, borderRadius: 6,
-                      border: "1px solid #1e293b",
-                      background: carouselIdx === 0 ? "transparent" : "#1e293b",
+                      border: "1px solid rgba(255,255,255,0.07)",
+                      background: carouselIdx === 0 ? "transparent" : "#111827",
                       color: carouselIdx === 0 ? "#334155" : "#94a3b8",
                       cursor: carouselIdx === 0 ? "default" : "pointer",
                       display: "flex", alignItems: "center", justifyContent: "center",
@@ -301,8 +301,8 @@ export default function DonatePage() {
                     disabled={carouselIdx >= maxIdx}
                     style={{
                       width: 28, height: 28, borderRadius: 6,
-                      border: "1px solid #1e293b",
-                      background: carouselIdx >= maxIdx ? "transparent" : "#1e293b",
+                      border: "1px solid rgba(255,255,255,0.07)",
+                      background: carouselIdx >= maxIdx ? "transparent" : "#111827",
                       color: carouselIdx >= maxIdx ? "#334155" : "#94a3b8",
                       cursor: carouselIdx >= maxIdx ? "default" : "pointer",
                       display: "flex", alignItems: "center", justifyContent: "center",
@@ -341,7 +341,7 @@ export default function DonatePage() {
               color: "#475569", textTransform: "uppercase",
               whiteSpace: "nowrap",
             }}>Browse by Cause</span>
-            <div style={{ flex: 1, height: 1, background: "#1e293b" }} />
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
           </div>
 
           {/* Filter chips */}

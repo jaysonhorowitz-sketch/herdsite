@@ -34,7 +34,7 @@ function LegCard({ rep }) {
 
   return (
     <div style={{
-      background: "#1e293b",
+      background: "#111827",
       border: "1px solid rgba(255,255,255,0.08)",
       borderRadius: 8,
       padding: "24px",
@@ -45,7 +45,7 @@ function LegCard({ rep }) {
       <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
         <div style={{
           width: 64, height: 78, borderRadius: 5, overflow: "hidden", flexShrink: 0,
-          background: "#0f172a",
+          background: "#0B1120",
         }}>
           {imgOk && rep.photo_url ? (
             <img
@@ -63,7 +63,7 @@ function LegCard({ rep }) {
           )}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#f1f5f9", lineHeight: 1.3, marginBottom: 6 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#F5F1E8", lineHeight: 1.3, marginBottom: 6 }}>
             {rep.name}
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -236,8 +236,8 @@ export default function CallPage() {
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#111827",
-      fontFamily: "'Inter', system-ui, sans-serif", color: "#e2e8f0",
+      minHeight: "100vh", background: "#0B1120",
+      fontFamily: "'Inter', system-ui, sans-serif", color: "#EDE9E0",
     }}>
       {/* Nav */}
       <div style={{
@@ -262,7 +262,7 @@ export default function CallPage() {
           <h1 style={{
             fontFamily: "var(--font-fraunces), Georgia, serif",
             fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 700,
-            color: "#f1f5f9", margin: "0 0 12px", letterSpacing: "-0.02em", lineHeight: 1.1,
+            color: "#F5F1E8", margin: "0 0 12px", letterSpacing: "-0.02em", lineHeight: 1.1,
           }}>Call your representatives</h1>
           <p style={{ fontSize: 14, color: "#64748b", margin: 0, maxWidth: 560, lineHeight: 1.7 }}>
             Your voice matters. Calls are more effective than emails — most offices track call volume on specific issues.
@@ -281,7 +281,7 @@ export default function CallPage() {
                   maxLength={5}
                   style={{
                     background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: 4, padding: "5px 10px", color: "#f1f5f9", fontSize: 12, width: 110,
+                    borderRadius: 4, padding: "5px 10px", color: "#F5F1E8", fontSize: 12, width: 110,
                   }}
                 />
                 <button type="submit" style={{
@@ -299,7 +299,7 @@ export default function CallPage() {
                 maxLength={5}
                 style={{
                   background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)",
-                  borderRadius: 4, padding: "7px 12px", color: "#f1f5f9", fontSize: 13, width: 120,
+                  borderRadius: 4, padding: "7px 12px", color: "#F5F1E8", fontSize: 13, width: 120,
                 }}
               />
               <button type="submit" style={{
@@ -337,7 +337,7 @@ export default function CallPage() {
             </div>
             <p style={{ fontSize: 14, color: "#cbd5e1", lineHeight: 1.9, margin: 0 }}>
               "Hello, my name is <em style={{ color: "#94a3b8" }}>[your name]</em> and I'm a constituent calling from zip code {zip}.
-              I'm calling to urge {reps[0]?.name?.split(" ").slice(-1)[0]} to take action on <strong style={{ color: "#f1f5f9" }}>{topIssue}</strong>.
+              I'm calling to urge {reps[0]?.name?.split(" ").slice(-1)[0]} to take action on <strong style={{ color: "#F5F1E8" }}>{topIssue}</strong>.
               This issue is critically important to me and my community.
               Can you tell me where {reps[0]?.name?.split(" ").slice(-1)[0]} stands on this, and what steps they're taking?"
             </p>

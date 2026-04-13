@@ -197,14 +197,14 @@ function ActionCard({ card }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         display: "flex", flexDirection: "column", gap: 0,
-        background: "#1e293b",
+        background: hovered ? "#1F2937" : "#111827",
         border: "1px solid rgba(255,255,255,0.08)",
         borderRadius: 6,
         padding: "20px 22px",
         cursor: "pointer",
         transform: hovered ? "translateY(-2px)" : "translateY(0)",
         boxShadow: hovered ? "0 8px 24px rgba(0,0,0,0.35)" : "0 2px 8px rgba(0,0,0,0.2)",
-        transition: "transform 0.15s ease, box-shadow 0.15s ease",
+        transition: "transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease",
         textDecoration: "none",
         color: "inherit",
         flex: 1,
@@ -221,7 +221,7 @@ function ActionCard({ card }) {
 
       {/* Headline */}
       <p style={{
-        fontSize: 14, fontWeight: 700, color: "#f1f5f9",
+        fontSize: 14, fontWeight: 700, color: "#F5F1E8",
         lineHeight: 1.4, margin: "0 0 8px",
       }}>{card.headline}</p>
 
@@ -261,7 +261,7 @@ function IssueCard({ issue, expanded, onToggle, completedKeys, onAction, weekCou
         <div style={{ display: "flex", alignItems: "flex-start", gap: 18 }}>
           <div style={{ flexShrink: 0, width: 64, display: "flex", alignItems: "flex-start", gap: 6, paddingTop: 2 }}>
             <span style={{
-              fontSize: 56, fontWeight: 800, color: "#f1f5f9",
+              fontSize: 56, fontWeight: 800, color: "#F5F1E8",
               lineHeight: 1, letterSpacing: "-0.04em", display: "block",
             }}>{issue.severity_score}</span>
           </div>
@@ -274,7 +274,7 @@ function IssueCard({ issue, expanded, onToggle, completedKeys, onAction, weekCou
               }}>{issue.category}</span>
               <span style={{ fontSize: 10, color: "#374151", letterSpacing: "0.04em" }}>{issue.date}</span>
             </div>
-            <h2 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 6px", color: "#f1f5f9", lineHeight: 1.3, letterSpacing: "-0.01em" }}>{issue.title}</h2>
+            <h2 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 6px", color: "#F5F1E8", lineHeight: 1.3, letterSpacing: "-0.01em" }}>{issue.title}</h2>
             <p style={{ color: "#4b5563", fontSize: 13, lineHeight: 1.6, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{issue.description}</p>
           </div>
         </div>
@@ -458,7 +458,7 @@ export default function Home() {
     })
   }, [])
 
-  if (loading) return <div style={{ background: "#111827", minHeight: "100vh" }} />
+  if (loading) return <div style={{ background: "#0B1120", minHeight: "100vh" }} />
 
   const userCats = prefs?.categories || []
 
@@ -507,7 +507,7 @@ export default function Home() {
     background: "none", border: "none", cursor: "pointer",
     padding: "4px 0",
     fontSize: 13, fontWeight: active ? 600 : 400,
-    color: active ? "#f1f5f9" : "#64748b",
+    color: active ? "#F5F1E8" : "#64748b",
     textDecoration: active ? "underline" : "none",
     textDecorationColor: "rgba(255,255,255,0.35)",
     textUnderlineOffset: "5px",
@@ -517,7 +517,7 @@ export default function Home() {
   })
 
   return (
-    <div style={{ minHeight: "100vh", background: "#111827", fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: "#e2e8f0" }}>
+    <div style={{ minHeight: "100vh", background: "#0B1120", fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: "#EDE9E0" }}>
 
       {/* Nav */}
       <nav style={{
@@ -530,7 +530,7 @@ export default function Home() {
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", height: 60,
           display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
+            <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#F5F1E8", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
             <span style={{ fontSize: 12, color: "#4b5563", fontWeight: 400 }}>→ Politics & Governance</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -547,7 +547,7 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #1a2236 0%, #111827 100%)" }}>
+      <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #1a2236 0%, #0B1120 100%)" }}>
         <div style={{
           position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.35,
           backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
@@ -570,7 +570,7 @@ export default function Home() {
             lineHeight: 1.05,
             letterSpacing: "-0.025em",
             margin: "0 0 10px",
-            color: "#f1f5f9",
+            color: "#F5F1E8",
           }}>{userCats.length > 0 ? "The Issues You Care About" : "Issues That Actually Matter"}</h1>
 
           {/* Ticker — secondary status line */}
@@ -595,7 +595,7 @@ export default function Home() {
                 </button>
               </span>
             ))}
-            <span style={{ color: "#1e293b", padding: "0 14px", userSelect: "none", fontSize: 16 }}>|</span>
+            <span style={{ color: "#1a2540", padding: "0 14px", userSelect: "none", fontSize: 16 }}>|</span>
             <button onClick={() => setCat("All")} style={filterBtnStyle(cat === "All")}>
               All Issues
             </button>
@@ -624,7 +624,7 @@ export default function Home() {
           fontSize: 11, fontWeight: 600, color: "#475569",
           letterSpacing: "0.12em", textTransform: "uppercase", whiteSpace: "nowrap",
         }}>What&apos;s Happening This Week</span>
-        <div style={{ flex: 1, height: 1, background: "#1e293b" }} />
+        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
       </div>
 
       {/* Issue cards */}
@@ -690,7 +690,7 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "#0d1420" }}>
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "#060C18" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px",
           display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontSize: 11, color: "#1f2937", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>How Bad Is It?</span>
