@@ -1,9 +1,9 @@
 "use client"
 import { useEffect, useState, useCallback } from "react"
-import { createClient } from "@supabase/supabase-js"
+import { createClient } from "@/utils/supabase/client"
 import Link from "next/link"
 
-const supabase = createClient("https://mwahckdqmiopkzrmdxyc.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13YWhja2RxbWlvcGt6cm1keHljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDgxMjgsImV4cCI6MjA4ODkyNDEyOH0.0Ua6sM8_zLzCdjJ8SGX-MVFkbbbyzDvrjtZuRoZVVxM")
+const supabase = createClient()
 
 function scoreColor(s) {
   if (s >= 8) return "#ef4444"
@@ -329,12 +329,26 @@ export default function Home() {
   const [showRest,      setShowRest]      = useState(false)
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const done = localStorage.getItem("onboardingComplete")
-      if (!done) { window.location.href = "/onboarding"; return }
+    async function loadPrefs() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return // middleware handles redirect
+
+      const { data } = await supabase
+        .from("user_prefs")
+        .select("categories, action_pref, zip_code")
+        .eq("user_id", user.id)
+        .maybeSingle()
+
+      if (!data) {
+        window.location.href = "/onboarding"
+        return
+      }
+
+      setPrefs({ categories: data.categories || [], actionPref: data.action_pref })
+      if (data.zip_code) localStorage.setItem("userZipCode", data.zip_code)
+      setLoading(false)
     }
-    try { const raw = localStorage.getItem("howbadisite_prefs"); if (raw) setPrefs(JSON.parse(raw)) } catch {}
-    setLoading(false)
+    loadPrefs()
   }, [])
 
   useEffect(() => {
@@ -410,6 +424,16 @@ export default function Home() {
           const stored = JSON.parse(localStorage.getItem("completedActions") || "[]")
           localStorage.setItem("completedActions", JSON.stringify(stored.filter(k => k !== key)))
         } catch {}
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (user) {
+            supabase.from("user_actions")
+              .delete()
+              .eq("user_id", user.id)
+              .eq("issue_slug", issueSlug)
+              .eq("action_index", actionIndex)
+              .catch(() => {})
+          }
+        })
       } else {
         next.add(key)
         try {
@@ -419,6 +443,14 @@ export default function Home() {
         supabase.from("action_clicks").insert({ issue_slug: issueSlug, action_index: actionIndex, clicked_at: new Date().toISOString() })
           .then(() => { setActionCounts(prev => ({ ...prev, [issueSlug]: (prev[issueSlug] || 0) + 1 })) })
           .catch(() => {})
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (user) {
+            supabase.from("user_actions").upsert(
+              { user_id: user.id, issue_slug: issueSlug, action_index: actionIndex, completed_at: new Date().toISOString() },
+              { onConflict: "user_id,issue_slug,action_index" }
+            ).catch(() => {})
+          }
+        })
       }
       return next
     })
@@ -508,6 +540,13 @@ export default function Home() {
               background: "rgba(255,255,255,0.04)",
               textDecoration: "none",
             }}>Support the project</Link>
+            <button
+              onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login" }}
+              style={{
+                fontSize: 12, fontWeight: 500, color: "#374151",
+                background: "none", border: "none", cursor: "pointer", padding: 0,
+              }}
+            >Sign out</button>
           </div>
         </div>
       </nav>
