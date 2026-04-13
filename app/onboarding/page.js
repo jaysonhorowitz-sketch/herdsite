@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { createClient } from "@/utils/supabase/client"
 
 const CATEGORIES = [
   { name: "Executive Power",       icon: "⚡", desc: "Presidential actions, executive orders" },
@@ -57,11 +58,27 @@ export default function OnboardingPage() {
     setTimeout(() => { setScreen(n); setLeaving(false) }, 220)
   }
 
-  function finish() {
-    localStorage.setItem('onboardingComplete', 'true')
-    const prefs = { categories: selected, actionPref }
-    localStorage.setItem("howbadisite_prefs", JSON.stringify(prefs))
+  async function finish() {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (user) {
+      await supabase.from("user_prefs").upsert(
+        {
+          user_id: user.id,
+          categories: selected,
+          action_pref: actionPref,
+          zip_code: zipCode.trim() || null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" }
+      )
+    }
+
+    // Keep localStorage as a fast local cache
+    localStorage.setItem("howbadisite_prefs", JSON.stringify({ categories: selected, actionPref }))
     if (zipCode.trim()) localStorage.setItem("userZipCode", zipCode.trim())
+
     window.location.href = "/"
   }
 
