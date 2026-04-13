@@ -272,17 +272,6 @@ function NotFoundScreen() {
 
 // ─── Hardcoded resources by category ─────────────────────────────────────────
 
-// Pick n random items from an array (no repeats)
-function pick(arr, n) {
-  const copy = [...arr]
-  const out = []
-  while (out.length < n && copy.length) {
-    const i = Math.floor(Math.random() * copy.length)
-    out.push(copy.splice(i, 1)[0])
-  }
-  return out
-}
-
 const NL_MAINSTREAM = {
   "Executive Power": [
     { name: "Politico Playbook", description: "The essential morning read for Washington insiders and policy watchers.", url: "https://www.politico.com/newsletter/playbook" },

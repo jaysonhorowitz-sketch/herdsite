@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { supabase } from "../../../lib/supabase"
+import { createClient } from "@/utils/supabase/client"
 
 const CAT_COLOR = {
   "Executive Power":    "#60a5fa",
@@ -168,13 +169,31 @@ export default function DonatePage() {
   const [carouselIdx, setCarouselIdx] = useState(0)
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("howbadisite_prefs")
-      if (raw) {
-        const prefs = JSON.parse(raw)
-        if (Array.isArray(prefs.categories)) setUserCats(prefs.categories)
+    async function loadCats() {
+      // Supabase is authoritative — localStorage is just a cache
+      const authClient = createClient()
+      const { data: { user } } = await authClient.auth.getUser()
+      if (user) {
+        const { data } = await authClient
+          .from("user_prefs")
+          .select("categories")
+          .eq("user_id", user.id)
+          .maybeSingle()
+        if (data?.categories?.length) {
+          setUserCats(data.categories)
+          return
+        }
       }
-    } catch {}
+      // Fall back to localStorage for sessions without a Supabase row yet
+      try {
+        const raw = localStorage.getItem("howbadisite_prefs")
+        if (raw) {
+          const prefs = JSON.parse(raw)
+          if (Array.isArray(prefs.categories)) setUserCats(prefs.categories)
+        }
+      } catch {}
+    }
+    loadCats()
   }, [])
 
   useEffect(() => {

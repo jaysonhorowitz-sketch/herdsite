@@ -103,6 +103,14 @@ const ACTION_CARDS = [
     cta: "→ Join the waitlist",
     link: "/actions/events",
   },
+  {
+    icon: "📰",
+    effort: "FREE",
+    headline: "Stay informed",
+    body: "Curated newsletters and Substacks covering the issues you follow — vetted by topic.",
+    cta: "→ Browse newsletters",
+    link: "/actions/newsletters",
+  },
 ]
 
 // ─── TickerLine (main headline) ────────────────────────────────────────────────
@@ -694,7 +702,10 @@ export default function Home() {
 
       <style>{`
         ::-webkit-scrollbar { display: none; }
-        @media (max-width: 640px) {
+        @media (max-width: 900px) {
+          .action-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 560px) {
           .action-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
