@@ -232,12 +232,6 @@ function SiteHeader() {
           <Link href="/profile" style={{ fontSize: 12, fontWeight: 600, color: "#60a5fa", textDecoration: "none", letterSpacing: "0.02em" }}>
             My Impact
           </Link>
-          <Link href="/" style={{ fontSize: 13, color: "#4b5563", textDecoration: "none", display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
-            </svg>
-            All issues
-          </Link>
         </div>
       </div>
     </header>
@@ -636,6 +630,12 @@ export default function IssuePage() {
         <SiteHeader />
         <div style={{ background: "linear-gradient(160deg, #1a2236 0%, #111827 100%)" }}>
           <div style={{ maxWidth: 1120, margin: "0 auto", padding: "44px 40px 52px" }}>
+            <Link href="/" style={{ fontSize: 12, color: "#475569", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 500, marginBottom: 20 }}>
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M15 10H5M9 5l-5 5 5 5"/>
+              </svg>
+              Back to Herd
+            </Link>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
               <span style={{
                 fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
@@ -795,12 +795,6 @@ export default function IssuePage() {
               </section>
             )}
 
-            <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#9ca3af", textDecoration: "none", fontWeight: 500 }}>
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
-              </svg>
-              All issues
-            </Link>
           </div>
 
           {/* ════ RIGHT COLUMN ════ */}
