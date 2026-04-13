@@ -237,17 +237,24 @@ export default function DonatePage() {
         .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
       `}</style>
 
+      {/* Sticky nav */}
+      <header style={{
+        position: "sticky", top: 0, zIndex: 30,
+        background: "rgba(11,17,32,0.95)", backdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+      }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px", height: 52,
+          display: "flex", alignItems: "center" }}>
+          <Link href="/" style={{ fontSize: 13, color: "#64748b", textDecoration: "none", display: "flex", alignItems: "center", gap: 7, fontWeight: 500 }}>
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M15 10H5M9 5l-5 5 5 5"/>
+            </svg>
+            Back to Herd
+          </Link>
+        </div>
+      </header>
+
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 32px 80px" }}>
-        {/* Back link */}
-        <Link href="/" style={{
-          fontSize: 12, color: "#475569", textDecoration: "none",
-          display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 500,
-        }}>
-          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M15 10H5M9 5l-5 5 5 5"/>
-          </svg>
-          Back to Herd
-        </Link>
 
         {/* Page header */}
         <div style={{ marginTop: 32, marginBottom: 48 }}>

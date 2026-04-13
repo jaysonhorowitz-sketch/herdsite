@@ -44,6 +44,8 @@ export default function OnboardingPage() {
   const [actionPref, setActionPref] = useState(null)  // key
   const [zipCode,    setZipCode]    = useState("")
   const [leaving,    setLeaving]    = useState(false)
+  const [saveError,  setSaveError]  = useState(null)
+  const [saving,     setSaving]     = useState(false)
 
   function toggleCat(name) {
     setSelected(prev =>
@@ -59,25 +61,40 @@ export default function OnboardingPage() {
   }
 
   async function finish() {
+    setSaving(true)
+    setSaveError(null)
+
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (user) {
-      await supabase.from("user_prefs").upsert(
-        {
-          user_id: user.id,
-          categories: selected,
-          action_pref: actionPref,
-          zip_code: zipCode.trim() || null,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id" }
-      )
+    if (!user) {
+      // Session expired during onboarding — send back to log in
+      window.location.href = "/login"
+      return
+    }
+
+    const { error } = await supabase.from("user_prefs").upsert(
+      {
+        user_id: user.id,
+        categories: selected,
+        action_pref: actionPref,
+        zip_code: zipCode.trim() || null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    )
+
+    if (error) {
+      console.error("user_prefs upsert failed:", error)
+      setSaveError("Couldn't save your preferences — please try again.")
+      setSaving(false)
+      return
     }
 
     // Keep localStorage as a fast local cache
     localStorage.setItem("howbadisite_prefs", JSON.stringify({ categories: selected, actionPref }))
     if (zipCode.trim()) localStorage.setItem("userZipCode", zipCode.trim())
+    localStorage.setItem("onboardingComplete", "true")
 
     window.location.href = "/"
   }
@@ -355,18 +372,26 @@ export default function OnboardingPage() {
               </div>
             </div>
 
+            {saveError && (
+              <div style={{
+                marginBottom: 16, padding: "10px 16px", borderRadius: 8, fontSize: 13,
+                background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)",
+                color: "#fca5a5", textAlign: "center",
+              }}>{saveError}</div>
+            )}
             <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-              <button onClick={() => goToScreen(3)}
+              <button onClick={() => goToScreen(3)} disabled={saving}
                 style={{ padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600,
                   background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                  color: "#94a3b8", cursor: "pointer" }}>← Back</button>
-              <button onClick={finish}
+                  color: "#94a3b8", cursor: saving ? "not-allowed" : "pointer" }}>← Back</button>
+              <button onClick={finish} disabled={saving}
                 style={{ padding: "14px 40px", borderRadius: 8, fontSize: 15, fontWeight: 800,
-                  background: "#3b82f6", border: "none", color: "#fff", cursor: "pointer",
+                  background: saving ? "rgba(59,130,246,0.5)" : "#3b82f6", border: "none", color: "#fff",
+                  cursor: saving ? "not-allowed" : "pointer",
                   letterSpacing: "-0.01em", transition: "all 0.2s" }}
-                onMouseEnter={e => e.currentTarget.style.background = "#2563eb"}
-                onMouseLeave={e => e.currentTarget.style.background = "#3b82f6"}>
-                See My Feed →
+                onMouseEnter={e => { if (!saving) e.currentTarget.style.background = "#2563eb" }}
+                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = "#3b82f6" }}>
+                {saving ? "Saving…" : "See My Feed →"}
               </button>
             </div>
           </div>
