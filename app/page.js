@@ -650,7 +650,7 @@ export default function Home() {
               </div>
             )}
             {smallB && (
-              <div style={{ paddingLeft: 32 }}>
+              <div style={{ paddingRight: 32, paddingLeft: 32 }}>
                 <IssueCard issue={smallB} weekCount={actionCounts[smallB.slug] || 0} />
               </div>
             )}

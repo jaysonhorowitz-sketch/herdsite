@@ -141,7 +141,7 @@ export default function CategoryPage() {
   const [expandedSlug,  setExpandedSlug]  = useState(null)
   const [actionCounts,  setActionCounts]  = useState({})
   const [completedKeys, setCompletedKeys] = useState(new Set())
-  const [showRest,      setShowRest]      = useState(false)
+  const [showRest,      setShowRest]      = useState(true)
   const [zipCode,       setZipCode]       = useState("")
 
   useEffect(() => {

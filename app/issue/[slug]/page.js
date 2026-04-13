@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import { supabase } from "../../../lib/supabase"
+import { pick } from "../../../lib/newsletters"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 
