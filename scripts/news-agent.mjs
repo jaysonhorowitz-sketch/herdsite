@@ -122,6 +122,14 @@ async function evaluateWithClaude(articles, existing) {
 - Actions must be SPECIFIC and ACTIONABLE — real phone numbers, real organizations, real URLs when possible
 - Date format: "Mon YYYY" e.g. "Mar 2025"
 
+## HEADLINE STYLE
+- Headlines must be readable as a sentence or a clear context-claim structure, not a run-on noun phrase.
+- Avoid stacking nouns without connectors. "Iran War Strait of Hormuz Disruption Threatens Global Commerce" is bad — it reads as a search query, not a headline. Better: "Strait of Hormuz disruption from Iran war threatens global oil supply" OR "Iran war — Hormuz disruption hits 20% of global oil supply."
+- When two distinct ideas need to be in the same headline (a context and a claim, or a topic and an event), separate them with an em dash (—) or a colon (:). Do not smash them together.
+- Use sentence case, not Title Case. Capitalize only the first word and proper nouns.
+- Never include filler connectors like "amid", "as", "following" if they make the headline harder to parse.
+- Aim for under 85 characters but prioritize clarity over compression.
+
 ## FACTUAL ACCURACY
 - Only report what the source article actually states as fact. Do not convert speculation, predictions, warnings, or hypotheticals into reported events.
 - If an article says "experts warn X could happen" or "concerns grow that Y may occur" — do NOT write a headline saying X or Y happened. Either skip the article or write a headline that accurately reflects that it is a warning or concern, not an event.
@@ -142,7 +150,7 @@ If no articles warrant a new issue, return [].
 
 Each element must match this exact shape:
 {
-  "title": "Specific factual title under 85 characters",
+  "title": "Sentence-case headline: clear subject + verb or context — claim structure, under 85 chars. No Title Case. No stacked noun phrases.",
   "slug": "url-safe-slug-max-60-chars",
   "category": "one of the categories above",
   "date": "Mon YYYY",
