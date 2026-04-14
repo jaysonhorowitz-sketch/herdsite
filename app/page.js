@@ -498,34 +498,32 @@ export default function Home() {
     return b.severity_score - a.severity_score
   })
 
-  const isHome = cat === "home" && selectedCats.length === 0
-  const pool   = selectedCats.length > 0
+  // Pool = what issues are in scope based on current filter state
+  // - dropdown selected: only those categories
+  // - Home pill: only user's onboarded categories
+  // - specific category pill: only that category
+  const pool = selectedCats.length > 0
                ? issues.filter(i => selectedCats.includes(i.category))
                : cat === "home" ? issues.filter(i => userCats.includes(i.category))
-               : issues
+               : issues.filter(i => i.category === cat)
 
-  // Spread cats = the categories to pull one top issue from each
+  // "Spread cats" = categories to pull one top issue from each for the featured 3 slots
+  // Home & dropdown = spread across multiple categories
+  // Single category pill = just show top 3 from that one category
   const spreadCats = selectedCats.length > 0 ? selectedCats
-                   : isHome ? userCats
+                   : cat === "home" ? userCats
                    : null
 
-  let featuredItems = [] // top issue per category (the "spread" row)
   let featured, smallA, smallB
-
   if (spreadCats && spreadCats.length > 0) {
-    // One top issue per category, in order
-    featuredItems = spreadCats
-      .map(c => byImpact(issues.filter(i => i.category === c))[0])
-      .filter(Boolean)
-    featured = featuredItems[0]
-    smallA   = featuredItems[1]
-    smallB   = featuredItems[2]
+    const tops = spreadCats.map(c => byImpact(issues.filter(i => i.category === c))[0]).filter(Boolean)
+    featured = tops[0]; smallA = tops[1]; smallB = tops[2]
   } else {
     const top = byImpact(pool)
     featured = top[0]; smallA = top[1]; smallB = top[2]
   }
 
-  const usedSlugs    = new Set(featuredItems.map(i => i.slug))
+  const usedSlugs    = new Set([featured, smallA, smallB].filter(Boolean).map(i => i.slug))
   const expandIssues = byImpact(pool).filter(i => !usedSlugs.has(i.slug)).slice(0, 50)
 
   const since7 = Date.now() - 7 * 24 * 3600 * 1000
@@ -624,7 +622,7 @@ export default function Home() {
                   {i > 0 && (
                     <span style={{ color: "#475569", padding: "0 8px", userSelect: "none", fontSize: 14 }}>·</span>
                   )}
-                  <button onClick={() => setCat(c)} style={filterBtnStyle(cat === c)}>
+                  <button onClick={() => { setCat(c); setSelectedCats([]) }} style={filterBtnStyle(cat === c && selectedCats.length === 0)}>
                     {c === "home" ? "Home" : c}
                   </button>
                 </span>
@@ -738,39 +736,23 @@ export default function Home() {
       {/* Issue cards */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 48px" }}>
 
-        {featuredItems.length > 3 ? (
-          /* More than 3 categories selected — show one top issue per category in a 2-col grid */
+        {featured && (
+          <IssueCard issue={featured} weekCount={actionCounts[featured.slug] || 0} />
+        )}
+
+        {(smallA || smallB) && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
-            {featuredItems.map((issue, i) => (
-              <div key={issue.id} style={{
-                paddingRight: i % 2 === 0 ? 32 : 0,
-                paddingLeft: i % 2 === 1 ? 32 : 0,
-                borderRight: i % 2 === 0 ? "1px solid rgba(255,255,255,0.07)" : "none",
-              }}>
-                <IssueCard issue={issue} weekCount={actionCounts[issue.slug] || 0} />
+            {smallA && (
+              <div style={{ paddingRight: 32, borderRight: "1px solid rgba(255,255,255,0.07)" }}>
+                <IssueCard issue={smallA} weekCount={actionCounts[smallA.slug] || 0} />
               </div>
-            ))}
+            )}
+            {smallB && (
+              <div style={{ paddingRight: 32, paddingLeft: 32 }}>
+                <IssueCard issue={smallB} weekCount={actionCounts[smallB.slug] || 0} />
+              </div>
+            )}
           </div>
-        ) : (
-          <>
-            {featured && (
-              <IssueCard issue={featured} weekCount={actionCounts[featured.slug] || 0} />
-            )}
-            {(smallA || smallB) && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
-                {smallA && (
-                  <div style={{ paddingRight: 32, borderRight: "1px solid rgba(255,255,255,0.07)" }}>
-                    <IssueCard issue={smallA} weekCount={actionCounts[smallA.slug] || 0} />
-                  </div>
-                )}
-                {smallB && (
-                  <div style={{ paddingRight: 32, paddingLeft: 32 }}>
-                    <IssueCard issue={smallB} weekCount={actionCounts[smallB.slug] || 0} />
-                  </div>
-                )}
-              </div>
-            )}
-          </>
         )}
 
         {expandIssues.length > 0 && (
