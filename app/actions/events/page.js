@@ -87,7 +87,7 @@ export default function EventsPage() {
     }
   }, [])
 
-  // Add / update markers when map is ready or filter changes
+  // Add / update markers when map is ready, events load, or filter changes
   useEffect(() => {
     if (!mapReady || !mapInstance.current) return
 
@@ -134,7 +134,7 @@ export default function EventsPage() {
         markers.current.push(marker)
       })
     })
-  }, [mapReady, filter])
+  }, [mapReady, filter, events])
 
   // Geocode zip → fly map to that location
   useEffect(() => {
