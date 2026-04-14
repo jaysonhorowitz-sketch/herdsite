@@ -79,7 +79,6 @@ export default function LoginPage() {
             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.transform = "translateY(0)" }}
           >
             <div>
-              <div style={{ fontSize: 32, marginBottom: 16 }}>👤</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: "#F5F1E8", marginBottom: 10, letterSpacing: "-0.02em" }}>
                 Continue as Guest
               </div>
@@ -111,7 +110,6 @@ export default function LoginPage() {
             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(59,130,246,0.25)"; e.currentTarget.style.transform = "translateY(0)" }}
           >
             <div>
-              <div style={{ fontSize: 32, marginBottom: 16 }}>✨</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: "#F5F1E8", marginBottom: 10, letterSpacing: "-0.02em" }}>
                 Sign In / Create Account
               </div>
