@@ -65,7 +65,7 @@ export default function LoginPage() {
 
           {/* Guest card */}
           <button
-            onClick={() => { window.location.href = "/" }}
+            onClick={() => { window.location.href = "/onboarding" }}
             style={{
               flex: "1 1 280px", minHeight: 220,
               background: "#111827",

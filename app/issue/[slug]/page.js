@@ -8,10 +8,10 @@ import { useParams } from "next/navigation"
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
 function getSev(score) {
-  if (score <= 3) return { accent: "#22c55e", label: "Notable"    }
-  if (score <= 6) return { accent: "#eab308", label: "Significant" }
-  if (score <= 8) return { accent: "#f97316", label: "Major"      }
-  return                 { accent: "#ef4444", label: "Critical"   }
+  if (score >= 9) return { accent: "#ef4444", bar: "rgba(220,38,38,0.6)",   label: "Severe Impact"  }
+  if (score >= 7) return { accent: "#ea580c", bar: "rgba(234,88,12,0.6)",   label: "Major Impact"   }
+  if (score >= 4) return { accent: "#d97706", bar: "rgba(217,119,6,0.6)",   label: "Notable Impact" }
+  return                 { accent: "#64748b", bar: "rgba(100,116,139,0.6)", label: "Worth Watching" }
 }
 
 function effortConfig(effort) {
@@ -227,7 +227,7 @@ function SiteHeader() {
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "0 40px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
-          <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>→ Politics & Governance</span>
+          <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>Track. Act. Organize.</span>
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <Link href="/profile" style={{ fontSize: 12, fontWeight: 600, color: "#60a5fa", textDecoration: "none", letterSpacing: "0.02em" }}>
@@ -612,14 +612,59 @@ export default function IssuePage() {
   const newsletters = pickedNL || []
   const nonprofits  = NONPROFITS[issue.category] || []
 
+  const CARD = {
+    borderRadius: 10, border: "1px solid #e5e7eb",
+    background: "#ffffff", padding: "20px",
+  }
+
+  const VOLUNTEER_KEYWORDS = {
+    "Environment":         "environment",
+    "Civil Rights":        "civil-rights",
+    "Economy":             "economic-justice",
+    "National Security":   "veterans",
+    "Healthcare":          "health",
+    "Immigration":         "immigration",
+    "Education & Science": "education",
+    "Media & Democracy":   "democracy",
+    "Executive Power":     "civic-engagement",
+    "Rule of Law":         "justice",
+  }
+  const volunteerKeyword = VOLUNTEER_KEYWORDS[issue.category] || "civic-engagement"
+  const idealistUrl = zipCode
+    ? `https://www.idealist.org/en/volunteer?q=${volunteerKeyword}&location=${encodeURIComponent(zipCode)}`
+    : `https://www.idealist.org/en/volunteer?q=${volunteerKeyword}`
+
   return (
     <div style={{ minHeight: "100vh", fontFamily: "'Inter', system-ui, sans-serif", background: "#ffffff" }}>
+      <style>{`
+        .issue-layout {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 40px;
+        }
+        @media (min-width: 1024px) {
+          .issue-layout {
+            grid-template-columns: 2fr 1fr;
+            gap: 56px;
+          }
+        }
+        .nonprofit-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        @media (min-width: 768px) {
+          .nonprofit-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+      `}</style>
 
       {/* ── Dark hero ── */}
       <div style={{ background: "#111827" }}>
         <SiteHeader />
         <div style={{ background: "linear-gradient(160deg, #1a2236 0%, #111827 100%)" }}>
-          <div style={{ maxWidth: 1120, margin: "0 auto", padding: "44px 40px 52px" }}>
+          <div style={{ maxWidth: 1152, margin: "0 auto", padding: "44px 40px 52px" }}>
             <Link href="/" style={{ fontSize: 12, color: "#475569", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 500, marginBottom: 20 }}>
               <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M15 10H5M9 5l-5 5 5 5"/>
@@ -641,7 +686,6 @@ export default function IssuePage() {
               {issue.title}
             </h1>
           </div>
-          {/* Wave */}
           <svg viewBox="0 0 1440 36" fill="none" style={{ display: "block", width: "100%", marginBottom: -2 }}>
             <path d="M0 36 L0 18 Q360 0 720 18 Q1080 36 1440 18 L1440 36 Z" fill="#ffffff"/>
           </svg>
@@ -649,39 +693,36 @@ export default function IssuePage() {
       </div>
 
       {/* ── Two-column content ── */}
-      <main style={{ maxWidth: 1120, margin: "0 auto", padding: "52px 40px 100px" }}>
-        <div style={{ display: "flex", gap: 64, alignItems: "flex-start" }}>
+      <main style={{ maxWidth: 1152, margin: "0 auto", padding: "48px 40px 80px" }}>
+
+        {/* Severity rule — spans full content width */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 40 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 800, letterSpacing: "0.14em",
+            textTransform: "uppercase", color: sev.accent, whiteSpace: "nowrap",
+          }}>
+            {issue.severity_label || sev.label}
+          </span>
+          <div style={{ flex: 1, height: 2, background: sev.accent, borderRadius: 1, opacity: 0.35 }} />
+        </div>
+
+        <div className="issue-layout">
 
           {/* ════ LEFT COLUMN ════ */}
-          <div style={{ flex: "1 1 0", minWidth: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 40, minWidth: 0 }}>
 
-            {/* What Is Happening */}
-            <section style={{ marginBottom: 52 }}>
+            {/* 1. What Is Happening */}
+            <section>
               <p style={SH}>What Is Happening</p>
               <p style={{ color: "#111827", lineHeight: 1.85, fontSize: 18, margin: 0, fontWeight: 400, letterSpacing: "-0.01em" }}>
                 {issue.description}
               </p>
             </section>
 
-            {/* Key Players */}
-            {hasPlayers && (
-              <section style={{ marginBottom: 52 }}>
-                <p style={SH}>Key Players</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {issue.players.map((player, i) => (
-                    <PlayerCard key={i} player={player} />
-                  ))}
-                </div>
-                <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 14, marginBottom: 0, lineHeight: 1.6 }}>
-                  ⚡ = up for election in 2026 · Re-election odds via Kalshi prediction markets
-                </p>
-              </section>
-            )}
-
-            {/* What You Can Do */}
+            {/* 2. What You Can Do */}
             {hasActions && (
-              <section style={{ marginBottom: 52 }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <section>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                   <p style={{ ...SH, marginBottom: 0 }}>What You Can Do</p>
                   {weekCount !== null && weekCount > 0 && (
                     <span style={{ fontSize: 12, color: "#6b7280", display: "flex", alignItems: "center", gap: 5 }}>
@@ -701,7 +742,7 @@ export default function IssuePage() {
                         <button
                           onClick={() => handleAction(i, actionUrl)}
                           style={{
-                            display: "flex", alignItems: "center", gap: 16, padding: "16px 4px",
+                            display: "flex", alignItems: "center", gap: 16, padding: "14px 4px",
                             cursor: "pointer", width: "100%", textAlign: "left",
                             background: done ? "#f9fafb" : "transparent",
                             border: "none", fontFamily: "inherit",
@@ -715,9 +756,8 @@ export default function IssuePage() {
                             background: done ? "#dcfce7" : ef.bg,
                             border: `1px solid ${done ? "#86efac" : ef.border}`,
                           }}>{action.effort}</span>
-
                           <span style={{
-                            fontSize: 15, lineHeight: 1.55, flex: 1,
+                            fontSize: 14, lineHeight: 1.55, flex: 1,
                             color: done ? "#9ca3af" : "#1a1a1a",
                             textDecoration: done ? "line-through" : "none",
                           }}>
@@ -726,7 +766,6 @@ export default function IssuePage() {
                               <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 400 }}> — via 5Calls ↗</span>
                             )}
                           </span>
-
                           {done ? (
                             <span style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
                               <span style={{ fontSize: 14, color: "#16a34a" }}>✓</span>
@@ -745,20 +784,127 @@ export default function IssuePage() {
               </section>
             )}
 
-            {/* Stay Informed */}
+            {/* 3. Take Action With Your Money */}
+            {nonprofits.length > 0 && (
+              <section id="take-action">
+                <p style={SH}>Take Action With Your Money</p>
+                <div className="nonprofit-grid">
+                  {nonprofits.map((org, i) => (
+                    <div
+                      key={i}
+                      style={{ ...CARD, display: "flex", flexDirection: "column" }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = "#cbd5e1"}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = "#e5e7eb"}
+                    >
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 6 }}>{org.name}</div>
+                      <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5, marginBottom: 12, flex: 1 }}>{org.description}</div>
+                      <a
+                        href={org.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: "block", textAlign: "center",
+                          fontSize: 12, fontWeight: 700,
+                          padding: "7px 0", borderRadius: 8,
+                          background: "#eff6ff", border: "1px solid #bfdbfe",
+                          color: "#1d4ed8", textDecoration: "none",
+                        }}
+                      >Donate →</a>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* 4. Key Players */}
+            {hasPlayers && (
+              <section>
+                <p style={SH}>Key Players</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {issue.players.map((player, i) => (
+                    <PlayerCard key={i} player={player} />
+                  ))}
+                </div>
+                <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 14, marginBottom: 0, lineHeight: 1.6 }}>
+                  ⚡ = up for election in 2026 · Re-election odds via Kalshi prediction markets
+                </p>
+              </section>
+            )}
+
+            {/* 5. Get Involved Near You */}
+            <section>
+              <p style={SH}>Get Involved Near You</p>
+              <div
+                style={{ ...CARD }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = "#cbd5e1"}
+                onMouseLeave={e => e.currentTarget.style.borderColor = "#e5e7eb"}
+              >
+                {zipCode && (
+                  <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.65, margin: "0 0 16px" }}>
+                    Showing opportunities for <strong style={{ color: "#111827" }}>{zipCode}</strong>. Your zip is also pre-filled in the Call My Rep button.
+                  </p>
+                )}
+                <a
+                  href={idealistUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+                    fontSize: 13, fontWeight: 700, color: "#111827", textDecoration: "none",
+                  }}
+                >
+                  <span>Find Volunteer Opportunities Near You</span>
+                  <span style={{ color: "#6b7280" }}>→</span>
+                </a>
+              </div>
+            </section>
+
+          </div>
+
+          {/* ════ RIGHT COLUMN ════ */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+
+            {/* Call My Rep card */}
+            <div style={{ borderRadius: 10, border: "1px solid #e5e7eb", background: "#ffffff", padding: "20px 20px 24px" }}>
+              <a
+                href={zipCode ? `https://5calls.org/?address=${encodeURIComponent(zipCode)}` : "https://5calls.org"}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                  padding: "16px 20px", borderRadius: 10,
+                  background: "#059669", color: "#ffffff",
+                  fontSize: 15, fontWeight: 800, textDecoration: "none",
+                  letterSpacing: "-0.01em",
+                  boxShadow: "0 4px 16px rgba(5,150,105,0.3)",
+                  width: "100%", boxSizing: "border-box",
+                }}
+              >
+                📞 Call My Rep
+              </a>
+              {zipCode && (
+                <p style={{ margin: "10px 0 0", fontSize: 11, color: "#9ca3af", textAlign: "center", lineHeight: 1.5 }}>
+                  Pre-filled for zip code {zipCode}
+                </p>
+              )}
+            </div>
+
+            {/* Stay Informed — stacked newsletter cards */}
             {newsletters.length > 0 && (
-              <section style={{ marginBottom: 52 }}>
+              <section>
                 <p style={SH}>Stay Informed</p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {newsletters.map((nl, i) => {
                     const isSubstack = NL_SUBSTACK[issue.category]?.some(s => s.name === nl.name)
                     return (
-                      <div key={i} style={{
-                        padding: "20px", borderRadius: 12, border: "1px solid #e5e7eb",
-                        display: "flex", flexDirection: "column",
-                      }}>
-                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: "#111827", lineHeight: 1.3 }}>{nl.name}</div>
+                      <div
+                        key={i}
+                        style={{ borderRadius: 10, border: "1px solid #e5e7eb", background: "#ffffff", padding: "16px", display: "flex", flexDirection: "column", transition: "border-color 0.15s" }}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = "#cbd5e1"}
+                        onMouseLeave={e => e.currentTarget.style.borderColor = "#e5e7eb"}
+                      >
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", lineHeight: 1.3 }}>{nl.name}</div>
                           <span style={{
                             fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
                             padding: "2px 7px", borderRadius: 4, flexShrink: 0,
@@ -773,7 +919,7 @@ export default function IssuePage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{
-                            marginTop: 14, fontSize: 12, fontWeight: 700,
+                            marginTop: 10, fontSize: 12, fontWeight: 700,
                             color: "#059669", textDecoration: "none",
                             display: "inline-flex", alignItems: "center", gap: 4,
                           }}
@@ -787,154 +933,11 @@ export default function IssuePage() {
 
           </div>
 
-          {/* ════ RIGHT COLUMN ════ */}
-          <div style={{ width: 292, flexShrink: 0 }}>
-            <div style={{ position: "sticky", top: 72, display: "flex", flexDirection: "column", gap: 28 }}>
-
-              {/* Impact Score */}
-              <div style={{
-                borderRadius: 16, border: "1px solid #e5e7eb",
-                padding: "28px 24px 24px", textAlign: "center",
-                background: "#fafafa",
-              }}>
-                <p style={{ ...SH, textAlign: "center", marginBottom: 16 }}>Impact Score</p>
-                <div style={{
-                  fontSize: 80, fontWeight: 900, color: sev.accent,
-                  letterSpacing: "-0.06em", lineHeight: 1, marginBottom: 6,
-                }}>{issue.severity_score}</div>
-                <div style={{
-                  display: "inline-block",
-                  fontSize: 11, fontWeight: 700, color: sev.accent,
-                  textTransform: "uppercase", letterSpacing: "0.12em",
-                  background: sev.accent + "12",
-                  padding: "3px 10px", borderRadius: 99,
-                  marginBottom: 20,
-                }}>{sev.label}</div>
-                <div style={{ background: "#e5e7eb", borderRadius: 99, height: 5, overflow: "hidden", marginBottom: 6 }}>
-                  <div style={{ width: `${issue.severity_score * 10}%`, height: "100%", background: sev.accent, borderRadius: 99, transition: "width 0.6s ease" }} />
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 10, color: "#9ca3af" }}>Low</span>
-                  <span style={{ fontSize: 10, color: "#9ca3af" }}>Critical</span>
-                </div>
-              </div>
-
-              {/* Call My Rep */}
-              <a
-                href={zipCode ? `https://5calls.org/?address=${encodeURIComponent(zipCode)}` : "https://5calls.org"}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                  padding: "16px 20px", borderRadius: 12,
-                  background: "#059669", color: "#ffffff",
-                  fontSize: 15, fontWeight: 700, textDecoration: "none",
-                  letterSpacing: "-0.01em",
-                  boxShadow: "0 4px 12px rgba(5,150,105,0.25)",
-                }}
-              >
-                📞 Call My Rep
-              </a>
-              {zipCode && (
-                <p style={{ margin: "-16px 0 0", fontSize: 11, color: "#9ca3af", textAlign: "center", lineHeight: 1.5 }}>
-                  Pre-filled for zip code {zipCode}
-                </p>
-              )}
-
-              {/* Take Action With Your Money */}
-              {nonprofits.length > 0 && (
-                <div id="take-action">
-                  <p style={SH}>Take Action With Your Money</p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    {nonprofits.map((org, i) => (
-                      <div key={i} style={{
-                        padding: "16px 18px", borderRadius: 12,
-                        border: "1px solid #e5e7eb", background: "#fafafa",
-                      }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 5 }}>{org.name}</div>
-                        <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.55, marginBottom: 14 }}>{org.description}</div>
-                        <a
-                          href={org.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            display: "block", textAlign: "center",
-                            fontSize: 12, fontWeight: 700,
-                            padding: "8px 0", borderRadius: 8,
-                            background: "#eff6ff", border: "1px solid #bfdbfe",
-                            color: "#1d4ed8", textDecoration: "none",
-                          }}
-                        >Donate →</a>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* In Your Area */}
-              {zipCode && (
-                <div>
-                  <p style={SH}>In Your Area</p>
-                  <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.65, margin: 0 }}>
-                    Showing resources for <strong style={{ color: "#111827" }}>{zipCode}</strong>. The Call My Rep button above is pre-filled with your location so you can reach your representatives directly.
-                  </p>
-                </div>
-              )}
-
-              {/* Volunteer Near You */}
-              {(() => {
-                const VOLUNTEER_KEYWORDS = {
-                  "Environment":        "environment",
-                  "Civil Rights":       "civil-rights",
-                  "Economy":            "economic-justice",
-                  "National Security":  "veterans",
-                  "Healthcare":         "health",
-                  "Immigration":        "immigration",
-                  "Education & Science":"education",
-                  "Media & Democracy":  "democracy",
-                  "Executive Power":    "civic-engagement",
-                  "Rule of Law":        "justice",
-                }
-                const keyword = VOLUNTEER_KEYWORDS[issue.category] || "civic-engagement"
-                const idealistUrl = zipCode
-                  ? `https://www.idealist.org/en/volunteer?q=${keyword}&location=${encodeURIComponent(zipCode)}`
-                  : null
-                return (
-                  <div>
-                    <p style={SH}>Volunteer Near You</p>
-                    {idealistUrl ? (
-                      <a
-                        href={idealistUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
-                          padding: "14px 16px", borderRadius: 12,
-                          border: "1px solid #e5e7eb", background: "#fafafa",
-                          fontSize: 13, fontWeight: 700, color: "#111827",
-                          textDecoration: "none",
-                        }}
-                      >
-                        <span>Find Volunteer Opportunities Near You</span>
-                        <span style={{ color: "#6b7280" }}>→</span>
-                      </a>
-                    ) : (
-                      <p style={{ fontSize: 12, color: "#9ca3af", lineHeight: 1.6, margin: 0 }}>
-                        Add your location in settings to find local opportunities.
-                      </p>
-                    )}
-                  </div>
-                )
-              })()}
-
-            </div>
-          </div>
-
         </div>
       </main>
 
       <footer style={{ borderTop: "1px solid #f3f4f6" }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto", padding: "28px 40px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ maxWidth: 1152, margin: "0 auto", padding: "28px 40px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontSize: 11, color: "#d1d5db", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>How Bad Is It?</span>
           <span style={{ fontSize: 11, color: "#d1d5db" }}>Not affiliated with any political party.</span>
         </div>

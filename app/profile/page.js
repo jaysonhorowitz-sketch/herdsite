@@ -102,7 +102,7 @@ export default function ProfilePage() {
           display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
-            <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>→ Politics & Governance</span>
+            <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>Track. Act. Organize.</span>
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             <Link href="/" style={{ fontSize: 13, color: "#4b5563", textDecoration: "none",
@@ -164,7 +164,6 @@ export default function ProfilePage() {
         {/* Actions list */}
         {total === 0 ? (
           <div style={{ ...S, textAlign: "center", padding: "48px 24px" }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>✊</div>
             <p style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>
               No actions tracked yet
             </p>

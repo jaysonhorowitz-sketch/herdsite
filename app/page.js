@@ -75,15 +75,13 @@ function catSlug(name) {
 const ACTION_CARDS = [
   {
     icon: "📞",
-    effort: "2 MIN EACH",
     headline: "Call your representatives",
     body: "Find your senators and house rep, with a script for the issues you care about.",
     cta: "→ Get started",
     link: "/actions/call",
   },
   {
-    icon: "🌳",
-    effort: "FREE",
+    icon: <span style={{ filter: "grayscale(0.6)", fontSize: 20, lineHeight: 1 }}>🌳</span>,
     headline: "Explore nonprofits",
     body: "Discover vetted organizations working on the issues you care about.",
     cta: "→ Browse causes",
@@ -91,13 +89,12 @@ const ACTION_CARDS = [
   },
   {
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
         <line x1="8" y1="2" x2="8" y2="18"/>
         <line x1="16" y1="6" x2="16" y2="22"/>
       </svg>
     ),
-    effort: "NEAR YOU",
     headline: "Get Involved",
     body: "Events, actions, and opportunities near you.",
     cta: "→ Find events",
@@ -105,7 +102,6 @@ const ACTION_CARDS = [
   },
   {
     icon: "📰",
-    effort: "FREE",
     headline: "Stay informed",
     body: "Curated newsletters and Substacks covering the issues you follow — vetted by topic.",
     cta: "→ Browse newsletters",
@@ -220,20 +216,14 @@ function ActionCard({ card }) {
         flex: 1,
       }}
     >
-      {/* Top row: icon + effort tag */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ fontSize: 22, lineHeight: 1 }}>{card.icon}</span>
-        <span style={{
-          fontSize: 10, fontWeight: 700, letterSpacing: "0.12em",
-          textTransform: "uppercase", color: "#64748b",
-        }}>{card.effort}</span>
+      {/* Icon + headline on one row */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <span style={{ flexShrink: 0, lineHeight: 1 }}>{card.icon}</span>
+        <p style={{
+          fontSize: 14, fontWeight: 700, color: "#F5F1E8",
+          lineHeight: 1.4, margin: 0,
+        }}>{card.headline}</p>
       </div>
-
-      {/* Headline */}
-      <p style={{
-        fontSize: 14, fontWeight: 700, color: "#F5F1E8",
-        lineHeight: 1.4, margin: "0 0 8px",
-      }}>{card.headline}</p>
 
       {/* Body */}
       <p style={{
@@ -275,13 +265,13 @@ function IssueCard({ issue, weekCount }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        textDecoration: "none", color: "inherit", display: "block",
+        textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", height: "100%",
         borderTop: "1px solid rgba(255,255,255,0.07)",
         transition: "background 0.15s",
         background: hovered ? "rgba(255,255,255,0.02)" : "transparent",
       }}
     >
-      <div style={{ padding: "20px 0 0" }}>
+      <div style={{ padding: "20px 0 0", flex: 1 }}>
         {/* Category + date */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}>
           <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,241,232,0.5)" }}>{issue.category}</span>
@@ -293,10 +283,10 @@ function IssueCard({ issue, weekCount }) {
         <p style={{ color: "rgba(245,241,232,0.55)", fontSize: 13, lineHeight: 1.6, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{issue.description}</p>
       </div>
 
-      {/* Bottom row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0 16px", gap: 12 }}>
+      {/* Bottom row — mt-auto pins it to the card bottom regardless of content height */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0 16px", gap: 12, marginTop: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: tier.color, transform: "translateY(5px)", display: "inline-block" }}>{tier.label}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: tier.color }}>{tier.label}</span>
           {weekCount > 0 && (
             <span style={{ fontSize: 11, color: "#374151", display: "flex", alignItems: "center", gap: 4 }}>
               <span style={{ color: "#22c55e", fontSize: 7 }}>●</span>
@@ -305,12 +295,12 @@ function IssueCard({ issue, weekCount }) {
           )}
         </div>
         <span style={{
-          display: "inline-flex", alignItems: "center",
-          padding: "5px 14px", borderRadius: 3,
-          background: "rgba(255,255,255,0.88)", border: "1px solid rgba(255,255,255,0.88)",
-          color: "#111827", fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "4px 12px", borderRadius: 3,
+          background: "transparent", border: "1px solid rgba(255,255,255,0.15)",
+          color: "rgba(245,241,232,0.4)", fontSize: 10, fontWeight: 600, letterSpacing: "0.04em",
           whiteSpace: "nowrap", textTransform: "uppercase",
-        }}>Take Action →</span>
+        }}>Take Action <span>→</span></span>
       </div>
       <div style={{ height: 2, background: tier.bar }} />
     </Link>
@@ -339,7 +329,23 @@ export default function Home() {
   useEffect(() => {
     async function loadPrefs() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return // middleware handles redirect
+      if (!user) {
+        const onboardingComplete = localStorage.getItem("onboardingComplete")
+        if (!onboardingComplete) {
+          window.location.href = "/login"
+          return
+        }
+        // Guest who finished onboarding — load prefs from localStorage
+        try {
+          const raw = localStorage.getItem("howbadisite_prefs")
+          const parsed = raw ? JSON.parse(raw) : {}
+          setPrefs({ categories: parsed.categories || [], actionPref: parsed.actionPref || null })
+        } catch {
+          setPrefs({ categories: [], actionPref: null })
+        }
+        setLoading(false)
+        return
+      }
 
       const { data } = await supabase
         .from("user_prefs")
@@ -505,7 +511,7 @@ export default function Home() {
   const pool   = selectedCats.length > 0
                ? issues.filter(i => selectedCats.includes(i.category))
                : cat === "home" ? issues.filter(i => userCats.includes(i.category))
-               : issues
+               : issues.filter(i => i.category === cat)
 
   let featured, smallA, smallB
   if (isHome && userCats.length >= 3) {
@@ -561,15 +567,29 @@ export default function Home() {
             <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#F5F1E8", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
             <span style={{ fontSize: 12, color: "#4b5563", fontWeight: 400 }}>Track. Act. Organize.</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <Link href="/profile" style={{ fontSize: 12, fontWeight: 600, color: "#60a5fa", textDecoration: "none" }}>⚡ My Impact</Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <Link
+              href="/profile"
+              style={{
+                fontSize: 12, fontWeight: 700, color: "#60a5fa",
+                background: "rgba(96,165,250,0.1)",
+                border: "1px solid rgba(96,165,250,0.3)",
+                textDecoration: "none",
+                padding: "7px 16px", borderRadius: 6,
+                transition: "background 0.15s, border-color 0.15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(96,165,250,0.18)"; e.currentTarget.style.borderColor = "rgba(96,165,250,0.55)" }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(96,165,250,0.1)"; e.currentTarget.style.borderColor = "rgba(96,165,250,0.3)" }}
+            >My Impact</Link>
             <button
               onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login" }}
               style={{
-                fontSize: 12, fontWeight: 600, color: "#fff",
-                background: "#ef4444", border: "none", cursor: "pointer",
-                padding: "7px 14px", borderRadius: 4,
+                fontSize: 12, fontWeight: 500, color: "#64748b",
+                background: "none", border: "none", cursor: "pointer",
+                padding: 0, transition: "color 0.15s",
               }}
+              onMouseEnter={e => e.currentTarget.style.color = "#f1f5f9"}
+              onMouseLeave={e => e.currentTarget.style.color = "#64748b"}
             >Sign out</button>
           </div>
         </div>
@@ -612,17 +632,24 @@ export default function Home() {
             />
           </div>
 
-          {/* Filter row: Home · Topic1 · Topic2 · Topic3 → All Issues  |  dropdown */}
+          {/* Filter row: Home | Topic1 · Topic2 · Topic3  |  All Issues dropdown */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 0 }}>
             <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0 }}>
-              {["home", ...userCats].map((c, i) => (
+              {/* Home button */}
+              <button onClick={() => setCat("home")} style={filterBtnStyle(cat === "home")}>
+                Home
+              </button>
+              {/* Vertical divider — visually groups topics under Home */}
+              {userCats.length > 0 && (
+                <span style={{ width: 1, height: 14, background: "rgba(255,255,255,0.15)", margin: "0 12px", display: "inline-block", flexShrink: 0 }} />
+              )}
+              {/* Topic buttons */}
+              {userCats.map((c, i) => (
                 <span key={c} style={{ display: "inline-flex", alignItems: "center" }}>
                   {i > 0 && (
                     <span style={{ color: "#475569", padding: "0 8px", userSelect: "none", fontSize: 14 }}>·</span>
                   )}
-                  <button onClick={() => setCat(c)} style={filterBtnStyle(cat === c)}>
-                    {c === "home" ? "Home" : c}
-                  </button>
+                  <button onClick={() => setCat(c)} style={filterBtnStyle(cat === c)}>{c}</button>
                 </span>
               ))}
             </div>
@@ -637,11 +664,11 @@ export default function Home() {
                   border: selectedCats.length > 0 ? "1px solid rgba(59,130,246,0.35)" : "1px solid rgba(255,255,255,0.1)",
                   borderRadius: 6, padding: "6px 12px", cursor: "pointer",
                   fontSize: 12, fontWeight: 600,
-                  color: selectedCats.length > 0 ? "#93c5fd" : "#64748b",
+                  color: selectedCats.length > 0 ? "#93c5fd" : "#e2e8f0",
                   transition: "all 0.15s",
                 }}
               >
-                {selectedCats.length > 0 ? `${selectedCats.length} topic${selectedCats.length > 1 ? "s" : ""} selected` : "Filter topics"}
+                {selectedCats.length > 0 ? `${selectedCats.length} topic${selectedCats.length > 1 ? "s" : ""} selected` : "All Issues"}
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transition: "transform 0.2s", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }}>
                   <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
@@ -739,14 +766,14 @@ export default function Home() {
         )}
 
         {(smallA || smallB) && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, alignItems: "stretch" }}>
             {smallA && (
-              <div style={{ paddingRight: 32, borderRight: "1px solid rgba(255,255,255,0.07)" }}>
+              <div style={{ paddingRight: 32, borderRight: "1px solid rgba(255,255,255,0.07)", height: "100%" }}>
                 <IssueCard issue={smallA} weekCount={actionCounts[smallA.slug] || 0} />
               </div>
             )}
             {smallB && (
-              <div style={{ paddingRight: 32, paddingLeft: 32 }}>
+              <div style={{ paddingLeft: 32, height: "100%" }}>
                 <IssueCard issue={smallB} weekCount={actionCounts[smallB.slug] || 0} />
               </div>
             )}

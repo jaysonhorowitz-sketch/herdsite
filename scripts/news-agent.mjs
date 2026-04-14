@@ -114,12 +114,21 @@ async function evaluateWithClaude(articles, existing) {
 - Tone must be neutral and factual — wire-service style, no opinion
 - Each issue must be ONE specific action or event, not a broad theme
 - Do NOT duplicate any existing issue (listed below)
+- One issue per real-world event. If multiple articles cover the same underlying event from different angles, pick the most informative one and produce a single issue. Do not create two or three issues about the same event just because the articles frame it differently (e.g. "Trump signs X order", "White House moves on X", and "X policy takes effect" are all the same issue — pick one).
 - Do NOT add opinion pieces, fundraising stories, or speculation
-- Severity should be CONSERVATIVE: most things are 4–7. Reserve 8–10 for genuinely severe institutional threats. Reserve 1–3 for routine/minor matters.
+- Severity should be CONSERVATIVE: most routine policy actions are 2–5. Reserve 6–7 for clearly consequential actions. Reserve 8–10 for genuinely severe institutional threats with concrete, documented impact — not speculation about potential impact.
 - Severity labels: "worth watching" (1–3), "notable impact" (4–6), "major impact" (7–8), "severe impact" (9–10)
-- Categories (pick exactly one): Rule of Law, Government, Economy, Military, Foreign Policy, Healthcare, Immigration, Environment, Science, Press Freedom, Culture, Corruption
+- Categories (pick exactly one): Executive Power, Rule of Law, Economy, Civil Rights, National Security, Healthcare, Environment, Education & Science, Immigration, Media & Democracy
 - Actions must be SPECIFIC and ACTIONABLE — real phone numbers, real organizations, real URLs when possible
 - Date format: "Mon YYYY" e.g. "Mar 2025"
+
+## FACTUAL ACCURACY
+- Only report what the source article actually states as fact. Do not convert speculation, predictions, warnings, or hypotheticals into reported events.
+- If an article says "experts warn X could happen" or "concerns grow that Y may occur" — do NOT write a headline saying X or Y happened. Either skip the article or write a headline that accurately reflects that it is a warning or concern, not an event.
+- If the article is an opinion piece, editorial, or commentary, skip it entirely.
+- If you cannot write a headline that is literally supported by the article's reported facts (not its speculation), skip the article and return fewer issues. Returning [] is always acceptable.
+- Do not combine information across articles to make a claim that no single article supports.
+- Headlines must describe what happened, not what might happen or what people fear will happen.
 
 ## EXISTING ISSUES (do not duplicate)
 ${existingList}
@@ -152,7 +161,7 @@ Each element must match this exact shape:
 }`
 
   const msg = await anthropic.messages.create({
-    model: "claude-opus-4-6",
+    model: "claude-sonnet-4-6",
     max_tokens: 8000,
     messages: [{ role: "user", content: prompt }],
   })

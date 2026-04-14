@@ -68,8 +68,11 @@ export default function OnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      // Session expired during onboarding — send back to log in
-      window.location.href = "/login"
+      // Guest flow — save to localStorage only and go to the feed
+      localStorage.setItem("howbadisite_prefs", JSON.stringify({ categories: selected, actionPref }))
+      if (zipCode.trim()) localStorage.setItem("userZipCode", zipCode.trim())
+      localStorage.setItem("onboardingComplete", "true")
+      window.location.href = "/"
       return
     }
 
@@ -114,7 +117,6 @@ export default function OnboardingPage() {
       <div style={{ padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 20, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
-          <span style={{ fontSize: 11, color: "#6b7280" }}>→ Politics & Governance</span>
         </div>
         {/* Step indicators */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -128,7 +130,7 @@ export default function OnboardingPage() {
         </div>
         <button
           onClick={() => { localStorage.setItem('onboardingComplete', 'true'); localStorage.setItem("howbadisite_prefs", JSON.stringify({ categories: [], actionPref: "both", skipped: true })); window.location.href = "/" }}
-          style={{ background: "none", border: "none", color: "#374151", fontSize: 12, cursor: "pointer" }}>
+          style={{ background: "none", border: "none", color: "#e2e8f0", fontSize: 12, cursor: "pointer" }}>
           Skip →
         </button>
       </div>
