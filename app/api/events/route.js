@@ -55,16 +55,17 @@ async function zipToLocation(zip) {
   } catch { return null }
 }
 
-// ── Mobilize.us (free public API, 25mi radius) ────────────────────────────────
+// ── Mobilize.us (free public API, 25mi radius, multiple pages) ───────────────
 async function fetchMobilize(zip) {
   try {
-    const url = `https://api.mobilize.us/v1/events?zipcode=${zip}&radius=${RADIUS_MILES}&timeslot_start=gte_now&per_page=20`
-    const res = await fetch(url, {
-      headers: { "Accept": "application/json", "User-Agent": HEADERS["User-Agent"] }
-    })
-    if (!res.ok) return []
-    const data = await res.json()
-    return (data.data || []).map((item, i) => {
+    const base = `https://api.mobilize.us/v1/events?zipcode=${zip}&radius=${RADIUS_MILES}&timeslot_start=gte_now&per_page=50`
+    const [res1, res2] = await Promise.all([
+      fetch(base + "&page=1", { headers: { "Accept": "application/json", "User-Agent": HEADERS["User-Agent"] } }),
+      fetch(base + "&page=2", { headers: { "Accept": "application/json", "User-Agent": HEADERS["User-Agent"] } }),
+    ])
+    const [d1, d2] = await Promise.all([res1.json().catch(() => ({})), res2.json().catch(() => ({}))])
+    const items = [...(d1.data || []), ...(d2.data || [])]
+    return items.map((item, i) => {
       const timeslot = item.timeslots?.[0]
       const date = timeslot?.start_date
         ? new Date(timeslot.start_date * 1000).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
@@ -95,80 +96,39 @@ async function fetchMobilize(zip) {
   } catch { return [] }
 }
 
-// ── Idealist (scrape, 25mi radius via city/state) ─────────────────────────────
-async function scrapeIdealist(city, state) {
+// ── Action Network (free public API, no key needed for public events) ─────────
+async function fetchActionNetwork(city, state) {
   try {
+    // Action Network hosts events from thousands of progressive orgs — public read
     const query = encodeURIComponent(`${city} ${state}`)
-    const url   = `https://www.idealist.org/en/volunteer-opportunities?q=${query}&type=VOLUNTEER`
-    const res   = await fetch(url, { headers: HEADERS })
+    const url   = `https://actionnetwork.org/api/v2/events?filter[location]=${query}&filter[status]=confirmed&per_page=25`
+    const res   = await fetch(url, {
+      headers: { "Content-Type": "application/json", "User-Agent": HEADERS["User-Agent"] }
+    })
     if (!res.ok) return []
-    const html  = await res.text()
-    const $     = load(html)
-    const events = []
-
-    // Try __NEXT_DATA__ JSON first
-    const scriptContent = $("#__NEXT_DATA__").first().html()
-    if (scriptContent) {
-      try {
-        const json     = JSON.parse(scriptContent)
-        const listings = json?.props?.pageProps?.results?.listings
-          || json?.props?.pageProps?.listings
-          || []
-        listings.slice(0, 10).forEach((item, i) => {
-          const title = item.name || item.title
-          if (!title) return
-          const desc = item.description?.replace(/<[^>]*>/g, "").slice(0, 140) || ""
-          events.push({
-            id:          `idealist-${i}`,
-            title,
-            org:         item.organization?.name || "Organization",
-            type:        "Volunteering",
-            category:    detectCategory(title, desc),
-            date:        "Flexible",
-            time:        "",
-            address:     item.location?.city || `${city}, ${state}`,
-            city:        item.location?.city  || city,
-            state:       item.location?.state || state,
-            lat:         item.location?.lat   || null,
-            lng:         item.location?.lon   || null,
-            description: desc,
-            url:         item.url || `https://www.idealist.org/en/volunteer-opportunity/${item.id}`,
-            source:      "Idealist",
-          })
-        })
-      } catch { /* ignore */ }
-    }
-
-    // DOM fallback
-    if (events.length === 0) {
-      $("[data-testid='listing-card'], .listing-card, article").each((i, el) => {
-        if (i >= 8) return false
-        const title = $(el).find("h2, h3, [data-testid='listing-title']").first().text().trim()
-        const org   = $(el).find("[data-testid='org-name'], .org-name").first().text().trim()
-        const loc   = $(el).find("[data-testid='location'], .location").first().text().trim()
-        const link  = $(el).find("a").first().attr("href")
-        if (!title) return
-        events.push({
-          id:          `idealist-dom-${i}`,
-          title,
-          org:         org || "Organization",
-          type:        "Volunteering",
-          category:    detectCategory(title),
-          date:        "Flexible",
-          time:        "",
-          address:     loc || `${city}, ${state}`,
-          city,
-          state,
-          lat:         null,
-          lng:         null,
-          description: `Volunteer opportunity in ${city}, ${state}.`,
-          url:         link ? (link.startsWith("http") ? link : `https://www.idealist.org${link}`) : url,
-          source:      "Idealist",
-        })
-      })
-    }
-
-    return events
+    const data   = await res.json()
+    const items  = data._embedded?.["osdi:events"] || []
+    return items.map((item, i) => {
+      const startDate = item.start_date ? new Date(item.start_date) : null
+      const loc = item.location
+      return {
+        id:          `an-${item.identifiers?.[0] || i}`,
+        title:       item.name || "Community Event",
+        org:         item.sponsor?.name || "Action Network",
+        type:        detectType(item.name, item.description || "", "Political"),
+        category:    detectCategory(item.name, item.description || ""),
+        date:        startDate ? startDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "Upcoming",
+        time:        startDate ? startDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "",
+        address:     loc?.address_lines?.[0] || loc?.locality || "",
+        city:        loc?.locality || city,
+        state:       loc?.region  || state,
+        lat:         loc?.latitude  ? parseFloat(loc.latitude)  : null,
+        lng:         loc?.longitude ? parseFloat(loc.longitude) : null,
+        description: (item.description || "").replace(/<[^>]*>/g, "").slice(0, 140),
+        url:         item.browser_url || item._links?.self?.href || "https://actionnetwork.org",
+        source:      "Action Network",
+      }
+    })
   } catch { return [] }
 }
 
@@ -289,6 +249,158 @@ async function scrapeAllForGood(city, state) {
   } catch { return [] }
 }
 
+// ── VolunteerMatch (scrape public search) ─────────────────────────────────────
+async function scrapeVolunteerMatch(zip) {
+  try {
+    const url = `https://www.volunteermatch.org/search/opps.jsp?l=${zip}&v=true&categories=&s=1&o=20&sort=distance`
+    const res = await fetch(url, { headers: HEADERS })
+    if (!res.ok) return []
+    const html = await res.text()
+    const $    = load(html)
+    const events = []
+
+    $(".oppcard, .result-item, [class*='opp-card'], [class*='opportunity']").each((i, el) => {
+      if (i >= 15) return false
+      const title = $(el).find("h3, h2, .title, [class*='title']").first().text().trim()
+      const org   = $(el).find(".org, [class*='org'], .organization").first().text().trim()
+      const loc   = $(el).find(".loc, .location, [class*='location']").first().text().trim()
+      const link  = $(el).find("a").first().attr("href")
+      if (!title) return
+      events.push({
+        id:          `vm-${i}`,
+        title,
+        org:         org || "Organization",
+        type:        "Volunteering",
+        category:    detectCategory(title),
+        date:        "Flexible",
+        time:        "",
+        address:     loc || "",
+        city:        "",
+        state:       "",
+        lat:         null,
+        lng:         null,
+        description: `Volunteer opportunity near ${zip}.`,
+        url:         link ? (link.startsWith("http") ? link : `https://www.volunteermatch.org${link}`) : `https://www.volunteermatch.org/search/opps.jsp?l=${zip}`,
+        source:      "VolunteerMatch",
+      })
+    })
+
+    // Try JSON-LD fallback
+    if (events.length === 0) {
+      $("script[type='application/ld+json']").each((_, el) => {
+        try {
+          const json  = JSON.parse($(el).html() || "")
+          const items = Array.isArray(json) ? json : [json]
+          items.forEach((item, i) => {
+            if (item["@type"] !== "VolunteerAction" && item["@type"] !== "Event") return
+            if (events.length >= 15) return
+            const title = item.name
+            if (!title) return
+            events.push({
+              id:          `vm-ld-${i}`,
+              title,
+              org:         item.organizer?.name || "Organization",
+              type:        "Volunteering",
+              category:    detectCategory(title, item.description || ""),
+              date:        "Flexible",
+              time:        "",
+              address:     item.location?.address?.streetAddress || "",
+              city:        item.location?.address?.addressLocality || "",
+              state:       item.location?.address?.addressRegion || "",
+              lat:         null,
+              lng:         null,
+              description: (item.description || "").replace(/<[^>]*>/g, "").slice(0, 140),
+              url:         item.url || `https://www.volunteermatch.org`,
+              source:      "VolunteerMatch",
+            })
+          })
+        } catch { /* ignore */ }
+      })
+    }
+
+    return events
+  } catch { return [] }
+}
+
+// ── Meetup (scrape public search) ─────────────────────────────────────────────
+async function scrapeMeetup(city, state) {
+  try {
+    const query = encodeURIComponent(`${city} ${state} volunteer community activism`)
+    const url   = `https://www.meetup.com/find/?keywords=${query}&source=EVENTS&distance=twentyFiveMiles`
+    const res   = await fetch(url, { headers: HEADERS })
+    if (!res.ok) return []
+    const html  = await res.text()
+    const $     = load(html)
+    const events = []
+
+    // Try __NEXT_DATA__ JSON
+    const scriptContent = $("#__NEXT_DATA__").first().html()
+    if (scriptContent) {
+      try {
+        const json = JSON.parse(scriptContent)
+        const results = json?.props?.pageProps?.searchResults?.edges
+          || json?.props?.pageProps?.results
+          || []
+        results.slice(0, 12).forEach((edge, i) => {
+          const item  = edge?.node || edge
+          const title = item?.name || item?.title || item?.event?.name
+          if (!title) return
+          const startTime = item?.dateTime || item?.event?.dateTime
+          const startDate = startTime ? new Date(startTime) : null
+          const venue = item?.venue || item?.event?.venue
+          events.push({
+            id:          `meetup-${i}`,
+            title,
+            org:         item?.group?.name || item?.event?.group?.name || "Meetup Group",
+            type:        detectType(title, item?.description || "", "Volunteering"),
+            category:    detectCategory(title, item?.description || ""),
+            date:        startDate ? startDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "Upcoming",
+            time:        startDate ? startDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "",
+            address:     venue?.address || `${city}, ${state}`,
+            city:        venue?.city || city,
+            state:       venue?.state || state,
+            lat:         venue?.lat || null,
+            lng:         venue?.lng || null,
+            description: (item?.description || "").replace(/<[^>]*>/g, "").slice(0, 140),
+            url:         item?.eventUrl || item?.event?.eventUrl || "https://www.meetup.com",
+            source:      "Meetup",
+          })
+        })
+      } catch { /* ignore */ }
+    }
+
+    // DOM fallback
+    if (events.length === 0) {
+      $("[data-testid='event-card'], .event-listing, [class*='eventCard']").each((i, el) => {
+        if (i >= 10) return false
+        const title = $(el).find("h3, h2, [class*='title']").first().text().trim()
+        const date  = $(el).find("time, [class*='date']").first().text().trim()
+        const link  = $(el).find("a").first().attr("href")
+        if (!title) return
+        events.push({
+          id:          `meetup-dom-${i}`,
+          title,
+          org:         "Meetup Group",
+          type:        detectType(title, "", "Volunteering"),
+          category:    detectCategory(title),
+          date:        date || "Upcoming",
+          time:        "",
+          address:     `${city}, ${state}`,
+          city,
+          state,
+          lat:         null,
+          lng:         null,
+          description: `Community event in ${city}, ${state}.`,
+          url:         link ? (link.startsWith("http") ? link : `https://www.meetup.com${link}`) : "https://www.meetup.com",
+          source:      "Meetup",
+        })
+      })
+    }
+
+    return events
+  } catch { return [] }
+}
+
 // ── Main handler ──────────────────────────────────────────────────────────────
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
@@ -302,11 +414,8 @@ export async function GET(request) {
   const city     = location?.city  || ""
   const state    = location?.state || ""
 
-  const [mobilize, idealist, eventbrite, allForGood] = await Promise.all([
+  const [mobilize] = await Promise.all([
     fetchMobilize(zip),
-    scrapeIdealist(city, state),
-    scrapeEventbrite(city, state),
-    scrapeAllForGood(city, state),
   ])
 
   const fallbackLat = location?.lat
@@ -314,7 +423,7 @@ export async function GET(request) {
 
   // Merge all sources, fill missing coords, deduplicate by title
   const seen = new Set()
-  const events = [...mobilize, ...idealist, ...eventbrite, ...allForGood]
+  const events = [...mobilize]
     .map(e => ({ ...e, lat: e.lat || fallbackLat, lng: e.lng || fallbackLng }))
     .filter(e => {
       const key = e.title.toLowerCase().slice(0, 40)

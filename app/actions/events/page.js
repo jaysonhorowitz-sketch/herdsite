@@ -99,7 +99,13 @@ export default function EventsPage() {
       const visible = filter === "All" ? events : events.filter(e => e.type === filter || e.category === filter)
 
       visible.forEach(event => {
+        if (!event.lat || !event.lng) return  // skip events with no coordinates
         const catColor = CAT_COLOR[event.category] || "#94a3b8"
+
+        // Add tiny random jitter so stacked events spread out visually
+        const jitter = () => (Math.random() - 0.5) * 0.012
+        const lat = event.lat + jitter()
+        const lng = event.lng + jitter()
 
         const el = document.createElement("div")
         el.style.cssText = `
@@ -108,26 +114,29 @@ export default function EventsPage() {
           border: 2px solid rgba(255,255,255,0.6);
           box-shadow: 0 0 8px ${catColor}80;
           cursor: pointer;
+          transition: transform 0.15s;
         `
+        el.onmouseenter = () => { el.style.transform = "scale(1.5)" }
+        el.onmouseleave = () => { el.style.transform = "scale(1)" }
 
         const popup = new mapboxgl.Popup({ offset: 12, closeButton: false })
           .setHTML(`
             <div style="font-family: Inter, sans-serif; padding: 4px 2px;">
               <div style="font-size: 11px; font-weight: 700; color: ${catColor};
                 text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">
-                ${event.type}
+                ${event.type} · ${event.category}
               </div>
               <div style="font-size: 13px; font-weight: 700; color: #f1f5f9; line-height: 1.3;">
                 ${event.title}
               </div>
               <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">
-                ${event.date} · ${event.time}
+                ${event.date}${event.time ? " · " + event.time : ""} · via ${event.source || ""}
               </div>
             </div>
           `)
 
         const marker = new mapboxgl.Marker(el)
-          .setLngLat([event.lng, event.lat])
+          .setLngLat([lng, lat])
           .setPopup(popup)
           .addTo(mapInstance.current)
 
