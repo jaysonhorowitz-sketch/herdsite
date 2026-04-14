@@ -577,7 +577,7 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #1a2236 0%, #0B1120 100%)" }}>
+      <div style={{ position: "relative", background: "linear-gradient(160deg, #1a2236 0%, #0B1120 100%)" }}>
         <div style={{
           position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.35,
           backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
@@ -675,9 +675,13 @@ export default function Home() {
                   )}
                   {CAT_ORDER.filter(c => c !== "All").map(c => {
                     const checked = selectedCats.includes(c)
+                    const toggle = () => setSelectedCats(prev =>
+                      prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]
+                    )
                     return (
-                      <label
+                      <div
                         key={c}
+                        onClick={toggle}
                         style={{
                           display: "flex", alignItems: "center", gap: 10,
                           padding: "9px 16px", cursor: "pointer",
@@ -698,22 +702,10 @@ export default function Home() {
                             </svg>
                           )}
                         </div>
-                        <input
-                          type="checkbox" checked={checked} readOnly
-                          style={{ display: "none" }}
-                          onChange={() => {
-                            setSelectedCats(prev =>
-                              prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]
-                            )
-                          }}
-                        />
-                        <span
-                          style={{ fontSize: 13, color: checked ? "#F5F1E8" : "#94a3b8", fontWeight: checked ? 600 : 400 }}
-                          onClick={() => setSelectedCats(prev =>
-                            prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]
-                          )}
-                        >{c}</span>
-                      </label>
+                        <span style={{ fontSize: 13, color: checked ? "#F5F1E8" : "#94a3b8", fontWeight: checked ? 600 : 400 }}>
+                          {c}
+                        </span>
+                      </div>
                     )
                   })}
                 </div>
