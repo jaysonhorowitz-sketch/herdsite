@@ -283,6 +283,48 @@ async function scrapeAllForGood(city, state) {
   } catch { return [] }
 }
 
+// ── Ticketmaster Discovery API ────────────────────────────────────────────────
+async function fetchTicketmaster(zip) {
+  try {
+    const key = process.env.TICKETMASTER_API_KEY
+    if (!key) return []
+    const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${key}&postalCode=${zip}&radius=${RADIUS_MILES}&unit=miles&countryCode=US&size=50&sort=date,asc`
+    const res  = await fetch(url, { headers: { "Accept": "application/json" } })
+    if (!res.ok) return []
+    const data   = await res.json()
+    const items  = data._embedded?.events || []
+    return items.map((item, i) => {
+      const venue    = item._embedded?.venues?.[0]
+      const loc      = venue?.location
+      const seg      = item.classifications?.[0]
+      const segment  = seg?.segment?.name || ""
+      const genre    = seg?.genre?.name    || ""
+      const fullType = [segment, genre].filter(Boolean).join(" › ")
+      const startDate = item.dates?.start?.localDate
+        ? new Date(item.dates.start.localDate + "T" + (item.dates.start.localTime || "00:00:00"))
+        : null
+      const desc = `${fullType ? fullType + " event" : "Event"} at ${venue?.name || "local venue"} in ${venue?.city?.name || ""}.`
+      return {
+        id:          `tm-${item.id || i}`,
+        title:       item.name || "Event",
+        org:         venue?.name || "Venue",
+        type:        detectType(item.name, desc, "Volunteering"),
+        category:    detectCategory(item.name, fullType + " " + desc),
+        date:        startDate ? startDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "Upcoming",
+        time:        startDate && item.dates?.start?.localTime ? startDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "",
+        address:     venue?.address?.line1 || "",
+        city:        venue?.city?.name     || "",
+        state:       venue?.state?.stateCode || "",
+        lat:         loc?.latitude  ? parseFloat(loc.latitude)  : null,
+        lng:         loc?.longitude ? parseFloat(loc.longitude) : null,
+        description: desc,
+        url:         item.url || "https://www.ticketmaster.com",
+        source:      "Ticketmaster",
+      }
+    })
+  } catch { return [] }
+}
+
 // ── VolunteerMatch (scrape public search) ─────────────────────────────────────
 async function scrapeVolunteerMatch(zip) {
   try {
@@ -448,9 +490,10 @@ export async function GET(request) {
   const city     = location?.city  || ""
   const state    = location?.state || ""
 
-  const [mobilize, eventbrite] = await Promise.all([
+  const [mobilize, eventbrite, ticketmaster] = await Promise.all([
     fetchMobilize(zip),
     fetchEventbrite(location?.lat, location?.lng),
+    fetchTicketmaster(zip),
   ])
 
   const fallbackLat = location?.lat
@@ -458,7 +501,7 @@ export async function GET(request) {
 
   // Merge all sources, fill missing coords, deduplicate by title
   const seen = new Set()
-  const events = [...mobilize, ...eventbrite]
+  const events = [...mobilize, ...eventbrite, ...ticketmaster]
     .map(e => ({ ...e, lat: e.lat || fallbackLat, lng: e.lng || fallbackLng }))
     .filter(e => {
       const key = e.title.toLowerCase().slice(0, 40)
