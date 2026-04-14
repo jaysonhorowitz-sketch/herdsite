@@ -97,10 +97,10 @@ const ACTION_CARDS = [
         <line x1="16" y1="6" x2="16" y2="22"/>
       </svg>
     ),
-    effort: "COMING SOON",
-    headline: "Events near you",
-    body: "Local protests, town halls, and volunteer opportunities in your area.",
-    cta: "→ Join the waitlist",
+    effort: "NEAR YOU",
+    headline: "Get Involved",
+    body: "Events, actions, and opportunities near you.",
+    cta: "→ Find events",
     link: "/actions/events",
   },
   {
