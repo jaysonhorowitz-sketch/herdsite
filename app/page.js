@@ -420,7 +420,7 @@ export default function Home() {
     return () => window.removeEventListener("scroll", fn)
   }, [])
 
-  useEffect(() => { setShowRest(false); setExpandedSlug(null) }, [cat])
+  useEffect(() => { setShowRest(false); setExpandedSlug(null) }, [cat, selectedCats])
 
   useEffect(() => {
     function handleClick(e) {
@@ -656,7 +656,7 @@ export default function Home() {
                 }}>
                   <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4 }}>
                     <button
-                      onClick={() => setSelectedCats(CAT_ORDER.filter(c => c !== "All"))}
+                      onClick={() => { setSelectedCats([]); setDropdownOpen(false) }}
                       style={{
                         flex: 1, textAlign: "left", padding: "8px 16px",
                         background: "none", border: "none", cursor: "pointer",
@@ -664,7 +664,7 @@ export default function Home() {
                         letterSpacing: "0.06em", textTransform: "uppercase",
                       }}
                     >
-                      Select all
+                      Show all issues
                     </button>
                     {selectedCats.length > 0 && (
                       <button
