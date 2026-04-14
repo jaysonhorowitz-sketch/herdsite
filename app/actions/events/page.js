@@ -324,7 +324,7 @@ export default function EventsPage() {
         }}>
           <div ref={mapContainer} style={{ width: "100%", height: "100%" }} />
           {/* Hint overlay when hub is showing but not expanded */}
-          {mapCenter && events.length > 0 && !expanded && !loading && (
+          {mapCenter && events.length > 0 && !expandedRef.current && !loading && (
             <div style={{
               position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)",
               background: "rgba(11,17,32,0.85)", backdropFilter: "blur(8px)",
