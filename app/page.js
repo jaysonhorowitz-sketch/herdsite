@@ -536,13 +536,6 @@ export default function Home() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             <Link href="/profile" style={{ fontSize: 12, fontWeight: 600, color: "#60a5fa", textDecoration: "none" }}>⚡ My Impact</Link>
-            <Link href="/donate" style={{
-              fontSize: 12, fontWeight: 600, color: "#94a3b8",
-              padding: "7px 16px", borderRadius: 4,
-              border: "1px solid rgba(255,255,255,0.1)",
-              background: "rgba(255,255,255,0.04)",
-              textDecoration: "none",
-            }}>Support the project</Link>
             <button
               onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login" }}
               style={{
