@@ -656,7 +656,7 @@ export default function Home() {
                 }}>
                   <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4 }}>
                     <button
-                      onClick={() => { setSelectedCats([]); setDropdownOpen(false) }}
+                      onClick={() => setSelectedCats(CAT_ORDER.filter(c => c !== "All"))}
                       style={{
                         flex: 1, textAlign: "left", padding: "8px 16px",
                         background: "none", border: "none", cursor: "pointer",
