@@ -331,7 +331,10 @@ export default function Home() {
   const [completedKeys, setCompletedKeys] = useState(new Set())
   const [showRest,      setShowRest]      = useState(false)
   const [stickyVisible, setStickyVisible] = useState(true)
+  const [selectedCats,  setSelectedCats]  = useState([])
+  const [dropdownOpen,  setDropdownOpen]  = useState(false)
   const actionCardsRef = useRef(null)
+  const dropdownRef    = useRef(null)
 
   useEffect(() => {
     async function loadPrefs() {
@@ -420,6 +423,16 @@ export default function Home() {
   useEffect(() => { setShowRest(false); setExpandedSlug(null) }, [cat])
 
   useEffect(() => {
+    function handleClick(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [])
+
+  useEffect(() => {
     const el = actionCardsRef.current
     if (!el) return
     const observer = new IntersectionObserver(
@@ -488,8 +501,10 @@ export default function Home() {
   // "home" = personalized landing (one per saved topic)
   // specific category = that topic's list
   // "All" = everything sorted
-  const isHome = cat === "home"
-  const pool   = cat === "All" ? issues
+  const isHome = cat === "home" && selectedCats.length === 0
+  const pool   = selectedCats.length > 0
+               ? issues.filter(i => selectedCats.includes(i.category))
+               : cat === "All" ? issues
                : cat === "home" ? issues.filter(i => userCats.includes(i.category))
                : issues.filter(i => i.category === cat)
 
@@ -598,22 +613,112 @@ export default function Home() {
             />
           </div>
 
-          {/* Filter row: Home · Topic1 · Topic2 · Topic3 → All Issues */}
-          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0 }}>
-            {["home", ...userCats].map((c, i) => (
-              <span key={c} style={{ display: "inline-flex", alignItems: "center" }}>
-                {i > 0 && (
-                  <span style={{ color: "#475569", padding: "0 8px", userSelect: "none", fontSize: 14 }}>·</span>
-                )}
-                <button onClick={() => setCat(c)} style={filterBtnStyle(cat === c)}>
-                  {c === "home" ? "Home" : c}
-                </button>
-              </span>
-            ))}
-            <span style={{ color: "#1a2540", padding: "0 14px", userSelect: "none", fontSize: 16 }}>|</span>
-            <button onClick={() => setCat("All")} style={filterBtnStyle(cat === "All")}>
-              All Issues
-            </button>
+          {/* Filter row: Home · Topic1 · Topic2 · Topic3 → All Issues  |  dropdown */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0 }}>
+              {["home", ...userCats].map((c, i) => (
+                <span key={c} style={{ display: "inline-flex", alignItems: "center" }}>
+                  {i > 0 && (
+                    <span style={{ color: "#475569", padding: "0 8px", userSelect: "none", fontSize: 14 }}>·</span>
+                  )}
+                  <button onClick={() => setCat(c)} style={filterBtnStyle(cat === c)}>
+                    {c === "home" ? "Home" : c}
+                  </button>
+                </span>
+              ))}
+              <span style={{ color: "#1a2540", padding: "0 14px", userSelect: "none", fontSize: 16 }}>|</span>
+              <button onClick={() => setCat("All")} style={filterBtnStyle(cat === "All")}>
+                All Issues
+              </button>
+            </div>
+
+            {/* Multi-select category dropdown */}
+            <div ref={dropdownRef} style={{ position: "relative", flexShrink: 0 }}>
+              <button
+                onClick={() => setDropdownOpen(o => !o)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  background: selectedCats.length > 0 ? "rgba(59,130,246,0.12)" : "rgba(255,255,255,0.04)",
+                  border: selectedCats.length > 0 ? "1px solid rgba(59,130,246,0.35)" : "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: 6, padding: "6px 12px", cursor: "pointer",
+                  fontSize: 12, fontWeight: 600,
+                  color: selectedCats.length > 0 ? "#93c5fd" : "#64748b",
+                  transition: "all 0.15s",
+                }}
+              >
+                {selectedCats.length > 0 ? `${selectedCats.length} topic${selectedCats.length > 1 ? "s" : ""} selected` : "Filter topics"}
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transition: "transform 0.2s", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }}>
+                  <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              {dropdownOpen && (
+                <div style={{
+                  position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 200,
+                  background: "#111827", border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: 10, padding: "8px 0", minWidth: 220,
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.5)",
+                }}>
+                  {selectedCats.length > 0 && (
+                    <button
+                      onClick={() => setSelectedCats([])}
+                      style={{
+                        width: "100%", textAlign: "left", padding: "8px 16px",
+                        background: "none", border: "none", cursor: "pointer",
+                        fontSize: 11, fontWeight: 700, color: "#60a5fa",
+                        letterSpacing: "0.06em", textTransform: "uppercase",
+                        borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4,
+                      }}
+                    >
+                      Clear all
+                    </button>
+                  )}
+                  {CAT_ORDER.filter(c => c !== "All").map(c => {
+                    const checked = selectedCats.includes(c)
+                    return (
+                      <label
+                        key={c}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 10,
+                          padding: "9px 16px", cursor: "pointer",
+                          background: checked ? "rgba(59,130,246,0.08)" : "transparent",
+                          transition: "background 0.1s",
+                        }}
+                      >
+                        <div style={{
+                          width: 15, height: 15, borderRadius: 4, flexShrink: 0,
+                          background: checked ? "#3b82f6" : "transparent",
+                          border: checked ? "1px solid #3b82f6" : "1px solid rgba(255,255,255,0.2)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          transition: "all 0.15s",
+                        }}>
+                          {checked && (
+                            <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                              <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                        </div>
+                        <input
+                          type="checkbox" checked={checked} readOnly
+                          style={{ display: "none" }}
+                          onChange={() => {
+                            setSelectedCats(prev =>
+                              prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]
+                            )
+                          }}
+                        />
+                        <span
+                          style={{ fontSize: 13, color: checked ? "#F5F1E8" : "#94a3b8", fontWeight: checked ? 600 : 400 }}
+                          onClick={() => setSelectedCats(prev =>
+                            prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]
+                          )}
+                        >{c}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
