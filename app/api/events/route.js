@@ -96,6 +96,40 @@ async function fetchMobilize(zip) {
   } catch { return [] }
 }
 
+// ── Eventbrite (free API key) ─────────────────────────────────────────────────
+async function fetchEventbrite(lat, lng) {
+  try {
+    const token = process.env.EVENTBRITE_API_KEY
+    if (!token) return []
+    const url = `https://www.eventbriteapi.com/v3/events/search/?location.latitude=${lat}&location.longitude=${lng}&location.within=${RADIUS_MILES}mi&expand=organizer,venue&status=live`
+    const res  = await fetch(url, { headers: { "Accept": "application/json", "Authorization": `Bearer ${token}` } })
+    if (!res.ok) return []
+    const data = await res.json()
+    return (data.events || []).map((item, i) => {
+      const startDate = item.start?.local ? new Date(item.start.local) : null
+      const venue     = item.venue
+      const desc      = (item.description?.text || item.summary || "").slice(0, 140)
+      return {
+        id:          `eb-${item.id || i}`,
+        title:       item.name?.text || "Community Event",
+        org:         item.organizer?.name || "Organizer",
+        type:        detectType(item.name?.text || "", desc, "Volunteering"),
+        category:    detectCategory(item.name?.text || "", desc),
+        date:        startDate ? startDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "Upcoming",
+        time:        startDate ? startDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "",
+        address:     venue?.address?.address_1 || venue?.address?.localized_address_display || "",
+        city:        venue?.address?.city || "",
+        state:       venue?.address?.region || "",
+        lat:         venue?.latitude  ? parseFloat(venue.latitude)  : null,
+        lng:         venue?.longitude ? parseFloat(venue.longitude) : null,
+        description: desc,
+        url:         item.url || "https://www.eventbrite.com",
+        source:      "Eventbrite",
+      }
+    })
+  } catch { return [] }
+}
+
 // ── Action Network (free public API, no key needed for public events) ─────────
 async function fetchActionNetwork(city, state) {
   try {
@@ -414,8 +448,9 @@ export async function GET(request) {
   const city     = location?.city  || ""
   const state    = location?.state || ""
 
-  const [mobilize] = await Promise.all([
+  const [mobilize, eventbrite] = await Promise.all([
     fetchMobilize(zip),
+    fetchEventbrite(location?.lat, location?.lng),
   ])
 
   const fallbackLat = location?.lat
@@ -423,7 +458,7 @@ export async function GET(request) {
 
   // Merge all sources, fill missing coords, deduplicate by title
   const seen = new Set()
-  const events = [...mobilize]
+  const events = [...mobilize, ...eventbrite]
     .map(e => ({ ...e, lat: e.lat || fallbackLat, lng: e.lng || fallbackLng }))
     .filter(e => {
       const key = e.title.toLowerCase().slice(0, 40)
