@@ -98,7 +98,7 @@ export default function EventsPage() {
         const center = data.features?.[0]?.center
         if (!center) return
         setMapCenter(center)
-        mapInstance.current.flyTo({ center, zoom: 11, duration: 1200 })
+        mapInstance.current.flyTo({ center, zoom: 12, duration: 1000 })
       })
       .catch(() => {})
   }, [zip, mapReady])
@@ -118,13 +118,14 @@ export default function EventsPage() {
       // Hub dot — white glowing pulse
       const hub = document.createElement("div")
       hub.style.cssText = `
-        width: 22px; height: 22px; border-radius: 50%;
+        width: 26px; height: 26px; border-radius: 50%;
         background: white;
-        box-shadow: 0 0 0 0 rgba(255,255,255,0.6);
-        animation: hub-pulse 1.8s ease-out infinite;
+        box-shadow: 0 0 16px rgba(255,255,255,0.9), 0 0 0 0 rgba(255,255,255,0.5);
+        animation: hub-pulse 1.6s ease-out infinite;
         cursor: pointer;
         position: relative;
         z-index: 10;
+        border: 2px solid rgba(255,255,255,0.4);
       `
       hub.title = `${events.length} events — click to explore`
 
@@ -148,11 +149,12 @@ export default function EventsPage() {
   }, [filter, expanded])
 
   function explodeDots(mapboxgl, center, allEvents, currentFilter) {
-    // Remove hub
     if (hubMarker.current) { hubMarker.current.remove(); hubMarker.current = null }
-    // Clear old event dots
     markers.current.forEach(m => m.remove())
     markers.current = []
+
+    // Zoom in so the tight cluster is clearly visible
+    mapInstance.current.flyTo({ center, zoom: 13.5, duration: 600 })
 
     const visible = currentFilter === "All" ? allEvents : allEvents.filter(e => e.type === currentFilter || e.category === currentFilter)
     setExpanded(true)
@@ -161,14 +163,18 @@ export default function EventsPage() {
 
   function placeDots(mapboxgl, center, eventsToShow) {
     const [cLng, cLat] = center
+    // Correct for longitude shrinkage at higher latitudes
+    const lngScale = Math.cos(cLat * Math.PI / 180)
+
     eventsToShow.forEach((event, i) => {
       const catColor = CAT_COLOR[event.category] || "#94a3b8"
 
-      // Spread dots in a rough circle + some randomness
-      const angle   = (i / eventsToShow.length) * 2 * Math.PI + Math.random() * 0.5
-      const radius  = 0.018 + Math.random() * 0.022  // ~1-3km spread
-      const lat = cLat + radius * Math.sin(angle)
-      const lng = cLng + radius * Math.cos(angle)
+      // Tight cluster — evenly spread in a circle, ~150-400m from hub
+      const angle  = (i / eventsToShow.length) * 2 * Math.PI + (Math.random() - 0.5) * 0.4
+      const radiusMeters = 150 + Math.random() * 250   // 150–400m
+      const radiusDeg    = radiusMeters / 111320        // convert meters → degrees
+      const lat = cLat + radiusDeg * Math.sin(angle)
+      const lng = cLng + (radiusDeg / lngScale) * Math.cos(angle)
 
       const el = document.createElement("div")
       el.style.cssText = `
