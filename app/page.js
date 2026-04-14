@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { createClient } from "@/utils/supabase/client"
 import Link from "next/link"
 
@@ -330,6 +330,8 @@ export default function Home() {
   const [actionCounts,  setActionCounts]  = useState({})
   const [completedKeys, setCompletedKeys] = useState(new Set())
   const [showRest,      setShowRest]      = useState(false)
+  const [stickyVisible, setStickyVisible] = useState(true)
+  const actionCardsRef = useRef(null)
 
   useEffect(() => {
     async function loadPrefs() {
@@ -416,6 +418,17 @@ export default function Home() {
   }, [])
 
   useEffect(() => { setShowRest(false); setExpandedSlug(null) }, [cat])
+
+  useEffect(() => {
+    const el = actionCardsRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setStickyVisible(!entry.isIntersecting),
+      { threshold: 0.1 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   const handleActionClick = useCallback((issueSlug, actionIndex) => {
     const key = `${issueSlug}-${actionIndex}`
@@ -605,21 +618,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Change 3: Action cards row */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px 0" }}>
-        {visibleActionCards.length > 0 && (
-          <div className="action-grid" style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${visibleActionCards.length}, 1fr)`,
-            gap: 16,
-          }}>
-            {visibleActionCards.map((card, i) => (
-              <ActionCard key={i} card={card} />
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Section header */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 32px 0", display: "flex", alignItems: "center", gap: 16 }}>
         <span style={{
@@ -683,6 +681,26 @@ export default function Home() {
         )}
       </div>
 
+      {/* Action cards — below the feed */}
+      <div ref={actionCardsRef} style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 48px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 600, color: "#475569",
+            letterSpacing: "0.12em", textTransform: "uppercase", whiteSpace: "nowrap",
+          }}>Take Action</span>
+          <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+        </div>
+        <div className="action-grid" style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${visibleActionCards.length}, 1fr)`,
+          gap: 16,
+        }}>
+          {visibleActionCards.map((card, i) => (
+            <ActionCard key={i} card={card} />
+          ))}
+        </div>
+      </div>
+
       {/* Footer */}
       <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "#060C18" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px",
@@ -701,6 +719,9 @@ export default function Home() {
         backdropFilter: "blur(16px)",
         borderTop: "1px solid rgba(255,255,255,0.08)",
         padding: "0 24px",
+        opacity: stickyVisible ? 1 : 0,
+        pointerEvents: stickyVisible ? "auto" : "none",
+        transition: "opacity 0.3s ease",
       }}>
         <div style={{
           maxWidth: 1200, margin: "0 auto",
