@@ -233,12 +233,12 @@ export default function EventsPage() {
 
         {/* Hero */}
         <div style={{ marginBottom: 28 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#3b82f6", marginBottom: 10 }}>Events near you</div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#3b82f6", marginBottom: 10 }}>Get Involved</div>
           <h1 style={{ fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 900, color: "#F5F1E8", letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 12px" }}>
             Show up. Make a difference.
           </h1>
           <p style={{ fontSize: 15, color: "#4b5563", margin: 0, lineHeight: 1.6, maxWidth: 520 }}>
-            Enter your zip to find events near you. Click the dot on the map to explore them.
+            Events, actions, and opportunities near you.
           </p>
         </div>
 
