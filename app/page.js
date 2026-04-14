@@ -694,6 +694,43 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Sticky action bar */}
+      <div style={{
+        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100,
+        background: "rgba(17,24,39,0.97)",
+        backdropFilter: "blur(16px)",
+        borderTop: "1px solid rgba(255,255,255,0.08)",
+        padding: "0 24px",
+      }}>
+        <div style={{
+          maxWidth: 1200, margin: "0 auto",
+          display: "flex", alignItems: "stretch",
+          height: 56,
+        }}>
+          {ACTION_CARDS.map((card, i) => (
+            <Link
+              key={i}
+              href={card.link}
+              style={{
+                flex: 1,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                textDecoration: "none",
+                borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                transition: "background 0.15s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+            >
+              <span style={{ fontSize: 16, lineHeight: 1 }}>{typeof card.icon === "string" ? card.icon : "🗺️"}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", whiteSpace: "nowrap" }}>{card.headline}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Spacer so content isn't hidden behind sticky bar */}
+      <div style={{ height: 56 }} />
+
       <style>{`
         ::-webkit-scrollbar { display: none; }
         @media (max-width: 900px) {
