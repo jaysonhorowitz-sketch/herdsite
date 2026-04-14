@@ -133,21 +133,7 @@ export default function EventsPage() {
         z-index: 10;
         border: 2px solid rgba(255,255,255,0.4);
       `
-      hub.title = `${events.length} events — click to explore`
-
-      // Use refs so click always gets the latest events + filter, no stale closures
-      hub.onclick = () => {
-        if (hubMarker.current) { hubMarker.current.remove(); hubMarker.current = null }
-        markers.current.forEach(m => m.remove())
-        markers.current = []
-        expandedRef.current = true
-        const center = mapCenterRef.current
-        mapInstance.current.flyTo({ center, zoom: 13.5, duration: 600 })
-        const all = eventsRef.current
-        const f   = filterRef.current
-        const visible = f === "All" ? all : all.filter(e => e.type === f || e.category === f)
-        placeDots(mapboxgl, center, visible)
-      }
+      hub.title = `${events.length} events in this area`
 
       hubMarker.current = new mapboxgl.Marker(hub)
         .setLngLat(mapCenter)
@@ -155,17 +141,6 @@ export default function EventsPage() {
     })
   }, [mapReady, mapCenter, events])
 
-  // Re-draw dots when filter changes (only if already expanded)
-  useEffect(() => {
-    if (!expandedRef.current || !mapInstance.current || !mapCenterRef.current) return
-    import("mapbox-gl").then(({ default: mapboxgl }) => {
-      markers.current.forEach(m => m.remove())
-      markers.current = []
-      const all     = eventsRef.current
-      const visible = filter === "All" ? all : all.filter(e => e.type === filter || e.category === filter)
-      placeDots(mapboxgl, mapCenterRef.current, visible)
-    })
-  }, [filter])
 
   function placeDots(mapboxgl, center, eventsToShow) {
     const [cLng, cLat] = center
