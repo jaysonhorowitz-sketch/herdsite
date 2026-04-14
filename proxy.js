@@ -27,12 +27,12 @@ export async function proxy(request) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
-  const isPublicPath =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/auth") ||
-    pathname.startsWith("/api/")
 
-  if (!user && !isPublicPath) {
+  // Only the auth callback requires a logged-in user
+  // Everything else is accessible as guest — login only unlocks saving/personalization
+  const requiresAuth = pathname.startsWith("/auth/callback")
+
+  if (!user && requiresAuth) {
     const url = request.nextUrl.clone()
     url.pathname = "/login"
     return NextResponse.redirect(url)
