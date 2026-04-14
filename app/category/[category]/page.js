@@ -267,13 +267,7 @@ export default function CategoryPage() {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
               <Link href="/profile" style={{ fontSize: 12, fontWeight: 600, color: "#60a5fa", textDecoration: "none" }}>⚡ My Impact</Link>
-              <Link href="/donate" style={{
-                fontSize: 12, fontWeight: 600, color: "#cbd5e1",
-                padding: "7px 16px", borderRadius: 6,
-                border: "1px solid rgba(255,255,255,0.1)",
-                background: "rgba(255,255,255,0.05)",
-                textDecoration: "none",
-              }}>Support the project</Link>
+
             </div>
           </div>
         </nav>
