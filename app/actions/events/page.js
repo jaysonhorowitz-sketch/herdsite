@@ -28,14 +28,22 @@ export default function EventsPage() {
   const mapInstance   = useRef(null)
   const markers       = useRef([])
   const hubMarker     = useRef(null)
-  const [zip,         setZip]         = useState("")
-  const [filter,      setFilter]      = useState("All")
-  const [mapReady,    setMapReady]    = useState(false)
-  const [events,      setEvents]      = useState([])
-  const [loading,     setLoading]     = useState(false)
-  const [error,       setError]       = useState(null)
-  const [expanded,    setExpanded]    = useState(false)  // whether dots are exploded out
-  const [mapCenter,   setMapCenter]   = useState(null)   // [lng, lat] of current zip
+  const expandedRef   = useRef(false)
+  const eventsRef     = useRef([])
+  const filterRef     = useRef("All")
+  const mapCenterRef  = useRef(null)
+  const [zip,       setZip]       = useState("")
+  const [filter,    setFilter]    = useState("All")
+  const [mapReady,  setMapReady]  = useState(false)
+  const [events,    setEvents]    = useState([])
+  const [loading,   setLoading]   = useState(false)
+  const [error,     setError]     = useState(null)
+  const [mapCenter, setMapCenter] = useState(null)
+
+  // Keep refs in sync with state so closures always have fresh values
+  eventsRef.current   = events
+  filterRef.current   = filter
+  mapCenterRef.current = mapCenter
 
   // Load saved zip
   useEffect(() => {
@@ -47,12 +55,12 @@ export default function EventsPage() {
   useEffect(() => {
     if (!zip || zip.length !== 5) {
       setEvents([])
-      setExpanded(false)
+      expandedRef.current = false
       return
     }
     setLoading(true)
     setError(null)
-    setExpanded(false)
+    expandedRef.current = false
     const timer = setTimeout(() => {
       fetch(`/api/events?zip=${zip}`)
         .then(r => r.json())
@@ -103,19 +111,17 @@ export default function EventsPage() {
       .catch(() => {})
   }, [zip, mapReady])
 
-  // Show hub dot when we have a center + events loaded
+  // Show hub dot when center + events are ready
   useEffect(() => {
     if (!mapReady || !mapInstance.current || !mapCenter) return
     import("mapbox-gl").then(({ default: mapboxgl }) => {
-      // Remove previous hub + event markers
       if (hubMarker.current) { hubMarker.current.remove(); hubMarker.current = null }
       markers.current.forEach(m => m.remove())
       markers.current = []
-      setExpanded(false)
+      expandedRef.current = false
 
       if (events.length === 0) return
 
-      // Hub dot — white glowing pulse
       const hub = document.createElement("div")
       hub.style.cssText = `
         width: 26px; height: 26px; border-radius: 50%;
@@ -129,7 +135,19 @@ export default function EventsPage() {
       `
       hub.title = `${events.length} events — click to explore`
 
-      hub.onclick = () => explodeDots(mapboxgl, mapCenter, events, filter)
+      // Use refs so click always gets the latest events + filter, no stale closures
+      hub.onclick = () => {
+        if (hubMarker.current) { hubMarker.current.remove(); hubMarker.current = null }
+        markers.current.forEach(m => m.remove())
+        markers.current = []
+        expandedRef.current = true
+        const center = mapCenterRef.current
+        mapInstance.current.flyTo({ center, zoom: 13.5, duration: 600 })
+        const all = eventsRef.current
+        const f   = filterRef.current
+        const visible = f === "All" ? all : all.filter(e => e.type === f || e.category === f)
+        placeDots(mapboxgl, center, visible)
+      }
 
       hubMarker.current = new mapboxgl.Marker(hub)
         .setLngLat(mapCenter)
@@ -137,29 +155,17 @@ export default function EventsPage() {
     })
   }, [mapReady, mapCenter, events])
 
-  // Re-filter visible dots when filter changes (only if already expanded)
+  // Re-draw dots when filter changes (only if already expanded)
   useEffect(() => {
-    if (!expanded || !mapReady || !mapInstance.current || !mapCenter) return
+    if (!expandedRef.current || !mapInstance.current || !mapCenterRef.current) return
     import("mapbox-gl").then(({ default: mapboxgl }) => {
       markers.current.forEach(m => m.remove())
       markers.current = []
-      const visible = filter === "All" ? events : events.filter(e => e.type === filter || e.category === filter)
-      placeDots(mapboxgl, mapCenter, visible)
+      const all     = eventsRef.current
+      const visible = filter === "All" ? all : all.filter(e => e.type === filter || e.category === filter)
+      placeDots(mapboxgl, mapCenterRef.current, visible)
     })
-  }, [filter, expanded])
-
-  function explodeDots(mapboxgl, center, allEvents, currentFilter) {
-    if (hubMarker.current) { hubMarker.current.remove(); hubMarker.current = null }
-    markers.current.forEach(m => m.remove())
-    markers.current = []
-
-    // Zoom in so the tight cluster is clearly visible
-    mapInstance.current.flyTo({ center, zoom: 13.5, duration: 600 })
-
-    const visible = currentFilter === "All" ? allEvents : allEvents.filter(e => e.type === currentFilter || e.category === currentFilter)
-    setExpanded(true)
-    placeDots(mapboxgl, center, visible)
-  }
+  }, [filter])
 
   function placeDots(mapboxgl, center, eventsToShow) {
     const [cLng, cLat] = center
