@@ -504,31 +504,36 @@ export default function Home() {
     return b.severity_score - a.severity_score
   })
 
-  // "home" = personalized landing (one per saved topic)
-  // specific category = that topic's list
-  // "All" = everything sorted
-  const isHome = cat === "home" && selectedCats.length === 0
-  const pool   = selectedCats.length > 0
+  // Pool = what issues are in scope based on current filter state
+  // - dropdown selected: only those categories
+  // - Home pill: only user's onboarded categories
+  // - specific category pill: only that category
+  const pool = selectedCats.length > 0
                ? issues.filter(i => selectedCats.includes(i.category))
                : cat === "home" ? issues.filter(i => userCats.includes(i.category))
                : issues.filter(i => i.category === cat)
 
+  // "Spread cats" = categories to pull one top issue from each for the featured 3 slots
+  // Home & dropdown = spread across multiple categories
+  // Single category pill = just show top 3 from that one category
+  const spreadCats = selectedCats.length > 0 ? selectedCats
+                   : cat === "home" ? userCats
+                   : null
+
   let featured, smallA, smallB
-  if (isHome && userCats.length >= 3) {
-    featured = byImpact(issues.filter(i => i.category === userCats[0]))[0]
-    smallA   = byImpact(issues.filter(i => i.category === userCats[1]))[0]
-    smallB   = byImpact(issues.filter(i => i.category === userCats[2]))[0]
-  } else if (isHome && userCats.length === 2) {
-    const c1 = byImpact(issues.filter(i => i.category === userCats[0]))
-    const c2 = byImpact(issues.filter(i => i.category === userCats[1]))
-    featured = c1[0]; smallA = c1[1]; smallB = c2[0]
+  if (spreadCats && spreadCats.length > 0) {
+    const tops = spreadCats.map(c => byImpact(issues.filter(i => i.category === c))[0]).filter(Boolean)
+    featured = tops[0]; smallA = tops[1]; smallB = tops[2]
   } else {
     const top = byImpact(pool)
     featured = top[0]; smallA = top[1]; smallB = top[2]
   }
 
   const usedSlugs    = new Set([featured, smallA, smallB].filter(Boolean).map(i => i.slug))
-  const expandIssues = byImpact(pool).filter(i => !usedSlugs.has(i.slug)).slice(0, 27)
+  const expandIssues = [...pool]
+    .filter(i => !usedSlugs.has(i.slug))
+    .sort((a, b) => b.severity_score - a.severity_score)
+    .slice(0, 50)
 
   const since7 = Date.now() - 7 * 24 * 3600 * 1000
   const critWeekCount = issues.filter(i =>
@@ -649,7 +654,9 @@ export default function Home() {
                   {i > 0 && (
                     <span style={{ color: "#475569", padding: "0 8px", userSelect: "none", fontSize: 14 }}>·</span>
                   )}
-                  <button onClick={() => setCat(c)} style={filterBtnStyle(cat === c)}>{c}</button>
+                  <button onClick={() => { setCat(c); setSelectedCats([]) }} style={filterBtnStyle(cat === c && selectedCats.length === 0)}>
+                    {c === "home" ? "Home" : c}
+                  </button>
                 </span>
               ))}
             </div>
