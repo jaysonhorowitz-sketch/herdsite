@@ -428,7 +428,7 @@ export default function Home() {
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [])
+  }, [loading])
 
   const handleActionClick = useCallback((issueSlug, actionIndex) => {
     const key = `${issueSlug}-${actionIndex}`
