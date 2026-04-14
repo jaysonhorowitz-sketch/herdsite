@@ -504,9 +504,8 @@ export default function Home() {
   const isHome = cat === "home" && selectedCats.length === 0
   const pool   = selectedCats.length > 0
                ? issues.filter(i => selectedCats.includes(i.category))
-               : cat === "All" ? issues
                : cat === "home" ? issues.filter(i => userCats.includes(i.category))
-               : issues.filter(i => i.category === cat)
+               : issues
 
   let featured, smallA, smallB
   if (isHome && userCats.length >= 3) {
@@ -626,10 +625,6 @@ export default function Home() {
                   </button>
                 </span>
               ))}
-              <span style={{ color: "#1a2540", padding: "0 14px", userSelect: "none", fontSize: 16 }}>|</span>
-              <button onClick={() => setCat("All")} style={filterBtnStyle(cat === "All")}>
-                All Issues
-              </button>
             </div>
 
             {/* Multi-select category dropdown */}
@@ -659,20 +654,32 @@ export default function Home() {
                   borderRadius: 10, padding: "8px 0", minWidth: 220,
                   boxShadow: "0 16px 40px rgba(0,0,0,0.5)",
                 }}>
-                  {selectedCats.length > 0 && (
+                  <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4 }}>
                     <button
-                      onClick={() => setSelectedCats([])}
+                      onClick={() => setSelectedCats(CAT_ORDER.filter(c => c !== "All"))}
                       style={{
-                        width: "100%", textAlign: "left", padding: "8px 16px",
+                        flex: 1, textAlign: "left", padding: "8px 16px",
                         background: "none", border: "none", cursor: "pointer",
                         fontSize: 11, fontWeight: 700, color: "#60a5fa",
                         letterSpacing: "0.06em", textTransform: "uppercase",
-                        borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4,
                       }}
                     >
-                      Clear all
+                      Select all
                     </button>
-                  )}
+                    {selectedCats.length > 0 && (
+                      <button
+                        onClick={() => setSelectedCats([])}
+                        style={{
+                          textAlign: "right", padding: "8px 16px",
+                          background: "none", border: "none", cursor: "pointer",
+                          fontSize: 11, fontWeight: 700, color: "#6b7280",
+                          letterSpacing: "0.06em", textTransform: "uppercase",
+                        }}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
                   {CAT_ORDER.filter(c => c !== "All").map(c => {
                     const checked = selectedCats.includes(c)
                     const toggle = () => setSelectedCats(prev =>
