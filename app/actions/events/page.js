@@ -2,97 +2,6 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 
-// ─── Mock events — structured to match VolunteerMatch API response ─────────────
-// TODO: Replace this with a real VolunteerMatch API call once the key is ready.
-// API docs: https://www.volunteermatch.org/api/docs
-// Endpoint: GET /api/vol?action=searchOpportunities&zip={zip}&radius=25&key={VOLUNTEERMATCH_API_KEY}
-const MOCK_EVENTS = [
-  {
-    id: "1",
-    title: "Riverside Park Cleanup",
-    org: "NYC Parks Foundation",
-    type: "Volunteering",
-    category: "Environment",
-    date: "Sat, Apr 19",
-    time: "9:00 AM",
-    address: "Riverside Park, 83rd St",
-    city: "New York", state: "NY",
-    lat: 40.7851, lng: -73.9874,
-    description: "Help clean up Riverside Park ahead of Earth Day. Gloves and bags provided.",
-    url: "https://www.volunteermatch.org",
-  },
-  {
-    id: "2",
-    title: "Phone Bank — Voting Rights",
-    org: "Common Cause NY",
-    type: "Political",
-    category: "Civil Rights",
-    date: "Wed, Apr 16",
-    time: "6:00 PM",
-    address: "150 Broadway, Suite 1820",
-    city: "New York", state: "NY",
-    lat: 40.7089, lng: -74.0131,
-    description: "Call voters in key districts to share info about upcoming ballot measures.",
-    url: "https://www.mobilize.us",
-  },
-  {
-    id: "3",
-    title: "Food Bank Weekly Shift",
-    org: "City Harvest",
-    type: "Volunteering",
-    category: "Healthcare",
-    date: "Thu, Apr 17",
-    time: "8:00 AM",
-    address: "6 East 32nd Street",
-    city: "New York", state: "NY",
-    lat: 40.7474, lng: -73.9836,
-    description: "Sort and pack donated food for distribution to families in need across the city.",
-    url: "https://www.volunteermatch.org",
-  },
-  {
-    id: "4",
-    title: "Immigration Legal Aid Clinic",
-    org: "NYLAG",
-    type: "Volunteering",
-    category: "Immigration",
-    date: "Sat, Apr 19",
-    time: "10:00 AM",
-    address: "100 William Street",
-    city: "New York", state: "NY",
-    lat: 40.7075, lng: -74.0068,
-    description: "Volunteer attorneys and interpreters needed for walk-in immigration legal consultations.",
-    url: "https://www.volunteermatch.org",
-  },
-  {
-    id: "5",
-    title: "Town Hall — Housing Policy",
-    org: "Community Board 7",
-    type: "Political",
-    category: "Economy",
-    date: "Mon, Apr 21",
-    time: "7:00 PM",
-    address: "250 West 87th Street",
-    city: "New York", state: "NY",
-    lat: 40.7862, lng: -73.9784,
-    description: "Public meeting on proposed zoning changes and affordable housing targets in Upper West Side.",
-    url: "https://www.mobilize.us",
-  },
-  {
-    id: "6",
-    title: "Climate Action Rally",
-    org: "Sunrise Movement NYC",
-    type: "Political",
-    category: "Environment",
-    date: "Fri, Apr 25",
-    time: "5:30 PM",
-    address: "Foley Square",
-    city: "New York", state: "NY",
-    lat: 40.7134, lng: -74.0043,
-    description: "Rally calling for stronger city commitments to renewable energy and green jobs.",
-    url: "https://www.mobilize.us",
-  },
-]
-
 const CAT_COLOR = {
   "Environment":   "#6ee7b7",
   "Civil Rights":  "#f87171",
@@ -113,12 +22,30 @@ export default function EventsPage() {
   const [zip,      setZip]      = useState("")
   const [filter,   setFilter]   = useState("All")
   const [mapReady, setMapReady] = useState(false)
+  const [events,   setEvents]   = useState([])
+  const [loading,  setLoading]  = useState(false)
+  const [error,    setError]    = useState(null)
 
   // Load saved zip
   useEffect(() => {
     const saved = localStorage.getItem("userZipCode")
     if (saved) setZip(saved)
   }, [])
+
+  // Fetch real events when zip is valid
+  useEffect(() => {
+    if (!zip || zip.length !== 5) return
+    setLoading(true)
+    setError(null)
+    fetch(`/api/events?zip=${zip}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) throw new Error(data.error)
+        setEvents(data.events || [])
+      })
+      .catch(e => setError("Couldn't load events. Try again."))
+      .finally(() => setLoading(false))
+  }, [zip])
 
   // Init Mapbox map
   useEffect(() => {
@@ -158,7 +85,7 @@ export default function EventsPage() {
       markers.current.forEach(m => m.remove())
       markers.current = []
 
-      const visible = filter === "All" ? MOCK_EVENTS : MOCK_EVENTS.filter(e => e.type === filter)
+      const visible = filter === "All" ? events : events.filter(e => e.type === filter)
 
       visible.forEach(event => {
         const catColor = CAT_COLOR[event.category] || "#94a3b8"
@@ -211,7 +138,7 @@ export default function EventsPage() {
       .catch(() => {})
   }, [zip])
 
-  const visible = filter === "All" ? MOCK_EVENTS : MOCK_EVENTS.filter(e => e.type === filter)
+  const visible = filter === "All" ? events : events.filter(e => e.type === filter)
 
   return (
     <div style={{ minHeight: "100vh", background: "#0B1120", fontFamily: "'Inter', system-ui, sans-serif", color: "#e2e8f0" }}>
@@ -315,22 +242,46 @@ export default function EventsPage() {
           <div ref={mapContainer} style={{ width: "100%", height: "100%" }} />
         </div>
 
-        {/* Coming soon banner */}
-        <div style={{
-          display: "flex", alignItems: "flex-start", gap: 14,
-          padding: "14px 18px", borderRadius: 10, marginBottom: 28,
-          background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.15)",
-        }}>
-          <span style={{ fontSize: 16, flexShrink: 0 }}>🔌</span>
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "#fbbf24", margin: "0 0 3px" }}>
-              Live events coming soon
-            </p>
-            <p style={{ fontSize: 12, color: "#4b5563", margin: 0, lineHeight: 1.6 }}>
-              These are sample events. Once connected to VolunteerMatch and Mobilize.us, this page will show real volunteer shifts and political events near your zip code automatically.
+        {/* Status banner */}
+        {!zip || zip.length < 5 ? (
+          <div style={{
+            display: "flex", alignItems: "flex-start", gap: 14,
+            padding: "14px 18px", borderRadius: 10, marginBottom: 28,
+            background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.15)",
+          }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>📍</span>
+            <p style={{ fontSize: 13, color: "#6b7280", margin: 0, lineHeight: 1.6 }}>
+              Enter your zip code above to find real volunteer opportunities and civic events near you.
             </p>
           </div>
-        </div>
+        ) : loading ? (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 14,
+            padding: "14px 18px", borderRadius: 10, marginBottom: 28,
+            background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.15)",
+          }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>⏳</span>
+            <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>Searching for events near {zip}…</p>
+          </div>
+        ) : error ? (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 14,
+            padding: "14px 18px", borderRadius: 10, marginBottom: 28,
+            background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)",
+          }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+            <p style={{ fontSize: 13, color: "#f87171", margin: 0 }}>{error}</p>
+          </div>
+        ) : events.length === 0 ? (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 14,
+            padding: "14px 18px", borderRadius: 10, marginBottom: 28,
+            background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.15)",
+          }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>🔍</span>
+            <p style={{ fontSize: 13, color: "#fbbf24", margin: 0 }}>No events found near {zip}. Try a nearby zip code.</p>
+          </div>
+        ) : null}
 
         {/* Event count */}
         <div style={{ fontSize: 11, fontWeight: 700, color: "#374151",
@@ -365,6 +316,9 @@ export default function EventsPage() {
                     }}>{event.type}</span>
                     <span style={{ fontSize: 10, fontWeight: 700, color: catColor,
                       textTransform: "uppercase", letterSpacing: "0.1em" }}>{event.category}</span>
+                    {event.source && (
+                      <span style={{ fontSize: 10, color: "#374151", marginLeft: "auto" }}>via {event.source}</span>
+                    )}
                   </div>
 
                   {/* Title */}
