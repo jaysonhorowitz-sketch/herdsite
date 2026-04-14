@@ -3,17 +3,25 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 
 const CAT_COLOR = {
-  "Environment":   "#6ee7b7",
-  "Civil Rights":  "#f87171",
-  "Healthcare":    "#f472b6",
-  "Immigration":   "#fb923c",
-  "Economy":       "#34d399",
+  "Environment":         "#6ee7b7",
+  "Civil Rights":        "#f87171",
+  "Healthcare":          "#f472b6",
+  "Immigration":         "#fb923c",
+  "Economy":             "#34d399",
+  "Education & Science": "#a78bfa",
+  "Media & Democracy":   "#38bdf8",
+  "National Security":   "#94a3b8",
+  "Rule of Law":         "#fbbf24",
+  "Executive Power":     "#f97316",
+  "Community":           "#6b7280",
 }
 
 const TYPE_COLOR = {
   "Volunteering": { bg: "rgba(96,165,250,0.12)", color: "#93c5fd", border: "rgba(96,165,250,0.25)" },
   "Political":    { bg: "rgba(251,146,60,0.12)",  color: "#fdba74", border: "rgba(251,146,60,0.25)" },
 }
+
+const ALL_FILTERS = ["All", "Volunteering", "Political", "Environment", "Healthcare", "Civil Rights", "Immigration", "Economy", "Education & Science"]
 
 export default function EventsPage() {
   const mapContainer = useRef(null)
@@ -32,19 +40,22 @@ export default function EventsPage() {
     if (saved) setZip(saved)
   }, [])
 
-  // Fetch real events when zip is valid
+  // Debounced live fetch — fires 700ms after user stops typing a valid zip
   useEffect(() => {
-    if (!zip || zip.length !== 5) return
+    if (!zip || zip.length !== 5) { setEvents([]); return }
     setLoading(true)
     setError(null)
-    fetch(`/api/events?zip=${zip}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.error) throw new Error(data.error)
-        setEvents(data.events || [])
-      })
-      .catch(e => setError("Couldn't load events. Try again."))
-      .finally(() => setLoading(false))
+    const timer = setTimeout(() => {
+      fetch(`/api/events?zip=${zip}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) throw new Error(data.error)
+          setEvents(data.events || [])
+        })
+        .catch(() => setError("Couldn't load events. Try again."))
+        .finally(() => setLoading(false))
+    }, 700)
+    return () => clearTimeout(timer)
   }, [zip])
 
   // Init Mapbox map
@@ -85,7 +96,7 @@ export default function EventsPage() {
       markers.current.forEach(m => m.remove())
       markers.current = []
 
-      const visible = filter === "All" ? events : events.filter(e => e.type === filter)
+      const visible = filter === "All" ? events : events.filter(e => e.type === filter || e.category === filter)
 
       visible.forEach(event => {
         const catColor = CAT_COLOR[event.category] || "#94a3b8"
@@ -214,21 +225,25 @@ export default function EventsPage() {
           </div>
 
           {/* Filter pills */}
-          <div style={{ display: "flex", gap: 8 }}>
-            {["All", "Volunteering", "Political"].map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                style={{
-                  padding: "8px 16px", borderRadius: 99, border: "1px solid",
-                  fontSize: 12, fontWeight: 600, cursor: "pointer",
-                  background: filter === f ? "rgba(59,130,246,0.15)" : "transparent",
-                  borderColor: filter === f ? "rgba(59,130,246,0.4)" : "rgba(255,255,255,0.1)",
-                  color: filter === f ? "#93c5fd" : "#4b5563",
-                  transition: "all 0.15s",
-                }}
-              >{f}</button>
-            ))}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {ALL_FILTERS.map(f => {
+              const accent = f === "All" ? "#93c5fd" : (CAT_COLOR[f] || "#93c5fd")
+              const active = filter === f
+              return (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  style={{
+                    padding: "8px 16px", borderRadius: 99, border: "1px solid",
+                    fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    background: active ? `${accent}20` : "transparent",
+                    borderColor: active ? `${accent}66` : "rgba(255,255,255,0.1)",
+                    color: active ? accent : "#4b5563",
+                    transition: "all 0.15s",
+                  }}
+                >{f}</button>
+              )
+            })}
           </div>
         </div>
 
