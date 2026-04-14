@@ -524,7 +524,10 @@ export default function Home() {
   }
 
   const usedSlugs    = new Set([featured, smallA, smallB].filter(Boolean).map(i => i.slug))
-  const expandIssues = byImpact(pool).filter(i => !usedSlugs.has(i.slug)).slice(0, 50)
+  const expandIssues = [...pool]
+    .filter(i => !usedSlugs.has(i.slug))
+    .sort((a, b) => b.severity_score - a.severity_score)
+    .slice(0, 50)
 
   const since7 = Date.now() - 7 * 24 * 3600 * 1000
   const critWeekCount = issues.filter(i =>
