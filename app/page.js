@@ -269,16 +269,16 @@ function FeedCard({ issue, weekCount, isArchived, onArchive }) {
   const [hovered, setHovered] = useState(false)
 
   return (
-    <div style={{ position: "relative", marginBottom: 10 }}>
+    <div style={{ position: "relative" }}>
       {/* Archive bookmark */}
       <button
         onClick={e => { e.preventDefault(); e.stopPropagation(); onArchive(issue.slug) }}
         style={{
-          position: "absolute", top: 18, right: 18, zIndex: 2,
+          position: "absolute", top: 14, right: 14, zIndex: 2,
           background: "none", border: "none", cursor: "pointer",
           color: isArchived ? catColor : "rgba(255,255,255,0.18)",
-          fontSize: 19, padding: 4, lineHeight: 1,
-          transition: "color 0.15s, transform 0.15s",
+          fontSize: 16, padding: 4, lineHeight: 1,
+          transition: "color 0.15s",
         }}
         title={isArchived ? "Remove from archive" : "Save to archive"}
       >{isArchived ? "★" : "☆"}</button>
@@ -288,54 +288,49 @@ function FeedCard({ issue, weekCount, isArchived, onArchive }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          textDecoration: "none", color: "inherit", display: "block",
-          background: hovered ? `rgba(${rgb},0.1)` : `rgba(${rgb},0.06)`,
-          border: `1px solid rgba(${rgb},${hovered ? 0.28 : 0.16})`,
-          borderRadius: 12,
-          padding: "22px 52px 20px 24px",
+          textDecoration: "none", color: "inherit",
+          display: "flex", flexDirection: "column", justifyContent: "space-between",
+          background: hovered ? `rgba(${rgb},0.11)` : `rgba(${rgb},0.06)`,
+          border: `1px solid rgba(${rgb},${hovered ? 0.3 : 0.16})`,
+          borderRadius: 16,
+          padding: "24px 44px 22px 24px",
           transition: "background 0.2s, border-color 0.2s",
         }}
       >
-        {/* Severity row */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 13 }}>
-          <span className="sev-pulse" style={{ "--c": tier.color }} />
-          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.13em", textTransform: "uppercase", color: tier.color }}>
-            {tier.label}
+        {/* Top: category + date */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: catColor }}>
+            {issue.category}
           </span>
-          <span style={{ fontSize: 10, color: "rgba(245,241,232,0.28)", marginLeft: 4 }}>{issue.date}</span>
+          <span style={{ fontSize: 10, color: "rgba(245,241,232,0.25)" }}>{issue.date}</span>
         </div>
 
         {/* Headline */}
-        <h2 style={{ fontSize: 19, fontWeight: 700, margin: "0 0 10px", color: "#F5F1E8", lineHeight: 1.3, letterSpacing: "-0.02em" }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 12px", color: "#F5F1E8", lineHeight: 1.3, letterSpacing: "-0.02em" }}>
           {issue.title}
         </h2>
 
         {/* Description */}
-        <p style={{ color: "rgba(245,241,232,0.58)", fontSize: 14, lineHeight: 1.68, margin: "0 0 18px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+        <p style={{ color: "rgba(245,241,232,0.62)", fontSize: 14, lineHeight: 1.7, margin: "0 0 16px" }}>
           {issue.description}
         </p>
 
         {/* Bottom row */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{
-              display: "inline-flex", alignItems: "center",
-              padding: "6px 16px", borderRadius: 6,
-              background: `rgba(${rgb},0.14)`,
-              border: `1px solid rgba(${rgb},0.32)`,
-              color: catColor, fontSize: 11, fontWeight: 700,
-              letterSpacing: "0.05em", textTransform: "uppercase", whiteSpace: "nowrap",
-            }}>Take Action →</span>
-            {weekCount > 0 && (
-              <span style={{ fontSize: 12, color: "rgba(245,241,232,0.35)", display: "flex", alignItems: "center", gap: 5 }}>
-                <span style={{ color: "#22c55e", fontSize: 7 }}>●</span>
-                <strong style={{ color: "rgba(245,241,232,0.55)", fontWeight: 600 }}>{weekCount}</strong> took action
-              </span>
-            )}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span className="sev-pulse" style={{ "--c": tier.color }} />
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: tier.color }}>
+              {tier.label}
+            </span>
           </div>
-          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: `rgba(${rgb},0.55)`, flexShrink: 0 }}>
-            {issue.category}
-          </span>
+          <span style={{
+            display: "inline-flex", alignItems: "center",
+            padding: "5px 12px", borderRadius: 6,
+            background: `rgba(${rgb},0.14)`,
+            border: `1px solid rgba(${rgb},0.32)`,
+            color: catColor, fontSize: 10, fontWeight: 700,
+            letterSpacing: "0.05em", textTransform: "uppercase", whiteSpace: "nowrap",
+          }}>Take Action →</span>
         </div>
       </Link>
     </div>
@@ -772,19 +767,25 @@ export default function Home() {
       </div>
 
       {/* Flat feed */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 80px" }}>
+      <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 20px 80px" }}>
         {feedIssues.length === 0 && (
           <p style={{ color: "#4b5563", fontSize: 14, padding: "40px 0", textAlign: "center" }}>No issues match your current filter.</p>
         )}
-        {feedIssues.map(issue => (
-          <FeedCard
-            key={issue.id}
-            issue={issue}
-            weekCount={actionCounts[issue.slug] || 0}
-            isArchived={archivedSlugs.has(issue.slug)}
-            onArchive={toggleArchive}
-          />
-        ))}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr",
+          gap: 16,
+        }}>
+          {feedIssues.map(issue => (
+            <FeedCard
+              key={issue.id}
+              issue={issue}
+              weekCount={actionCounts[issue.slug] || 0}
+              isArchived={archivedSlugs.has(issue.slug)}
+              onArchive={toggleArchive}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Footer */}
@@ -809,7 +810,7 @@ export default function Home() {
         <div style={{
           maxWidth: 1200, margin: "0 auto",
           display: "flex", alignItems: "stretch",
-          height: 56,
+          height: 68,
         }}>
           {ACTION_CARDS.map((card, i) => (
             <Link
@@ -817,23 +818,24 @@ export default function Home() {
               href={card.link}
               style={{
                 flex: 1,
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
                 textDecoration: "none",
                 borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                padding: "0 12px",
                 transition: "background 0.15s",
               }}
               onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
-              <span style={{ fontSize: 16, lineHeight: 1 }}>{typeof card.icon === "string" ? card.icon : "🗺️"}</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", whiteSpace: "nowrap" }}>{card.headline}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap", letterSpacing: "0.01em" }}>{card.headline}</span>
+              <span style={{ fontSize: 11, color: "#475569", textAlign: "center", lineHeight: 1.4 }}>{card.body}</span>
             </Link>
           ))}
         </div>
       </div>
 
       {/* Spacer so content isn't hidden behind sticky bar */}
-      <div style={{ height: 56 }} />
+      <div style={{ height: 68 }} />
 
       <style>{`
         ::-webkit-scrollbar { display: none; }
