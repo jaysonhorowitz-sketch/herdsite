@@ -3,19 +3,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { createClient } from "@/utils/supabase/client"
 import { NL_MAINSTREAM, NL_SUBSTACK } from "../../../lib/newsletters"
-
-const CAT_COLOR = {
-  "Executive Power":    "#60a5fa",
-  "Rule of Law":        "#a78bfa",
-  "Economy":            "#34d399",
-  "Civil Rights":       "#f87171",
-  "National Security":  "#818cf8",
-  "Healthcare":         "#f472b6",
-  "Environment":        "#6ee7b7",
-  "Education & Science":"#67e8f9",
-  "Immigration":        "#fb923c",
-  "Media & Democracy":  "#fbbf24",
-}
+import { CAT_COLOR } from "@/lib/colors"
 
 const ALL_CATS = [
   "Executive Power", "Rule of Law", "Economy", "Civil Rights",

@@ -1,20 +1,7 @@
 "use client"
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-
-const CAT_COLOR = {
-  "Environment":         "#6ee7b7",
-  "Civil Rights":        "#f87171",
-  "Healthcare":          "#f472b6",
-  "Immigration":         "#fb923c",
-  "Economy":             "#34d399",
-  "Education & Science": "#a78bfa",
-  "Media & Democracy":   "#38bdf8",
-  "National Security":   "#94a3b8",
-  "Rule of Law":         "#fbbf24",
-  "Executive Power":     "#f97316",
-  "Community":           "#6b7280",
-}
+import { CAT_COLOR } from "@/lib/colors"
 
 const TYPE_COLOR = {
   "Volunteering": { bg: "rgba(96,165,250,0.12)", color: "#93c5fd", border: "rgba(96,165,250,0.25)" },
