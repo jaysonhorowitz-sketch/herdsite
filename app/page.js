@@ -596,6 +596,16 @@ export default function Home() {
             <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#F5F1E8", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
             <span style={{ fontSize: 12, color: "#4b5563", fontWeight: 400 }}>Track. Act. Organize.</span>
           </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Link href="/profile" style={{
+              fontSize: 12, fontWeight: 700, color: "#60a5fa",
+              background: "rgba(96,165,250,0.1)", border: "1px solid rgba(96,165,250,0.3)",
+              textDecoration: "none", padding: "7px 16px", borderRadius: 6,
+              transition: "background 0.15s",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(96,165,250,0.18)" }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(96,165,250,0.1)" }}
+            >My Impact</Link>
           <div ref={accountRef} style={{ position: "relative" }}>
             <button
               onClick={() => setAccountOpen(v => !v)}
@@ -653,6 +663,7 @@ export default function Home() {
                 >Sign Out</button>
               </div>
             )}
+          </div>
           </div>
         </div>
       </nav>
