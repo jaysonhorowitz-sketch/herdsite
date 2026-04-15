@@ -822,13 +822,13 @@ export default function Home() {
       </div>
 
       {/* Flat feed */}
-      <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 20px 80px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 80px" }}>
         {feedIssues.length === 0 && (
           <p style={{ color: "#4b5563", fontSize: 14, padding: "40px 0", textAlign: "center" }}>No issues match your current filter.</p>
         )}
         <div style={{
           display: "grid",
-          gridTemplateColumns: "1fr",
+          gridTemplateColumns: "repeat(2, 1fr)",
           gap: 16,
         }}>
           {feedIssues.map(issue => (
