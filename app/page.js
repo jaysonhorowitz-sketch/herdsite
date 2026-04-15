@@ -878,7 +878,7 @@ export default function Home() {
         <div style={{
           maxWidth: 1200, margin: "0 auto",
           display: "flex", alignItems: "stretch",
-          height: 68,
+          height: 136,
         }}>
           {ACTION_CARDS.map((card, i) => (
             <Link
@@ -886,25 +886,25 @@ export default function Home() {
               href={card.link}
               style={{
                 flex: 1,
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
                 textDecoration: "none",
                 borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
-                padding: "0 12px",
+                padding: "0 20px",
                 transition: "background 0.15s",
               }}
               onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
-              <span style={{ fontSize: 18, lineHeight: 1 }}>{typeof card.icon === "string" ? card.icon : "🗺️"}</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap", letterSpacing: "0.01em" }}>{card.headline}</span>
-              <span style={{ fontSize: 11, color: "#475569", textAlign: "center", lineHeight: 1.4 }}>{card.body}</span>
+              <span style={{ fontSize: 28, lineHeight: 1 }}>{typeof card.icon === "string" ? card.icon : "🗺️"}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap", letterSpacing: "0.01em" }}>{card.headline}</span>
+              <span style={{ fontSize: 12, color: "#475569", textAlign: "center", lineHeight: 1.5 }}>{card.body}</span>
             </Link>
           ))}
         </div>
       </div>
 
       {/* Spacer so content isn't hidden behind sticky bar */}
-      <div style={{ height: 68 }} />
+      <div style={{ height: 136 }} />
 
       <style>{`
         ::-webkit-scrollbar { display: none; }
