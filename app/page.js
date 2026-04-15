@@ -342,7 +342,9 @@ export default function Home() {
   const [catClicks,     setCatClicks]     = useState({})
   const [selectedCats,  setSelectedCats]  = useState([])
   const [dropdownOpen,  setDropdownOpen]  = useState(false)
+  const [accountOpen,   setAccountOpen]   = useState(false)
   const dropdownRef    = useRef(null)
+  const accountRef     = useRef(null)
 
   useEffect(() => {
     async function loadPrefs() {
@@ -455,6 +457,9 @@ export default function Home() {
     function handleClick(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false)
+      }
+      if (accountRef.current && !accountRef.current.contains(e.target)) {
+        setAccountOpen(false)
       }
     }
     document.addEventListener("mousedown", handleClick)
@@ -590,32 +595,63 @@ export default function Home() {
             <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#F5F1E8", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
             <span style={{ fontSize: 12, color: "#4b5563", fontWeight: 400 }}>Track. Act. Organize.</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <Link href="/archive" style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", textDecoration: "none", transition: "color 0.15s" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#F5F1E8"}
-              onMouseLeave={e => e.currentTarget.style.color = "#94a3b8"}
-            >Archive</Link>
-            <Link
-              href="/profile"
-              style={{
-                fontSize: 12, fontWeight: 700, color: "#60a5fa",
-                background: "rgba(96,165,250,0.1)",
-                border: "1px solid rgba(96,165,250,0.3)",
-                textDecoration: "none",
-                padding: "7px 16px", borderRadius: 6,
-                transition: "background 0.15s, border-color 0.15s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(96,165,250,0.18)"; e.currentTarget.style.borderColor = "rgba(96,165,250,0.55)" }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(96,165,250,0.1)"; e.currentTarget.style.borderColor = "rgba(96,165,250,0.3)" }}
-            >My Impact</Link>
+          <div ref={accountRef} style={{ position: "relative" }}>
             <button
-              onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login" }}
+              onClick={() => setAccountOpen(v => !v)}
               style={{
-                fontSize: 12, fontWeight: 600, color: "#fff",
-                background: "#ef4444", border: "none", cursor: "pointer",
-                padding: "7px 14px", borderRadius: 4,
+                display: "flex", alignItems: "center", gap: 7,
+                background: accountOpen ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 8, padding: "7px 12px",
+                cursor: "pointer", transition: "background 0.15s",
               }}
-            >Sign out</button>
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
+              onMouseLeave={e => e.currentTarget.style.background = accountOpen ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)"}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              </svg>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4b5563" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+
+            {accountOpen && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 8px)", right: 0,
+                background: "#1a2236", border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 10, padding: "6px", minWidth: 160,
+                boxShadow: "0 8px 32px rgba(0,0,0,0.5)", zIndex: 100,
+              }}>
+                {[
+                  { label: "My Impact", href: "/profile" },
+                  { label: "Archive",   href: "/archive" },
+                ].map(item => (
+                  <Link key={item.label} href={item.href} onClick={() => setAccountOpen(false)}
+                    style={{
+                      display: "block", padding: "9px 14px", borderRadius: 7,
+                      fontSize: 13, fontWeight: 600, color: "#e2e8f0",
+                      textDecoration: "none", transition: "background 0.12s",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                  >{item.label}</Link>
+                ))}
+                <div style={{ height: 1, background: "rgba(255,255,255,0.07)", margin: "4px 0" }} />
+                <button
+                  onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login" }}
+                  style={{
+                    display: "block", width: "100%", textAlign: "left",
+                    padding: "9px 14px", borderRadius: 7, border: "none",
+                    fontSize: 13, fontWeight: 600, color: "#f87171",
+                    background: "transparent", cursor: "pointer", transition: "background 0.12s",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(239,68,68,0.1)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                >Sign Out</button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
