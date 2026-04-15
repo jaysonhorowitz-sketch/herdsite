@@ -589,12 +589,10 @@ export default function Home() {
             <button
               onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login" }}
               style={{
-                fontSize: 12, fontWeight: 500, color: "#64748b",
-                background: "none", border: "none", cursor: "pointer",
-                padding: 0, transition: "color 0.15s",
+                fontSize: 12, fontWeight: 600, color: "#fff",
+                background: "#ef4444", border: "none", cursor: "pointer",
+                padding: "7px 14px", borderRadius: 4,
               }}
-              onMouseEnter={e => e.currentTarget.style.color = "#f1f5f9"}
-              onMouseLeave={e => e.currentTarget.style.color = "#64748b"}
             >Sign out</button>
           </div>
         </div>
