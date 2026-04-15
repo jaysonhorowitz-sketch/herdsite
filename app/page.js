@@ -258,7 +258,7 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick }) {
   const [hovered, setHovered] = useState(false)
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: "relative", height: "100%" }}>
       {/* Archive bookmark */}
       <button
         onClick={e => { e.preventDefault(); e.stopPropagation(); onArchive(issue.slug) }}
@@ -280,6 +280,7 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick }) {
         style={{
           textDecoration: "none", color: "inherit",
           display: "flex", flexDirection: "column", justifyContent: "space-between",
+          height: "100%",
           background: hovered ? `rgba(${rgb},0.11)` : `rgba(${rgb},0.06)`,
           border: `1px solid rgba(${rgb},${hovered ? 0.3 : 0.16})`,
           borderRadius: 16,
