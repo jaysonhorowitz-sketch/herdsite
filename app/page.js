@@ -895,6 +895,7 @@ export default function Home() {
               onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
+              <span style={{ fontSize: 18, lineHeight: 1 }}>{typeof card.icon === "string" ? card.icon : "🗺️"}</span>
               <span style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap", letterSpacing: "0.01em" }}>{card.headline}</span>
               <span style={{ fontSize: 11, color: "#475569", textAlign: "center", lineHeight: 1.4 }}>{card.body}</span>
             </Link>
