@@ -280,7 +280,7 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick }) {
         style={{
           textDecoration: "none", color: "inherit",
           display: "flex", flexDirection: "column", justifyContent: "space-between",
-          height: "100%",
+          height: 280,
           background: hovered ? `rgba(${rgb},0.11)` : `rgba(${rgb},0.06)`,
           border: `1px solid rgba(${rgb},${hovered ? 0.3 : 0.16})`,
           borderRadius: 16,
@@ -302,7 +302,7 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick }) {
         </h2>
 
         {/* Description */}
-        <p style={{ color: "rgba(245,241,232,0.62)", fontSize: 14, lineHeight: 1.7, margin: "0 0 16px" }}>
+        <p style={{ color: "rgba(245,241,232,0.62)", fontSize: 14, lineHeight: 1.7, margin: "0 0 16px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
           {issue.description}
         </p>
 
