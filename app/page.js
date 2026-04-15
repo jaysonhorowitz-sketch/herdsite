@@ -251,7 +251,7 @@ function severityTier(s) {
 }
 
 // ─── FeedCard ─────────────────────────────────────────────────────────────────
-function FeedCard({ issue, weekCount, isArchived, onArchive }) {
+function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick }) {
   const tier     = severityTier(issue.severity_score)
   const catColor = CAT_COLOR[issue.category] || "#94a3b8"
   const rgb      = hexToRgb(catColor)
@@ -274,6 +274,7 @@ function FeedCard({ issue, weekCount, isArchived, onArchive }) {
 
       <Link
         href={"/issue/" + issue.slug}
+        onClick={() => onCatClick(issue.category)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
@@ -338,6 +339,7 @@ export default function Home() {
   const [actionCounts,  setActionCounts]  = useState({})
   const [completedKeys, setCompletedKeys] = useState(new Set())
   const [archivedSlugs, setArchivedSlugs] = useState(new Set())
+  const [catClicks,     setCatClicks]     = useState({})
   const [selectedCats,  setSelectedCats]  = useState([])
   const [dropdownOpen,  setDropdownOpen]  = useState(false)
   const dropdownRef    = useRef(null)
@@ -510,6 +512,22 @@ export default function Home() {
     })
   }, [])
 
+  // Load category click history once on mount
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("catClicks") || "{}")
+      setCatClicks(stored)
+    } catch {}
+  }, [])
+
+  const recordCatClick = useCallback((category) => {
+    setCatClicks(prev => {
+      const next = { ...prev, [category]: (prev[category] || 0) + 1 }
+      try { localStorage.setItem("catClicks", JSON.stringify(next)) } catch {}
+      return next
+    })
+  }, [])
+
   if (loading) return <div style={{ background: "#0B1120", minHeight: "100vh" }} />
 
   const userCats = prefs?.categories || []
@@ -520,8 +538,20 @@ export default function Home() {
                : cat === "home" ? issues.filter(i => userCats.includes(i.category))
                : issues.filter(i => i.category === cat)
 
-  // Flat feed sorted by severity descending — no featured layout
-  const feedIssues = [...pool].sort((a, b) => b.severity_score - a.severity_score)
+  // Blended feed score: equal weight of topic affinity, severity, recency
+  const maxClicks  = Math.max(1, ...Object.values(catClicks))
+  const poolDates  = pool.map(i => parseDate(i.date))
+  const minDate    = poolDates.length ? Math.min(...poolDates) : 0
+  const dateRange  = Math.max(1, (poolDates.length ? Math.max(...poolDates) : 1) - minDate)
+
+  function blendScore(issue) {
+    const affinity = (catClicks[issue.category] || 0) / maxClicks
+    const severity = (issue.severity_score - 1) / 9
+    const recency  = (parseDate(issue.date) - minDate) / dateRange
+    return (affinity + severity + recency) / 3
+  }
+
+  const feedIssues = [...pool].sort((a, b) => blendScore(b) - blendScore(a))
 
   const since7 = Date.now() - 7 * 24 * 3600 * 1000
   const critWeekCount = issues.filter(i =>
@@ -772,6 +802,7 @@ export default function Home() {
               weekCount={actionCounts[issue.slug] || 0}
               isArchived={archivedSlugs.has(issue.slug)}
               onArchive={toggleArchive}
+              onCatClick={recordCatClick}
             />
           ))}
         </div>
