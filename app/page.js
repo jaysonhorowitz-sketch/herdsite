@@ -571,10 +571,20 @@ export default function Home() {
     const minDate   = poolDates.length ? Math.min(...poolDates) : 0
     const dateRange = Math.max(1, (poolDates.length ? Math.max(...poolDates) : 1) - minDate)
 
+    // Per-category severity ranges so each topic competes on equal footing
+    const catSevBounds = {}
+    pool.forEach(i => {
+      if (!catSevBounds[i.category]) catSevBounds[i.category] = { min: i.severity_score, max: i.severity_score }
+      if (i.severity_score > catSevBounds[i.category].max) catSevBounds[i.category].max = i.severity_score
+      if (i.severity_score < catSevBounds[i.category].min) catSevBounds[i.category].min = i.severity_score
+    })
+
     function blendScore(issue) {
-      const affinity = (catClicks[issue.category] || 0) / maxClicks
-      const severity = (issue.severity_score - 1) / 9
-      const recency  = (parseDate(issue.date) - minDate) / dateRange
+      const affinity  = (catClicks[issue.category] || 0) / maxClicks
+      const bounds    = catSevBounds[issue.category] || { min: 1, max: 10 }
+      const sevRange  = Math.max(1, bounds.max - bounds.min)
+      const severity  = (issue.severity_score - bounds.min) / sevRange  // relative within category
+      const recency   = (parseDate(issue.date) - minDate) / dateRange
       return (affinity + severity + recency) / 3
     }
 
