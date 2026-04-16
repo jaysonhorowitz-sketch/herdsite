@@ -534,20 +534,48 @@ export default function Home() {
                : cat === "home" ? issues.filter(i => userCats.includes(i.category))
                : issues.filter(i => i.category === cat)
 
-  // Blended feed score: equal weight of topic affinity, severity, recency
-  const maxClicks  = Math.max(1, ...Object.values(catClicks))
-  const poolDates  = pool.map(i => parseDate(i.date))
-  const minDate    = poolDates.length ? Math.min(...poolDates) : 0
-  const dateRange  = Math.max(1, (poolDates.length ? Math.max(...poolDates) : 1) - minDate)
+  const isHome = cat === "home" || selectedCats.length > 0
 
-  function blendScore(issue) {
-    const affinity = (catClicks[issue.category] || 0) / maxClicks
-    const severity = (issue.severity_score - 1) / 9
-    const recency  = (parseDate(issue.date) - minDate) / dateRange
-    return (affinity + severity + recency) / 3
+  let feedIssues
+
+  if (isHome) {
+    // ── Home / multi-filter: blended score + interleave (no back-to-back category) ──
+    const maxClicks = Math.max(1, ...Object.values(catClicks))
+    const poolDates = pool.map(i => parseDate(i.date))
+    const minDate   = poolDates.length ? Math.min(...poolDates) : 0
+    const dateRange = Math.max(1, (poolDates.length ? Math.max(...poolDates) : 1) - minDate)
+
+    function blendScore(issue) {
+      const affinity = (catClicks[issue.category] || 0) / maxClicks
+      const severity = (issue.severity_score - 1) / 9
+      const recency  = (parseDate(issue.date) - minDate) / dateRange
+      return (affinity + severity + recency) / 3
+    }
+
+    const scored = [...pool].sort((a, b) => blendScore(b) - blendScore(a))
+
+    // Interleave: never place two issues from the same category back to back
+    const interleaved = []
+    const remaining   = [...scored]
+    let lastCat       = null
+
+    while (remaining.length > 0) {
+      const idx = remaining.findIndex(i => i.category !== lastCat)
+      if (idx === -1) { interleaved.push(...remaining); break }
+      interleaved.push(remaining[idx])
+      lastCat = remaining[idx].category
+      remaining.splice(idx, 1)
+    }
+
+    feedIssues = interleaved
+  } else {
+    // ── Single category pill: newest first, severity breaks ties ──
+    feedIssues = [...pool].sort((a, b) => {
+      const dateDiff = parseDate(b.date) - parseDate(a.date)
+      if (dateDiff !== 0) return dateDiff
+      return b.severity_score - a.severity_score
+    })
   }
-
-  const feedIssues = [...pool].sort((a, b) => blendScore(b) - blendScore(a))
 
   const since7 = Date.now() - 7 * 24 * 3600 * 1000
   const critWeekCount = issues.filter(i =>
