@@ -37,7 +37,7 @@ function getActionUrl(actionText, issueTitle, issueSlug) {
 }
 
 function effortStyle(e) {
-  if (e === "2 min")  return { bg: "#1e3a5f", color: "#7dd3fc", border: "#1e40af" }
+  if (e === "2 min")  return { bg: "#143820", color: "#7dd3fc", border: "#1e40af" }
   if (e === "20 min") return { bg: "#2e1a5e", color: "#c4b5fd", border: "#5b21b6" }
   return                     { bg: "#1a3d36", color: "#6ee7b7", border: "#065f46" }
 }
@@ -107,20 +107,20 @@ function TickerLine({ topics, critWeekCount, activeCat, catCounts }) {
   const baseStyle = {
     display: "inline-flex", alignItems: "center", gap: 8,
     transition: "opacity 0.3s ease",
-    fontSize: 14, fontWeight: 400, color: "#64748b",
+    fontSize: 14, fontWeight: 400, color: "#5A6B5B",
     letterSpacing: "0.01em",
   }
 
-  const ACCENT = "#60a5fa"
+  const ACCENT = "#16a34a"
 
   // Static: a specific topic is selected via filter
   if (activeCat !== "All" && activeCat !== "home") {
-    const catColor = CAT_COLOR[activeCat] || "#94a3b8"
+    const catColor = CAT_COLOR[activeCat] || "#6B7C6C"
     const count = catCounts[activeCat] ?? 0
     return (
       <div style={baseStyle}>
         <span style={{ color: ACCENT, fontSize: 9 }}>●</span>
-        <span>Now showing: <strong style={{ color: "#94a3b8", fontWeight: 600 }}>{count}</strong> issues in <strong style={{ color: catColor, fontWeight: 600 }}>{activeCat}</strong></span>
+        <span>Now showing: <strong style={{ color: "#6B7C6C", fontWeight: 600 }}>{count}</strong> issues in <strong style={{ color: catColor, fontWeight: 600 }}>{activeCat}</strong></span>
       </div>
     )
   }
@@ -130,26 +130,26 @@ function TickerLine({ topics, critWeekCount, activeCat, catCounts }) {
     return (
       <div style={baseStyle}>
         <span style={{ color: ACCENT, fontSize: 9 }}>●</span>
-        <span>Now showing: <strong style={{ color: "#94a3b8", fontWeight: 600 }}>{critWeekCount}</strong> critical issues this week</span>
+        <span>Now showing: <strong style={{ color: "#6B7C6C", fontWeight: 600 }}>{critWeekCount}</strong> critical issues this week</span>
       </div>
     )
   }
 
   // Single topic
   if (topics.length === 1) {
-    const catColor = CAT_COLOR[topics[0].name] || "#94a3b8"
+    const catColor = CAT_COLOR[topics[0].name] || "#6B7C6C"
     const count = catCounts[topics[0].name] ?? 0
     return (
       <div style={baseStyle}>
         <span style={{ color: ACCENT, fontSize: 9 }}>●</span>
-        <span>Now showing: <strong style={{ color: "#94a3b8", fontWeight: 600 }}>{count}</strong> issues in <strong style={{ color: catColor, fontWeight: 600 }}>{topics[0].name}</strong></span>
+        <span>Now showing: <strong style={{ color: "#6B7C6C", fontWeight: 600 }}>{count}</strong> issues in <strong style={{ color: catColor, fontWeight: 600 }}>{topics[0].name}</strong></span>
       </div>
     )
   }
 
   // Multi-topic rotation — only number + category fade, frame stays static
   const current  = topics[idx % topics.length]
-  const catColor = CAT_COLOR[current?.name] || "#94a3b8"
+  const catColor = CAT_COLOR[current?.name] || "#6B7C6C"
   const count    = catCounts[current?.name] ?? 0
   return (
     <div
@@ -160,7 +160,7 @@ function TickerLine({ topics, critWeekCount, activeCat, catCounts }) {
       <span style={{ color: ACCENT, fontSize: 9 }}>●</span>
       <span>
         Now showing:{" "}
-        <strong style={{ color: "#94a3b8", fontWeight: 600, opacity: visible ? 1 : 0, transition: "opacity 0.3s ease", display: "inline-block" }}>{count}</strong>
+        <strong style={{ color: "#6B7C6C", fontWeight: 600, opacity: visible ? 1 : 0, transition: "opacity 0.3s ease", display: "inline-block" }}>{count}</strong>
         {" "}issues in{" "}
         <strong style={{ color: catColor, fontWeight: 600, opacity: visible ? 1 : 0, transition: "opacity 0.3s ease", display: "inline-block" }}>{current?.name}</strong>
       </span>
@@ -177,8 +177,8 @@ function ActionCard({ card }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         display: "flex", flexDirection: "column", gap: 0,
-        background: hovered ? "#1F2937" : "#111827",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: hovered ? "#D8D4C6" : "#FDFAF3",
+        border: "1px solid rgba(0,0,0,0.08)",
         borderRadius: 6,
         padding: "20px 22px",
         cursor: "pointer",
@@ -194,20 +194,20 @@ function ActionCard({ card }) {
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
         <span style={{ flexShrink: 0, lineHeight: 1 }}>{card.icon}</span>
         <p style={{
-          fontSize: 14, fontWeight: 700, color: "#F5F1E8",
+          fontSize: 14, fontWeight: 700, color: "#1C2E1E",
           lineHeight: 1.4, margin: 0,
         }}>{card.headline}</p>
       </div>
 
       {/* Body */}
       <p style={{
-        fontSize: 12, color: "#64748b", lineHeight: 1.6,
+        fontSize: 12, color: "#5A6B5B", lineHeight: 1.6,
         margin: "0 0 16px", flex: 1,
       }}>{card.body}</p>
 
       {/* CTA */}
       <p style={{
-        fontSize: 12, fontWeight: 600, color: "#60a5fa",
+        fontSize: 12, fontWeight: 600, color: "#16a34a",
         margin: 0, letterSpacing: "0.02em",
       }}>{card.cta}</p>
     </div>
@@ -225,13 +225,13 @@ function severityTier(s) {
   if (s >= 9) return { label: "severe impact",  color: "#ef4444", bar: "rgba(220,38,38,0.6)"    }
   if (s >= 7) return { label: "major impact",   color: "#fb923c", bar: "rgba(234,88,12,0.6)"    }
   if (s >= 4) return { label: "notable impact", color: "#fbbf24", bar: "rgba(217,119,6,0.6)"    }
-  return             { label: "worth watching", color: "#94a3b8", bar: "rgba(100,116,139,0.6)"  }
+  return             { label: "worth watching", color: "#6B7C6C", bar: "rgba(100,116,139,0.6)"  }
 }
 
 // ─── FeedCard ─────────────────────────────────────────────────────────────────
 function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick }) {
   const tier     = severityTier(issue.severity_score)
-  const catColor = CAT_COLOR[issue.category] || "#94a3b8"
+  const catColor = CAT_COLOR[issue.category] || "#6B7C6C"
   const rgb      = hexToRgb(catColor)
   const [hovered, setHovered] = useState(false)
 
@@ -241,11 +241,13 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick }) {
       <button
         onClick={e => { e.preventDefault(); e.stopPropagation(); onArchive(issue.slug) }}
         style={{
-          position: "absolute", top: 14, right: 14, zIndex: 2,
-          background: "none", border: "none", cursor: "pointer",
-          color: isArchived ? catColor : "rgba(255,255,255,0.18)",
-          fontSize: 16, padding: 4, lineHeight: 1,
-          transition: "color 0.15s",
+          position: "absolute", top: 16, right: 16, zIndex: 2,
+          background: isArchived ? `rgba(${rgb},0.12)` : "none",
+          border: "none", cursor: "pointer",
+          color: isArchived ? catColor : "#C5BFB0",
+          fontSize: 15, padding: "4px 5px", lineHeight: 1,
+          transition: "color 0.15s, background 0.15s",
+          borderRadius: 4,
         }}
         title={isArchived ? "Remove from archive" : "Save to archive"}
       >{isArchived ? "★" : "☆"}</button>
@@ -257,48 +259,73 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick }) {
         onMouseLeave={() => setHovered(false)}
         style={{
           textDecoration: "none", color: "inherit",
-          display: "flex", flexDirection: "column", justifyContent: "space-between",
-          height: 280,
-          background: hovered ? `rgba(${rgb},0.11)` : `rgba(${rgb},0.06)`,
-          border: `1px solid rgba(${rgb},${hovered ? 0.3 : 0.16})`,
+          display: "flex", flexDirection: "column",
+          height: "100%", minHeight: 220,
+          background: hovered ? "#FDFAF3" : "#fff",
           borderRadius: 16,
-          padding: "24px 44px 22px 24px",
-          transition: "background 0.2s, border-color 0.2s",
+          borderTop: `3px solid ${catColor}`,
+          borderRight: `1px solid ${hovered ? `rgba(${rgb},0.25)` : "rgba(0,0,0,0.07)"}`,
+          borderBottom: `1px solid ${hovered ? `rgba(${rgb},0.25)` : "rgba(0,0,0,0.07)"}`,
+          borderLeft: `1px solid ${hovered ? `rgba(${rgb},0.25)` : "rgba(0,0,0,0.07)"}`,
+          boxShadow: hovered
+            ? `0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(${rgb},0.12)`
+            : "0 2px 8px rgba(0,0,0,0.05)",
+          padding: "20px 20px 18px",
+          transform: hovered ? "translateY(-3px)" : "translateY(0)",
+          transition: "box-shadow 0.2s, transform 0.2s, border-color 0.2s, background 0.2s",
         }}
       >
         {/* Top: category + date */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: catColor }}>
-            {issue.category}
-          </span>
-          <span style={{ fontSize: 10, color: "rgba(245,241,232,0.25)" }}>{issue.date}</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, paddingRight: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: catColor, flexShrink: 0 }} />
+            <span style={{
+              fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase",
+              color: catColor,
+            }}>
+              {issue.category}
+            </span>
+          </div>
+          <span style={{ fontSize: 10, color: "#A8B5A9", fontWeight: 500, letterSpacing: "0.02em" }}>{issue.date}</span>
         </div>
 
         {/* Headline */}
-        <h2 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 12px", color: "#F5F1E8", lineHeight: 1.3, letterSpacing: "-0.02em" }}>
+        <h2 style={{
+          fontSize: 17, fontWeight: 800, margin: "0 0 12px", color: "#1a2e1c",
+          lineHeight: 1.35, letterSpacing: "-0.02em",
+          fontFamily: "var(--font-fraunces), Georgia, serif",
+          flex: "0 0 auto",
+        }}>
           {issue.title}
         </h2>
 
         {/* Description */}
-        <p style={{ color: "rgba(245,241,232,0.62)", fontSize: 14, lineHeight: 1.7, margin: "0 0 16px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+        <p style={{
+          color: "#5A6B5B", fontSize: 13, lineHeight: 1.65,
+          margin: "0 0 16px", flex: 1,
+        }}>
           {issue.description}
         </p>
 
+        {/* Divider */}
+        <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginBottom: 14 }} />
+
         {/* Bottom row */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <span className="sev-pulse" style={{ "--c": tier.color }} />
-            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: tier.color }}>
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: tier.color }}>
               {tier.label}
             </span>
           </div>
           <span style={{
-            display: "inline-flex", alignItems: "center",
+            display: "inline-flex", alignItems: "center", gap: 4,
             padding: "5px 12px", borderRadius: 6,
-            background: `rgba(${rgb},0.14)`,
-            border: `1px solid rgba(${rgb},0.32)`,
-            color: catColor, fontSize: 10, fontWeight: 700,
-            letterSpacing: "0.05em", textTransform: "uppercase", whiteSpace: "nowrap",
+            background: `rgba(${rgb},0.1)`,
+            border: `1px solid rgba(${rgb},0.25)`,
+            color: catColor, fontSize: 10, fontWeight: 800,
+            letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap",
+            transition: "background 0.15s",
           }}>Take Action →</span>
         </div>
       </Link>
@@ -320,9 +347,8 @@ export default function Home() {
   const [archivedSlugs, setArchivedSlugs] = useState(new Set())
   const [catClicks,     setCatClicks]     = useState({})
   const [selectedCats,  setSelectedCats]  = useState([])
-  const [dropdownOpen,  setDropdownOpen]  = useState(false)
   const [accountOpen,   setAccountOpen]   = useState(false)
-  const dropdownRef    = useRef(null)
+  const [showMore,      setShowMore]      = useState(false)
   const accountRef     = useRef(null)
 
   useEffect(() => {
@@ -434,9 +460,6 @@ export default function Home() {
 
   useEffect(() => {
     function handleClick(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false)
-      }
       if (accountRef.current && !accountRef.current.contains(e.target)) {
         setAccountOpen(false)
       }
@@ -538,7 +561,7 @@ export default function Home() {
     })
   }, [])
 
-  if (loading) return <div style={{ background: "#0B1120", minHeight: "100vh" }} />
+  if (loading) return <div style={{ background: "#F4F0E6", minHeight: "100vh" }} />
 
   const userCats = prefs?.categories || []
 
@@ -622,7 +645,7 @@ export default function Home() {
     background: "none", border: "none", cursor: "pointer",
     padding: "4px 0",
     fontSize: 13, fontWeight: active ? 600 : 400,
-    color: active ? "#F5F1E8" : "#64748b",
+    color: active ? "#1C2E1E" : "#5A6B5B",
     textDecorationLine: active ? "underline" : "none",
     textDecorationColor: "rgba(255,255,255,0.35)",
     textUnderlineOffset: "5px",
@@ -632,50 +655,60 @@ export default function Home() {
   })
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0B1120", fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: "#EDE9E0" }}>
+    <div style={{ minHeight: "100vh", background: "#F4F0E6", fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: "#1C2E1E" }}>
 
       {/* Nav */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 50,
-        background: scrolled ? "rgba(17,24,39,0.95)" : "transparent",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
+        background: scrolled ? "rgba(244,240,230,0.97)" : "rgba(244,240,230,0.97)",
+        backdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(0,0,0,0.07)",
         transition: "all 0.3s ease",
       }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", height: 60,
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", height: 56,
           display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#F5F1E8", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
-            <span style={{ fontSize: 12, color: "#4b5563", fontWeight: 400 }}>Track. Act. Organize.</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 34, height: 34, borderRadius: 8, background: "#15803d", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="6" r="2.5" fill="white" opacity="0.9"/>
+                  <circle cx="4" cy="10" r="2" fill="white" opacity="0.7"/>
+                  <circle cx="12" cy="10" r="2" fill="white" opacity="0.7"/>
+                </svg>
+              </div>
+              <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 20, fontWeight: 800, color: "#1C2E1E", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
+            </div>
+            <div style={{ width: 1, height: 16, background: "rgba(0,0,0,0.12)" }} />
+            <span style={{ fontSize: 11, color: "#6B7C6C", fontWeight: 500, letterSpacing: "0.04em" }}>Civic Intelligence</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Link href="/profile" style={{
-              fontSize: 12, fontWeight: 700, color: "#60a5fa",
-              background: "rgba(96,165,250,0.1)", border: "1px solid rgba(96,165,250,0.3)",
+              fontSize: 12, fontWeight: 700, color: "#16a34a",
+              background: "rgba(22,163,74,0.1)", border: "1px solid rgba(22,163,74,0.3)",
               textDecoration: "none", padding: "7px 16px", borderRadius: 6,
               transition: "background 0.15s",
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(96,165,250,0.18)" }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(96,165,250,0.1)" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(22,163,74,0.18)" }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(22,163,74,0.1)" }}
             >My Impact</Link>
           <div ref={accountRef} style={{ position: "relative" }}>
             <button
               onClick={() => setAccountOpen(v => !v)}
               style={{
                 display: "flex", alignItems: "center", gap: 7,
-                background: accountOpen ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.1)",
+                background: accountOpen ? "rgba(0,0,0,0.08)" : "rgba(0,0,0,0.04)",
+                border: "1px solid rgba(0,0,0,0.1)",
                 borderRadius: 8, padding: "7px 12px",
                 cursor: "pointer", transition: "background 0.15s",
               }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
-              onMouseLeave={e => e.currentTarget.style.background = accountOpen ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)"}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.08)"}
+              onMouseLeave={e => e.currentTarget.style.background = accountOpen ? "rgba(0,0,0,0.08)" : "rgba(0,0,0,0.04)"}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="8" r="4"/>
                 <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
               </svg>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4b5563" strokeWidth="2.5" strokeLinecap="round">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4A5C4B" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M6 9l6 6 6-6"/>
               </svg>
             </button>
@@ -683,9 +716,9 @@ export default function Home() {
             {accountOpen && (
               <div style={{
                 position: "absolute", top: "calc(100% + 8px)", right: 0,
-                background: "#1a2236", border: "1px solid rgba(255,255,255,0.1)",
+                background: "#E8E4D8", border: "1px solid rgba(0,0,0,0.1)",
                 borderRadius: 10, padding: "6px", minWidth: 160,
-                boxShadow: "0 8px 32px rgba(0,0,0,0.5)", zIndex: 100,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 100,
               }}>
                 {[
                   { label: "My Impact", href: "/profile" },
@@ -694,14 +727,14 @@ export default function Home() {
                   <Link key={item.label} href={item.href} onClick={() => setAccountOpen(false)}
                     style={{
                       display: "block", padding: "9px 14px", borderRadius: 7,
-                      fontSize: 13, fontWeight: 600, color: "#e2e8f0",
+                      fontSize: 13, fontWeight: 600, color: "#2A3E2C",
                       textDecoration: "none", transition: "background 0.12s",
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.06)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                   >{item.label}</Link>
                 ))}
-                <div style={{ height: 1, background: "rgba(255,255,255,0.07)", margin: "4px 0" }} />
+                <div style={{ height: 1, background: "rgba(0,0,0,0.07)", margin: "4px 0" }} />
                 <button
                   onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login" }}
                   style={{
@@ -721,34 +754,39 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <div style={{ position: "relative", background: "linear-gradient(160deg, #1a2236 0%, #0B1120 100%)" }}>
-        <div style={{
-          position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.35,
-          backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-        }} />
-        <div style={{
-          position: "absolute", top: -60, left: "25%",
-          width: 600, height: 400,
-          background: "radial-gradient(ellipse at center, rgba(59,130,246,0.07) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }} />
+      <div style={{ position: "relative", background: "#F4F0E6" }}>
+        {/* Decorative layer — clipped separately so it doesn't cut the dropdown */}
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+          <div style={{
+            position: "absolute", inset: 0, opacity: 0.03,
+            backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")",
+          }} />
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, #15803d 0%, #16a34a 40%, #4ade80 100%)" }} />
+          <div style={{
+            position: "absolute", top: -120, right: -80,
+            width: 500, height: 500,
+            background: "radial-gradient(ellipse at center, rgba(22,163,74,0.08) 0%, transparent 65%)",
+          }} />
+        </div>
 
-        <div style={{ position: "relative", maxWidth: 1200, margin: "0 auto", padding: "48px 32px 32px" }}>
-
-          {/* Static headline */}
-          <h1 style={{
-            fontFamily: "var(--font-fraunces), Georgia, serif",
-            fontSize: "clamp(48px, 7vw, 96px)",
-            fontWeight: 900,
-            lineHeight: 0.95,
-            letterSpacing: "-0.04em",
-            margin: "0 0 14px",
-            color: "#F5F1E8",
-          }}>Act Now.</h1>
+        <div style={{ position: "relative", maxWidth: 1200, margin: "0 auto", padding: "28px 32px 12px" }}>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#4A5C4B", marginBottom: 8 }}>
+              Civic Intelligence Feed
+            </div>
+            <h1 style={{
+              fontFamily: "var(--font-fraunces), Georgia, serif",
+              fontSize: "clamp(36px, 5vw, 64px)",
+              fontWeight: 900,
+              lineHeight: 0.92,
+              letterSpacing: "-0.04em",
+              margin: 0,
+              color: "#1C2E1E",
+            }}>Act<br/><span style={{ color: "#15803d" }}>Now.</span></h1>
+          </div>
 
           {/* Ticker — secondary status line */}
-          <div style={{ marginBottom: 28 }}>
+          <div style={{ marginBottom: 12 }}>
             <TickerLine
               topics={topics}
               critWeekCount={critWeekCount}
@@ -757,144 +795,139 @@ export default function Home() {
             />
           </div>
 
-          {/* Filter row: Home | Topic1 · Topic2 · Topic3  |  All Issues dropdown */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0 }}>
-              {/* Home button */}
-              <button onClick={() => setCat("home")} style={filterBtnStyle(cat === "home")}>
-                Home
-              </button>
-              {/* Vertical divider — visually groups topics under Home */}
-              {userCats.length > 0 && (
-                <span style={{ width: 1, height: 14, background: "rgba(255,255,255,0.15)", margin: "0 12px", display: "inline-block", flexShrink: 0 }} />
-              )}
-              {/* Topic buttons */}
-              {userCats.map((c, i) => (
-                <span key={c} style={{ display: "inline-flex", alignItems: "center" }}>
-                  {i > 0 && (
-                    <span style={{ color: "#475569", padding: "0 8px", userSelect: "none", fontSize: 14 }}>·</span>
-                  )}
-                  <button onClick={() => { setCat(c); setSelectedCats([]) }} style={filterBtnStyle(cat === c && selectedCats.length === 0)}>
-                    {c === "home" ? "Home" : c}
-                  </button>
-                </span>
-              ))}
-            </div>
-
-            {/* Multi-select category dropdown */}
-            <div ref={dropdownRef} style={{ position: "relative", flexShrink: 0 }}>
-              <button
-                onClick={() => setDropdownOpen(o => !o)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  background: selectedCats.length > 0 ? "rgba(59,130,246,0.12)" : "rgba(255,255,255,0.04)",
-                  border: selectedCats.length > 0 ? "1px solid rgba(59,130,246,0.35)" : "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 6, padding: "6px 12px", cursor: "pointer",
-                  fontSize: 12, fontWeight: 600,
-                  color: selectedCats.length > 0 ? "#93c5fd" : "#e2e8f0",
-                  transition: "all 0.15s",
-                }}
-              >
-                {selectedCats.length > 0 ? `${selectedCats.length} topic${selectedCats.length > 1 ? "s" : ""} selected` : "All Issues"}
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transition: "transform 0.2s", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }}>
-                  <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-
-              {dropdownOpen && (
-                <div style={{
-                  position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 200,
-                  background: "#111827", border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 10, padding: "8px 0", minWidth: 220,
-                  boxShadow: "0 16px 40px rgba(0,0,0,0.5)",
-                }}>
-                  <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4 }}>
-                    <button
-                      onClick={() => setSelectedCats(CAT_ORDER.filter(c => c !== "All"))}
-                      style={{
-                        flex: 1, textAlign: "left", padding: "8px 16px",
-                        background: "none", border: "none", cursor: "pointer",
-                        fontSize: 11, fontWeight: 700, color: "#60a5fa",
-                        letterSpacing: "0.06em", textTransform: "uppercase",
-                      }}
-                    >
-                      Show all issues
-                    </button>
-                    {selectedCats.length > 0 && (
-                      <button
-                        onClick={() => setSelectedCats([])}
-                        style={{
-                          textAlign: "right", padding: "8px 16px",
-                          background: "none", border: "none", cursor: "pointer",
-                          fontSize: 11, fontWeight: 700, color: "#6b7280",
-                          letterSpacing: "0.06em", textTransform: "uppercase",
-                        }}
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
-                  {CAT_ORDER.filter(c => c !== "All").map(c => {
-                    const checked = selectedCats.includes(c)
-                    const toggle = () => setSelectedCats(prev =>
-                      prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]
-                    )
-                    return (
-                      <div
-                        key={c}
-                        onClick={toggle}
-                        style={{
-                          display: "flex", alignItems: "center", gap: 10,
-                          padding: "9px 16px", cursor: "pointer",
-                          background: checked ? "rgba(59,130,246,0.08)" : "transparent",
-                          transition: "background 0.1s",
-                        }}
-                      >
-                        <div style={{
-                          width: 15, height: 15, borderRadius: 4, flexShrink: 0,
-                          background: checked ? "#3b82f6" : "transparent",
-                          border: checked ? "1px solid #3b82f6" : "1px solid rgba(255,255,255,0.2)",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          transition: "all 0.15s",
-                        }}>
-                          {checked && (
-                            <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-                              <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          )}
-                        </div>
-                        <span style={{ fontSize: 13, color: checked ? "#F5F1E8" : "#94a3b8", fontWeight: checked ? 600 : 400 }}>
-                          {c}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       </div>
 
+      {/* Category filter strip */}
+      {(() => {
+        const personalizedCats = CAT_ORDER.filter(c => c !== "All" && userCats.includes(c))
+        const otherCats = CAT_ORDER.filter(c => c !== "All" && !userCats.includes(c))
+        const allCats = showMore ? [...personalizedCats, ...otherCats] : personalizedCats
+
+        const pillStyle = (active, color, isAll) => ({
+          flexShrink: 0,
+          padding: "5px 14px",
+          minHeight: 32,
+          borderRadius: 20,
+          border: active
+            ? `1px solid ${isAll ? "rgba(0,0,0,0.2)" : color}`
+            : "1px solid rgba(0,0,0,0.09)",
+          background: active
+            ? isAll ? "rgba(0,0,0,0.06)" : `rgba(${hexToRgb(color)},0.1)`
+            : "transparent",
+          color: active ? (isAll ? "#1C2E1E" : color) : "#6B7C6C",
+          fontSize: 11, fontWeight: active ? 700 : 500,
+          cursor: "pointer",
+          letterSpacing: "0.02em",
+          transition: "all 0.15s",
+          whiteSpace: "nowrap",
+        })
+
+        const allActive = selectedCats.length === 0 && (cat === "home" || !userCats.includes(cat) === false)
+        const allSelected = selectedCats.length === CAT_ORDER.filter(c => c !== "All").length
+
+        return (
+          <div style={{
+            position: "sticky", top: 56, zIndex: 40,
+            borderBottom: "1px solid rgba(0,0,0,0.07)",
+            background: "rgba(244,240,230,0.97)",
+            backdropFilter: "blur(20px)",
+          }}>
+            <div style={{
+              maxWidth: 1200, margin: "0 auto", padding: "8px 32px",
+              display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap",
+            }}>
+              {/* All */}
+              <button
+                onClick={() => { setSelectedCats([]); setCat("home") }}
+                style={pillStyle(allActive, "#6B7C6C", true)}
+              >All</button>
+
+              {/* Personalized + expanded cats */}
+              {allCats.map(c => {
+                const active = selectedCats.includes(c)
+                const color = CAT_COLOR[c] || "#6B7C6C"
+                return (
+                  <button
+                    key={c}
+                    onClick={() => {
+                      setSelectedCats(prev =>
+                        prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]
+                      )
+                      setCat("home")
+                    }}
+                    style={pillStyle(active, color, false)}
+                  >{c}</button>
+                )
+              })}
+
+              {/* Select All — only visible when expanded */}
+              {showMore && <button
+                onClick={() => {
+                  if (allSelected) {
+                    setSelectedCats([])
+                  } else {
+                    setSelectedCats(CAT_ORDER.filter(c => c !== "All"))
+                    setCat("home")
+                    setShowMore(true)
+                  }
+                }}
+                className="pill-ctrl"
+                style={{
+                  flexShrink: 0, padding: "5px 14px", minHeight: 32, borderRadius: 20,
+                  border: allSelected ? "1px solid rgba(21,128,61,0.4)" : "1px solid rgba(0,0,0,0.09)",
+                  background: allSelected ? "rgba(21,128,61,0.08)" : "transparent",
+                  color: allSelected ? "#15803d" : "#6B7C6C",
+                  fontSize: 11, fontWeight: allSelected ? 700 : 500,
+                  cursor: "pointer", letterSpacing: "0.02em",
+                  transition: "all 0.15s", whiteSpace: "nowrap",
+                }}
+              >
+                {allSelected ? "✓ All selected" : "Select all"}
+              </button>}
+
+              {/* More / Less expander — sits right of Select all */}
+              {otherCats.length > 0 && (
+                <button
+                  onClick={() => setShowMore(v => !v)}
+                  className="pill-ctrl"
+                  style={{
+                    flexShrink: 0, padding: "5px 14px", minHeight: 32, borderRadius: 20,
+                    border: "1px solid rgba(0,0,0,0.09)",
+                    background: showMore ? "rgba(0,0,0,0.06)" : "transparent",
+                    color: "#6B7C6C", fontSize: 11, fontWeight: 500,
+                    cursor: "pointer", letterSpacing: "0.02em",
+                    transition: "all 0.15s", whiteSpace: "nowrap",
+                  }}
+                >
+                  {showMore ? "Less ▴" : `+${otherCats.length} more ▾`}
+                </button>
+              )}
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Section header */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 32px 12px", display: "flex", alignItems: "center", gap: 16 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: "#475569", letterSpacing: "0.12em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-          What&apos;s Happening
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 32px 10px", display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 3, height: 16, background: "#15803d", borderRadius: 2 }} />
+          <span style={{ fontSize: 11, fontWeight: 800, color: "#2A3E2C", letterSpacing: "0.14em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+            What&apos;s Happening
+          </span>
+        </div>
+        <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.06)" }} />
+        <span style={{ fontSize: 11, color: "#6B7C6C", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+          <strong style={{ color: "#3A4B3B" }}>{feedIssues.length}</strong> issues
         </span>
-        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
-        <span style={{ fontSize: 11, color: "#374151", whiteSpace: "nowrap" }}>{feedIssues.length} issues</span>
       </div>
 
       {/* Flat feed */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 80px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 40px" }}>
         {feedIssues.length === 0 && (
-          <p style={{ color: "#4b5563", fontSize: 14, padding: "40px 0", textAlign: "center" }}>No issues match your current filter.</p>
+          <p style={{ color: "#4A5C4B", fontSize: 14, padding: "40px 0", textAlign: "center" }}>No issues match your current filter.</p>
         )}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 16,
-        }}>
+        <div className="feed-grid" style={{ alignItems: "stretch" }}>
           {feedIssues.map(issue => (
             <FeedCard
               key={issue.id}
@@ -909,11 +942,20 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "#060C18" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px",
-          display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 11, color: "#1f2937", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>How Bad Is It?</span>
-          <p style={{ fontSize: 11, color: "#1f2937", margin: 0, maxWidth: 500, textAlign: "right", lineHeight: 1.7 }}>
+      <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", background: "#EAE6DA" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 32px",
+          display: "flex", justifyContent: "space-between", alignItems: "center", gap: 32 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 20, height: 20, borderRadius: 4, background: "#15803d", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="6" r="2.5" fill="white" opacity="0.9"/>
+                <circle cx="4" cy="10" r="2" fill="white" opacity="0.7"/>
+                <circle cx="12" cy="10" r="2" fill="white" opacity="0.7"/>
+              </svg>
+            </div>
+            <span style={{ fontSize: 11, color: "#3A4B3B", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>Herd</span>
+          </div>
+          <p style={{ fontSize: 11, color: "#5A6B5B", margin: 0, maxWidth: 520, textAlign: "right", lineHeight: 1.7 }}>
             Impact ratings are editorial assessments based on institutional impact, scope, reversibility, and legal precedent. Not affiliated with any political party. Always verify with primary sources.
           </p>
         </div>
@@ -922,43 +964,63 @@ export default function Home() {
       {/* Sticky action bar — always visible */}
       <div style={{
         position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100,
-        background: "rgba(17,24,39,0.97)",
-        backdropFilter: "blur(16px)",
-        borderTop: "1px solid rgba(255,255,255,0.08)",
+        background: "rgba(248,245,238,0.98)",
+        backdropFilter: "blur(24px)",
+        borderTop: "1px solid rgba(0,0,0,0.09)",
+        boxShadow: "0 -4px 24px rgba(0,0,0,0.06)",
         padding: "0 24px",
       }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "stretch", height: 100 }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "stretch", height: 80 }}>
           {ACTION_CARDS.map((card, i) => (
             <Link
               key={i}
               href={card.link}
               style={{
                 flex: 1,
-                display: "flex", alignItems: "center", gap: 16,
+                display: "flex", alignItems: "center", gap: 14,
                 textDecoration: "none",
-                borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.08)" : "none",
-                padding: "0 40px",
+                borderLeft: i > 0 ? "1px solid rgba(0,0,0,0.07)" : "none",
+                padding: "0 32px",
                 transition: "background 0.15s",
               }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.04)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
-              <span style={{ fontSize: 28, lineHeight: 1, filter: "grayscale(0.4)", opacity: 0.85, flexShrink: 0 }}>{card.icon}</span>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                <span style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0", letterSpacing: "-0.01em" }}>{card.headline}</span>
-                <span style={{ fontSize: 12, color: "#4b5563", lineHeight: 1.5 }}>{card.body}</span>
+              <span style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, filter: "grayscale(0.6) saturate(0.6)" }}>{card.icon}</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#1C2E1E", letterSpacing: "-0.01em" }}>{card.headline}</span>
+                <span style={{ fontSize: 11, color: "#6B7C6C", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{card.body}</span>
               </div>
-              <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: "#475569", flexShrink: 0 }}>→</span>
+              <span style={{
+                flexShrink: 0, fontSize: 11, fontWeight: 700, color: "#15803d",
+                background: "rgba(21,128,61,0.1)", border: "1px solid rgba(21,128,61,0.2)",
+                padding: "4px 10px", borderRadius: 20, letterSpacing: "0.02em",
+              }}>Go →</span>
             </Link>
           ))}
         </div>
       </div>
 
       {/* Spacer so content isn't hidden behind sticky bar */}
-      <div style={{ height: 100 }} />
+      <div style={{ height: 80 }} />
 
       <style>{`
         ::-webkit-scrollbar { display: none; }
+
+        .feed-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 14px;
+        }
+        @media (min-width: 1080px) {
+          .feed-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 640px) {
+          .feed-grid { grid-template-columns: 1fr; }
+        }
+
+        .pill-ctrl:hover { background: rgba(0,0,0,0.05) !important; }
+
         @keyframes sev-pulse {
           0%   { transform: scale(1);   opacity: 1; }
           70%  { transform: scale(2.4); opacity: 0; }
@@ -979,6 +1041,10 @@ export default function Home() {
           border-radius: 50%;
           background: var(--c);
           animation: sev-pulse 1.8s ease-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .sev-pulse::after { animation: none; }
+          * { transition-duration: 0.01ms !important; }
         }
       `}</style>
     </div>

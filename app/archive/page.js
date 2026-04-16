@@ -17,12 +17,12 @@ function severityTier(s) {
   if (s >= 9) return { label: "Severe Impact",  color: "#ef4444" }
   if (s >= 7) return { label: "Major Impact",   color: "#fb923c" }
   if (s >= 4) return { label: "Notable Impact", color: "#fbbf24" }
-  return             { label: "Worth Watching", color: "#94a3b8" }
+  return             { label: "Worth Watching", color: "#6B7C6C" }
 }
 
 function ArchiveCard({ issue, onRemove }) {
   const tier     = severityTier(issue.severity_score)
-  const catColor = CAT_COLOR[issue.category] || "#94a3b8"
+  const catColor = CAT_COLOR[issue.category] || "#6B7C6C"
   const rgb      = hexToRgb(catColor)
   const [hovered, setHovered] = useState(false)
 
@@ -60,7 +60,7 @@ function ArchiveCard({ issue, onRemove }) {
           <span style={{ fontSize: 10, color: "rgba(245,241,232,0.28)", marginLeft: 4 }}>{issue.date}</span>
         </div>
 
-        <h2 style={{ fontSize: 19, fontWeight: 700, margin: "0 0 10px", color: "#F5F1E8", lineHeight: 1.3, letterSpacing: "-0.02em" }}>
+        <h2 style={{ fontSize: 19, fontWeight: 700, margin: "0 0 10px", color: "#1C2E1E", lineHeight: 1.3, letterSpacing: "-0.02em" }}>
           {issue.title}
         </h2>
 
@@ -124,38 +124,38 @@ export default function ArchivePage() {
   }, [])
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0B1120", fontFamily: "'Inter', system-ui, sans-serif", color: "#EDE9E0" }}>
+    <div style={{ minHeight: "100vh", background: "#F4F0E6", fontFamily: "'Inter', system-ui, sans-serif", color: "#1C2E1E" }}>
       {/* Nav */}
-      <nav style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "rgba(11,17,32,0.95)", backdropFilter: "blur(20px)", position: "sticky", top: 0, zIndex: 50 }}>
+      <nav style={{ borderBottom: "1px solid rgba(0,0,0,0.07)", background: "rgba(244,240,230,0.95)", backdropFilter: "blur(20px)", position: "sticky", top: 0, zIndex: 50 }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#F5F1E8", letterSpacing: "-0.02em" }}>Herd</span>
+              <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#1C2E1E", letterSpacing: "-0.02em" }}>Herd</span>
             </Link>
-            <span style={{ color: "#374151", fontSize: 14 }}>/</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8" }}>Archive</span>
+            <span style={{ color: "#6B7C6C", fontSize: 14 }}>/</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#6B7C6C" }}>Archive</span>
           </div>
-          <Link href="/" style={{ fontSize: 12, fontWeight: 600, color: "#60a5fa", textDecoration: "none" }}>← Back to feed</Link>
+          <Link href="/" style={{ fontSize: 12, fontWeight: 600, color: "#16a34a", textDecoration: "none" }}>← Back to feed</Link>
         </div>
       </nav>
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 32px 80px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: "#F5F1E8", margin: 0, letterSpacing: "-0.02em" }}>Saved Issues</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: "#1C2E1E", margin: 0, letterSpacing: "-0.02em" }}>Saved Issues</h1>
           {issues.length > 0 && (
-            <span style={{ fontSize: 12, color: "#4b5563", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "3px 10px" }}>
+            <span style={{ fontSize: 12, color: "#4A5C4B", background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 20, padding: "3px 10px" }}>
               {issues.length}
             </span>
           )}
         </div>
 
-        {loading && <p style={{ color: "#4b5563", fontSize: 14 }}>Loading...</p>}
+        {loading && <p style={{ color: "#4A5C4B", fontSize: 14 }}>Loading...</p>}
 
         {!loading && issues.length === 0 && (
           <div style={{ textAlign: "center", padding: "80px 0" }}>
-            <p style={{ fontSize: 16, color: "#4b5563", marginBottom: 8 }}>No saved issues yet.</p>
-            <p style={{ fontSize: 13, color: "#374151" }}>Star ☆ any issue on the feed to save it here.</p>
-            <Link href="/" style={{ display: "inline-block", marginTop: 20, fontSize: 13, fontWeight: 600, color: "#60a5fa", textDecoration: "none" }}>← Go to feed</Link>
+            <p style={{ fontSize: 16, color: "#4A5C4B", marginBottom: 8 }}>No saved issues yet.</p>
+            <p style={{ fontSize: 13, color: "#6B7C6C" }}>Star ☆ any issue on the feed to save it here.</p>
+            <Link href="/" style={{ display: "inline-block", marginTop: 20, fontSize: 13, fontWeight: 600, color: "#16a34a", textDecoration: "none" }}>← Go to feed</Link>
           </div>
         )}
 

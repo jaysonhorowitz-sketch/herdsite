@@ -11,7 +11,7 @@ function getSev(score) {
   if (score >= 9) return { accent: "#ef4444", bar: "rgba(220,38,38,0.6)",   label: "Severe Impact"  }
   if (score >= 7) return { accent: "#ea580c", bar: "rgba(234,88,12,0.6)",   label: "Major Impact"   }
   if (score >= 4) return { accent: "#d97706", bar: "rgba(217,119,6,0.6)",   label: "Notable Impact" }
-  return                 { accent: "#64748b", bar: "rgba(100,116,139,0.6)", label: "Worth Watching" }
+  return                 { accent: "#5A6B5B", bar: "rgba(100,116,139,0.6)", label: "Worth Watching" }
 }
 
 function effortConfig(effort) {
@@ -22,12 +22,12 @@ function effortConfig(effort) {
 
 function partyColor(p) {
   if (p === "R") return { bg: "rgba(239,68,68,0.12)",  text: "#f87171",  border: "rgba(239,68,68,0.2)"  }
-  if (p === "D") return { bg: "rgba(59,130,246,0.12)", text: "#60a5fa",  border: "rgba(59,130,246,0.2)" }
+  if (p === "D") return { bg: "rgba(21,128,61,0.12)", text: "#16a34a",  border: "rgba(21,128,61,0.2)" }
   return               { bg: "rgba(168,85,247,0.12)", text: "#c084fc",  border: "rgba(168,85,247,0.2)" }
 }
 
 function oddsColor(n) {
-  if (n >= 70) return { text: "#4ade80", bg: "rgba(34,197,94,0.1)",  border: "rgba(34,197,94,0.2)"  }
+  if (n >= 70) return { text: "#16a34a", bg: "rgba(21,128,61,0.1)",  border: "rgba(21,128,61,0.2)"  }
   if (n >= 45) return { text: "#facc15", bg: "rgba(234,179,8,0.1)",  border: "rgba(234,179,8,0.2)"  }
   return             { text: "#f87171", bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.2)"  }
 }
@@ -57,8 +57,8 @@ function PlayerCard({ player }) {
 
   return (
     <div style={{
-      background: "#1a2236",
-      border: "1px solid rgba(255,255,255,0.07)",
+      background: "#E8E4D8",
+      border: "1px solid rgba(0,0,0,0.07)",
       borderRadius: 12,
       overflow: "hidden",
       transition: "border-color 0.2s",
@@ -69,7 +69,7 @@ function PlayerCard({ player }) {
         {/* Photo */}
         <div style={{
           width: 52, height: 52, borderRadius: 10, flexShrink: 0,
-          background: "rgba(255,255,255,0.06)",
+          background: "rgba(0,0,0,0.06)",
           overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           {photoUrl ? (
@@ -87,7 +87,7 @@ function PlayerCard({ player }) {
         {/* Info */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#f1f5f9", letterSpacing: "-0.01em" }}>{player.name}</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: "#1C2E1E", letterSpacing: "-0.01em" }}>{player.name}</span>
             {/* Party badge */}
             <span style={{
               fontSize: 10, fontWeight: 700, letterSpacing: "0.08em",
@@ -96,7 +96,7 @@ function PlayerCard({ player }) {
             }}>{player.party}</span>
             {/* Kalshi odds badge */}
             {oddsLoading && (
-              <span style={{ fontSize: 10, color: "#374151", fontStyle: "italic" }}>loading odds…</span>
+              <span style={{ fontSize: 10, color: "#6B7C6C", fontStyle: "italic" }}>loading odds…</span>
             )}
             {!oddsLoading && odds !== null && oc && (
               <span style={{
@@ -112,7 +112,7 @@ function PlayerCard({ player }) {
           <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 3, lineHeight: 1.4 }}>{player.role}</div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 11, color: "#374151" }}>
+            <span style={{ fontSize: 11, color: "#6B7C6C" }}>
               {player.state} · {player.chamber}
             </span>
             {player.next_election && (
@@ -131,9 +131,9 @@ function PlayerCard({ player }) {
         <button
           onClick={() => setExpanded(e => !e)}
           style={{
-            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+            background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)",
             borderRadius: 6, padding: "4px 8px", cursor: "pointer", flexShrink: 0,
-            color: "#4b5563", fontSize: 11, fontWeight: 500,
+            color: "#4A5C4B", fontSize: 11, fontWeight: 500,
             transition: "all 0.15s",
           }}
         >
@@ -144,7 +144,7 @@ function PlayerCard({ player }) {
       {/* Expanded panel */}
       {expanded && (
         <div style={{
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderTop: "1px solid rgba(0,0,0,0.06)",
           padding: "14px 18px",
           display: "flex", gap: 8, flexWrap: "wrap",
         }}>
@@ -153,10 +153,10 @@ function PlayerCard({ player }) {
               href={player.contact_url}
               target="_blank" rel="noopener noreferrer"
               style={{
-                fontSize: 12, fontWeight: 600, color: "#e2e8f0",
+                fontSize: 12, fontWeight: 600, color: "#2A3E2C",
                 padding: "7px 14px", borderRadius: 7,
-                background: "rgba(255,255,255,0.07)",
-                border: "1px solid rgba(255,255,255,0.1)",
+                background: "rgba(0,0,0,0.07)",
+                border: "1px solid rgba(0,0,0,0.1)",
                 textDecoration: "none",
                 display: "flex", alignItems: "center", gap: 6,
               }}
@@ -169,10 +169,10 @@ function PlayerCard({ player }) {
               href={`https://www.congress.gov/member/${player.name.toLowerCase().replace(/\s+/g, "-")}/${player.bioguide_id}`}
               target="_blank" rel="noopener noreferrer"
               style={{
-                fontSize: 12, fontWeight: 600, color: "#60a5fa",
+                fontSize: 12, fontWeight: 600, color: "#16a34a",
                 padding: "7px 14px", borderRadius: 7,
-                background: "rgba(59,130,246,0.08)",
-                border: "1px solid rgba(59,130,246,0.15)",
+                background: "rgba(21,128,61,0.08)",
+                border: "1px solid rgba(21,128,61,0.15)",
                 textDecoration: "none",
               }}
             >
@@ -199,10 +199,10 @@ function PlayerCard({ player }) {
               href={`https://kalshi.com/markets/${player.kalshi_ticker}`}
               target="_blank" rel="noopener noreferrer"
               style={{
-                fontSize: 12, fontWeight: 600, color: "#4ade80",
+                fontSize: 12, fontWeight: 600, color: "#16a34a",
                 padding: "7px 14px", borderRadius: 7,
-                background: "rgba(34,197,94,0.08)",
-                border: "1px solid rgba(34,197,94,0.15)",
+                background: "rgba(21,128,61,0.08)",
+                border: "1px solid rgba(21,128,61,0.15)",
                 textDecoration: "none",
               }}
             >
@@ -220,17 +220,17 @@ function PlayerCard({ player }) {
 function SiteHeader() {
   return (
     <header style={{
-      background: "rgba(17,24,39,0.95)", backdropFilter: "blur(20px)",
-      borderBottom: "1px solid rgba(255,255,255,0.06)",
+      background: "rgba(244,240,230,0.95)", backdropFilter: "blur(20px)",
+      borderBottom: "1px solid rgba(0,0,0,0.06)",
       position: "sticky", top: 0, zIndex: 30,
     }}>
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "0 40px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
+          <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#1C2E1E", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
           <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>Track. Act. Organize.</span>
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <Link href="/profile" style={{ fontSize: 12, fontWeight: 600, color: "#60a5fa", textDecoration: "none", letterSpacing: "0.02em" }}>
+          <Link href="/profile" style={{ fontSize: 12, fontWeight: 600, color: "#16a34a", textDecoration: "none", letterSpacing: "0.02em" }}>
             My Impact
           </Link>
         </div>
@@ -241,9 +241,9 @@ function SiteHeader() {
 
 function LoadingScreen() {
   return (
-    <div style={{ background: "#111827", minHeight: "100vh" }}>
+    <div style={{ background: "#FDFAF3", minHeight: "100vh" }}>
       <SiteHeader />
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", paddingTop: 120, gap: 10, color: "#374151" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", paddingTop: 120, gap: 10, color: "#6B7C6C" }}>
         <svg style={{ animation: "spin 1s linear infinite", width: 18, height: 18 }} fill="none" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25"/>
           <path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8v8z"/>
@@ -257,12 +257,12 @@ function LoadingScreen() {
 
 function NotFoundScreen() {
   return (
-    <div style={{ background: "#111827", minHeight: "100vh" }}>
+    <div style={{ background: "#FDFAF3", minHeight: "100vh" }}>
       <SiteHeader />
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "120px 24px", textAlign: "center" }}>
-        <p style={{ fontSize: 80, fontWeight: 900, color: "#1f2937", margin: "0 0 16px" }}>404</p>
+        <p style={{ fontSize: 80, fontWeight: 900, color: "#3A4B3B", margin: "0 0 16px" }}>404</p>
         <p style={{ fontSize: 20, fontWeight: 700, color: "#d1d5db", marginBottom: 8 }}>Issue not found</p>
-        <p style={{ fontSize: 14, color: "#4b5563", marginBottom: 32 }}>This issue may have been removed or the URL is incorrect.</p>
+        <p style={{ fontSize: 14, color: "#4A5C4B", marginBottom: 32 }}>This issue may have been removed or the URL is incorrect.</p>
         <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", background: "#ef4444", color: "white", borderRadius: 8, textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
           ← Back to all issues
         </Link>
@@ -661,11 +661,11 @@ export default function IssuePage() {
       `}</style>
 
       {/* ── Dark hero ── */}
-      <div style={{ background: "#111827" }}>
+      <div style={{ background: "#FDFAF3" }}>
         <SiteHeader />
-        <div style={{ background: "linear-gradient(160deg, #1a2236 0%, #111827 100%)" }}>
+        <div style={{ background: "linear-gradient(160deg, #E8E4D8 0%, #FDFAF3 100%)" }}>
           <div style={{ maxWidth: 1152, margin: "0 auto", padding: "44px 40px 52px" }}>
-            <Link href="/" style={{ fontSize: 12, color: "#475569", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 500, marginBottom: 20 }}>
+            <Link href="/" style={{ fontSize: 12, color: "#4A5C4B", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 500, marginBottom: 20 }}>
               <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M15 10H5M9 5l-5 5 5 5"/>
               </svg>
@@ -677,10 +677,10 @@ export default function IssuePage() {
                 color: sev.accent, background: sev.accent + "18",
                 padding: "4px 10px", borderRadius: 5, border: `1px solid ${sev.accent}30`,
               }}>{issue.category}</span>
-              {issue.date && <span style={{ fontSize: 12, color: "#4b5563" }}>{issue.date}</span>}
+              {issue.date && <span style={{ fontSize: 12, color: "#4A5C4B" }}>{issue.date}</span>}
             </div>
             <h1 style={{
-              fontSize: "clamp(24px, 4vw, 42px)", fontWeight: 800, color: "#f1f5f9",
+              fontSize: "clamp(24px, 4vw, 42px)", fontWeight: 800, color: "#1C2E1E",
               lineHeight: 1.15, letterSpacing: "-0.025em", margin: 0, maxWidth: 720,
             }}>
               {issue.title}
@@ -714,7 +714,7 @@ export default function IssuePage() {
             {/* 1. What Is Happening */}
             <section>
               <p style={SH}>What Is Happening</p>
-              <p style={{ color: "#111827", lineHeight: 1.85, fontSize: 18, margin: 0, fontWeight: 400, letterSpacing: "-0.01em" }}>
+              <p style={{ color: "#FDFAF3", lineHeight: 1.85, fontSize: 18, margin: 0, fontWeight: 400, letterSpacing: "-0.01em" }}>
                 {issue.description}
               </p>
             </section>
@@ -726,8 +726,8 @@ export default function IssuePage() {
                   <p style={{ ...SH, marginBottom: 0 }}>What You Can Do</p>
                   {weekCount !== null && weekCount > 0 && (
                     <span style={{ fontSize: 12, color: "#6b7280", display: "flex", alignItems: "center", gap: 5 }}>
-                      <span style={{ color: "#22c55e", fontSize: 8 }}>●</span>
-                      <strong style={{ color: "#374151" }}>{weekCount}</strong>&nbsp;{weekCount === 1 ? "person" : "people"} took action this week
+                      <span style={{ color: "#15803d", fontSize: 8 }}>●</span>
+                      <strong style={{ color: "#6B7C6C" }}>{weekCount}</strong>&nbsp;{weekCount === 1 ? "person" : "people"} took action this week
                     </span>
                   )}
                 </div>
@@ -754,7 +754,7 @@ export default function IssuePage() {
                             padding: "4px 9px", borderRadius: 5, flexShrink: 0, whiteSpace: "nowrap",
                             color: done ? "#16a34a" : ef.color,
                             background: done ? "#dcfce7" : ef.bg,
-                            border: `1px solid ${done ? "#86efac" : ef.border}`,
+                            border: `1px solid ${done ? "#16a34a" : ef.border}`,
                           }}>{action.effort}</span>
                           <span style={{
                             fontSize: 14, lineHeight: 1.55, flex: 1,
@@ -796,7 +796,7 @@ export default function IssuePage() {
                       onMouseEnter={e => e.currentTarget.style.borderColor = "#cbd5e1"}
                       onMouseLeave={e => e.currentTarget.style.borderColor = "#e5e7eb"}
                     >
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 6 }}>{org.name}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#FDFAF3", marginBottom: 6 }}>{org.name}</div>
                       <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5, marginBottom: 12, flex: 1 }}>{org.description}</div>
                       <a
                         href={org.url}
@@ -840,8 +840,8 @@ export default function IssuePage() {
                 onMouseLeave={e => e.currentTarget.style.borderColor = "#e5e7eb"}
               >
                 {zipCode && (
-                  <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.65, margin: "0 0 16px" }}>
-                    Showing opportunities for <strong style={{ color: "#111827" }}>{zipCode}</strong>. Your zip is also pre-filled in the Call My Rep button.
+                  <p style={{ fontSize: 13, color: "#6B7C6C", lineHeight: 1.65, margin: "0 0 16px" }}>
+                    Showing opportunities for <strong style={{ color: "#FDFAF3" }}>{zipCode}</strong>. Your zip is also pre-filled in the Call My Rep button.
                   </p>
                 )}
                 <a
@@ -850,7 +850,7 @@ export default function IssuePage() {
                   rel="noopener noreferrer"
                   style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
-                    fontSize: 13, fontWeight: 700, color: "#111827", textDecoration: "none",
+                    fontSize: 13, fontWeight: 700, color: "#FDFAF3", textDecoration: "none",
                   }}
                 >
                   <span>Find Volunteer Opportunities Near You</span>
@@ -904,13 +904,13 @@ export default function IssuePage() {
                         onMouseLeave={e => e.currentTarget.style.borderColor = "#e5e7eb"}
                       >
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", lineHeight: 1.3 }}>{nl.name}</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#FDFAF3", lineHeight: 1.3 }}>{nl.name}</div>
                           <span style={{
                             fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
                             padding: "2px 7px", borderRadius: 4, flexShrink: 0,
-                            background: isSubstack ? "rgba(255,102,0,0.08)" : "rgba(59,130,246,0.08)",
+                            background: isSubstack ? "rgba(255,102,0,0.08)" : "rgba(21,128,61,0.08)",
                             color:      isSubstack ? "#c2410c"              : "#1d4ed8",
-                            border:     `1px solid ${isSubstack ? "rgba(255,102,0,0.2)" : "rgba(59,130,246,0.2)"}`,
+                            border:     `1px solid ${isSubstack ? "rgba(255,102,0,0.2)" : "rgba(21,128,61,0.2)"}`,
                           }}>{isSubstack ? "Substack" : "Newsletter"}</span>
                         </div>
                         <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.6, flex: 1 }}>{nl.description}</div>

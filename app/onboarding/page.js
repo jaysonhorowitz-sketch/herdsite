@@ -108,7 +108,7 @@ export default function OnboardingPage() {
 
   return (
     <div style={{
-      background: "#111827", minHeight: "100vh", color: "#e2e8f0",
+      background: "#FDFAF3", minHeight: "100vh", color: "#2A3E2C",
       fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
       display: "flex", flexDirection: "column",
     }}>
@@ -116,21 +116,21 @@ export default function OnboardingPage() {
       {/* Top bar */}
       <div style={{ padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 20, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
+          <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 20, fontWeight: 800, color: "#1C2E1E", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
         </div>
         {/* Step indicators */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {[1, 2, 3, 4].map(n => (
             <div key={n} style={{
               width: n === screen ? 24 : 8, height: 8, borderRadius: 99,
-              background: n < screen ? "#3b82f6" : n === screen ? "#60a5fa" : "rgba(255,255,255,0.1)",
+              background: n < screen ? "#15803d" : n === screen ? "#16a34a" : "rgba(0,0,0,0.1)",
               transition: "all 0.3s ease",
             }} />
           ))}
         </div>
         <button
           onClick={() => { localStorage.setItem('onboardingComplete', 'true'); localStorage.setItem("howbadisite_prefs", JSON.stringify({ categories: [], actionPref: "both", skipped: true })); window.location.href = "/" }}
-          style={{ background: "none", border: "none", color: "#e2e8f0", fontSize: 12, cursor: "pointer" }}>
+          style={{ background: "none", border: "none", color: "#2A3E2C", fontSize: 12, cursor: "pointer" }}>
           Skip →
         </button>
       </div>
@@ -148,12 +148,12 @@ export default function OnboardingPage() {
           <div style={{ width: "100%", maxWidth: 720 }}>
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-                color: "#3b82f6", marginBottom: 12 }}>Step 1 of 4</div>
-              <h1 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 800, color: "#f1f5f9",
+                color: "#15803d", marginBottom: 12 }}>Step 1 of 4</div>
+              <h1 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 800, color: "#1C2E1E",
                 letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px" }}>
                 What issues do you care about?
               </h1>
-              <p style={{ fontSize: 15, color: "#4b5563", margin: 0 }}>
+              <p style={{ fontSize: 15, color: "#4A5C4B", margin: 0 }}>
                 Pick up to 5. We'll show you what's happening in those areas first.
               </p>
             </div>
@@ -167,24 +167,24 @@ export default function OnboardingPage() {
                     key={cat.name}
                     onClick={() => !maxed && toggleCat(cat.name)}
                     style={{
-                      background: on ? "rgba(59,130,246,0.15)" : "#1a2236",
-                      border: `1px solid ${on ? "rgba(59,130,246,0.5)" : "rgba(255,255,255,0.07)"}`,
+                      background: on ? "rgba(21,128,61,0.15)" : "#E8E4D8",
+                      border: `1px solid ${on ? "rgba(21,128,61,0.5)" : "rgba(0,0,0,0.07)"}`,
                       borderRadius: 12, padding: "16px 18px", textAlign: "left",
                       cursor: maxed ? "not-allowed" : "pointer",
                       opacity: maxed ? 0.4 : 1,
                       transition: "all 0.15s",
                     }}
-                    onMouseEnter={e => { if (!maxed) e.currentTarget.style.borderColor = on ? "rgba(59,130,246,0.7)" : "rgba(255,255,255,0.18)" }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = on ? "rgba(59,130,246,0.5)" : "rgba(255,255,255,0.07)" }}
+                    onMouseEnter={e => { if (!maxed) e.currentTarget.style.borderColor = on ? "rgba(21,128,61,0.7)" : "rgba(255,255,255,0.18)" }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = on ? "rgba(21,128,61,0.5)" : "rgba(0,0,0,0.07)" }}
                   >
                     <div style={{ fontSize: 22, marginBottom: 8 }}>{cat.icon}</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: on ? "#93c5fd" : "#e2e8f0", marginBottom: 4 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: on ? "#16a34a" : "#2A3E2C", marginBottom: 4 }}>
                       {cat.name}
                     </div>
-                    <div style={{ fontSize: 11, color: "#374151", lineHeight: 1.4 }}>{cat.desc}</div>
+                    <div style={{ fontSize: 11, color: "#6B7C6C", lineHeight: 1.4 }}>{cat.desc}</div>
                     {on && (
                       <div style={{ position: "absolute", top: 10, right: 10, width: 18, height: 18,
-                        borderRadius: "50%", background: "#3b82f6", display: "flex", alignItems: "center",
+                        borderRadius: "50%", background: "#15803d", display: "flex", alignItems: "center",
                         justifyContent: "center", fontSize: 10, color: "#fff", fontWeight: 700 }}>✓</div>
                     )}
                   </button>
@@ -193,7 +193,7 @@ export default function OnboardingPage() {
             </div>
 
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 16 }}>
-              <span style={{ fontSize: 12, color: "#374151" }}>
+              <span style={{ fontSize: 12, color: "#6B7C6C" }}>
                 {selected.length === 0 ? "Select at least 1" : `${selected.length}/5 selected`}
               </span>
               <button
@@ -201,7 +201,7 @@ export default function OnboardingPage() {
                 disabled={selected.length === 0}
                 style={{
                   padding: "12px 32px", borderRadius: 8, fontSize: 14, fontWeight: 700,
-                  background: selected.length > 0 ? "#3b82f6" : "rgba(59,130,246,0.3)",
+                  background: selected.length > 0 ? "#15803d" : "rgba(21,128,61,0.3)",
                   border: "none", color: "#fff", cursor: selected.length > 0 ? "pointer" : "not-allowed",
                   transition: "all 0.2s",
                 }}>
@@ -216,12 +216,12 @@ export default function OnboardingPage() {
           <div style={{ width: "100%", maxWidth: 560 }}>
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-                color: "#3b82f6", marginBottom: 12 }}>Step 2 of 4</div>
-              <h1 style={{ fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 800, color: "#f1f5f9",
+                color: "#15803d", marginBottom: 12 }}>Step 2 of 4</div>
+              <h1 style={{ fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 800, color: "#1C2E1E",
                 letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px" }}>
                 How do you want to engage?
               </h1>
-              <p style={{ fontSize: 15, color: "#4b5563", margin: 0 }}>
+              <p style={{ fontSize: 15, color: "#4A5C4B", margin: 0 }}>
                 We'll tailor what we emphasize for you.
               </p>
             </div>
@@ -234,24 +234,24 @@ export default function OnboardingPage() {
                     key={opt.key}
                     onClick={() => setActionPref(opt.key)}
                     style={{
-                      background: on ? "rgba(59,130,246,0.15)" : "#1a2236",
-                      border: `1px solid ${on ? "rgba(59,130,246,0.5)" : "rgba(255,255,255,0.07)"}`,
+                      background: on ? "rgba(21,128,61,0.15)" : "#E8E4D8",
+                      border: `1px solid ${on ? "rgba(21,128,61,0.5)" : "rgba(0,0,0,0.07)"}`,
                       borderRadius: 14, padding: "20px 24px", textAlign: "left",
                       cursor: "pointer", display: "flex", alignItems: "center", gap: 18,
                       transition: "all 0.15s",
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = on ? "rgba(59,130,246,0.7)" : "rgba(255,255,255,0.18)"; e.currentTarget.style.background = on ? "rgba(59,130,246,0.2)" : "#1f2a42" }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = on ? "rgba(59,130,246,0.5)" : "rgba(255,255,255,0.07)"; e.currentTarget.style.background = on ? "rgba(59,130,246,0.15)" : "#1a2236" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = on ? "rgba(21,128,61,0.7)" : "rgba(255,255,255,0.18)"; e.currentTarget.style.background = on ? "rgba(21,128,61,0.2)" : "#1f2a42" }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = on ? "rgba(21,128,61,0.5)" : "rgba(0,0,0,0.07)"; e.currentTarget.style.background = on ? "rgba(21,128,61,0.15)" : "#E8E4D8" }}
                   >
                     <span style={{ fontSize: 28, flexShrink: 0 }}>{opt.icon}</span>
                     <div>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: on ? "#93c5fd" : "#f1f5f9", marginBottom: 4 }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: on ? "#16a34a" : "#1C2E1E", marginBottom: 4 }}>
                         {opt.title}
                       </div>
-                      <div style={{ fontSize: 13, color: "#4b5563", lineHeight: 1.5 }}>{opt.desc}</div>
+                      <div style={{ fontSize: 13, color: "#4A5C4B", lineHeight: 1.5 }}>{opt.desc}</div>
                     </div>
                     {on && <div style={{ marginLeft: "auto", width: 22, height: 22, borderRadius: "50%",
-                      background: "#3b82f6", display: "flex", alignItems: "center", justifyContent: "center",
+                      background: "#15803d", display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: 12, color: "#fff", fontWeight: 700, flexShrink: 0 }}>✓</div>}
                   </button>
                 )
@@ -261,13 +261,13 @@ export default function OnboardingPage() {
             <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
               <button onClick={() => goToScreen(1)}
                 style={{ padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600,
-                  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                  color: "#94a3b8", cursor: "pointer" }}>← Back</button>
+                  background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.1)",
+                  color: "#6B7C6C", cursor: "pointer" }}>← Back</button>
               <button
                 onClick={() => actionPref && goToScreen(3)}
                 disabled={!actionPref}
                 style={{ padding: "12px 32px", borderRadius: 8, fontSize: 14, fontWeight: 700,
-                  background: actionPref ? "#3b82f6" : "rgba(59,130,246,0.3)",
+                  background: actionPref ? "#15803d" : "rgba(21,128,61,0.3)",
                   border: "none", color: "#fff", cursor: actionPref ? "pointer" : "not-allowed",
                   transition: "all 0.2s" }}>
                 Continue →
@@ -281,12 +281,12 @@ export default function OnboardingPage() {
           <div style={{ width: "100%", maxWidth: 480 }}>
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-                color: "#3b82f6", marginBottom: 12 }}>Step 3 of 4</div>
-              <h1 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 800, color: "#f1f5f9",
+                color: "#15803d", marginBottom: 12 }}>Step 3 of 4</div>
+              <h1 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 800, color: "#1C2E1E",
                 letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px" }}>
                 Where are you located?
               </h1>
-              <p style={{ fontSize: 15, color: "#4b5563", margin: 0 }}>
+              <p style={{ fontSize: 15, color: "#4A5C4B", margin: 0 }}>
                 We'll show you how issues affect your area and connect you with your local representatives.
               </p>
             </div>
@@ -303,14 +303,14 @@ export default function OnboardingPage() {
                 style={{
                   width: "100%", boxSizing: "border-box",
                   padding: "16px 20px", borderRadius: 12, fontSize: 22, fontWeight: 700,
-                  background: "#1a2236", border: "1px solid rgba(255,255,255,0.12)",
-                  color: "#f1f5f9", outline: "none", textAlign: "center",
-                  letterSpacing: "0.1em", caretColor: "#3b82f6",
+                  background: "#E8E4D8", border: "1px solid rgba(255,255,255,0.12)",
+                  color: "#1C2E1E", outline: "none", textAlign: "center",
+                  letterSpacing: "0.1em", caretColor: "#15803d",
                 }}
-                onFocus={e => e.target.style.borderColor = "rgba(59,130,246,0.6)"}
+                onFocus={e => e.target.style.borderColor = "rgba(21,128,61,0.6)"}
                 onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"}
               />
-              <p style={{ fontSize: 12, color: "#374151", textAlign: "center", marginTop: 10 }}>
+              <p style={{ fontSize: 12, color: "#6B7C6C", textAlign: "center", marginTop: 10 }}>
                 Optional — you can skip this step
               </p>
             </div>
@@ -318,11 +318,11 @@ export default function OnboardingPage() {
             <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
               <button onClick={() => goToScreen(2)}
                 style={{ padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600,
-                  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                  color: "#94a3b8", cursor: "pointer" }}>← Back</button>
+                  background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.1)",
+                  color: "#6B7C6C", cursor: "pointer" }}>← Back</button>
               <button onClick={() => goToScreen(4)}
                 style={{ padding: "12px 32px", borderRadius: 8, fontSize: 14, fontWeight: 700,
-                  background: "#3b82f6", border: "none", color: "#fff", cursor: "pointer",
+                  background: "#15803d", border: "none", color: "#fff", cursor: "pointer",
                   transition: "all 0.2s" }}>
                 {zipCode.length === 5 ? "Continue →" : "Skip →"}
               </button>
@@ -334,22 +334,22 @@ export default function OnboardingPage() {
         {screen === 4 && (
           <div style={{ width: "100%", maxWidth: 560, textAlign: "center" }}>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-              color: "#3b82f6", marginBottom: 20 }}>Step 4 of 4 · You're all set</div>
+              color: "#15803d", marginBottom: 20 }}>Step 4 of 4 · You're all set</div>
 
             {/* Big summary card */}
-            <div style={{ background: "linear-gradient(135deg, #1a2236 0%, #0f172a 100%)",
-              border: "1px solid rgba(59,130,246,0.2)", borderRadius: 20, padding: "36px 40px",
+            <div style={{ background: "linear-gradient(135deg, #E8E4D8 0%, #0f172a 100%)",
+              border: "1px solid rgba(21,128,61,0.2)", borderRadius: 20, padding: "36px 40px",
               marginBottom: 32, position: "relative", overflow: "hidden" }}>
               {/* Glow */}
               <div style={{ position: "absolute", top: -40, left: "50%", transform: "translateX(-50%)",
-                width: 300, height: 200, background: "radial-gradient(ellipse, rgba(59,130,246,0.15) 0%, transparent 70%)",
+                width: 300, height: 200, background: "radial-gradient(ellipse, rgba(21,128,61,0.15) 0%, transparent 70%)",
                 pointerEvents: "none" }} />
 
               <div style={{ fontSize: 48, marginBottom: 20 }}>
                 {selected.map(c => CATEGORIES.find(x => x.name === c)?.icon).filter(Boolean).slice(0, 3).join(" ")}
               </div>
 
-              <h2 style={{ fontSize: "clamp(22px, 4vw, 32px)", fontWeight: 800, color: "#f1f5f9",
+              <h2 style={{ fontSize: "clamp(22px, 4vw, 32px)", fontWeight: 800, color: "#1C2E1E",
                 letterSpacing: "-0.02em", lineHeight: 1.2, margin: "0 0 16px" }}>
                 You care about {word}
               </h2>
@@ -365,8 +365,8 @@ export default function OnboardingPage() {
                   const cat = CATEGORIES.find(c => c.name === name)
                   return (
                     <span key={name} style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px",
-                      borderRadius: 99, background: "rgba(59,130,246,0.15)", color: "#93c5fd",
-                      border: "1px solid rgba(59,130,246,0.25)" }}>
+                      borderRadius: 99, background: "rgba(21,128,61,0.15)", color: "#16a34a",
+                      border: "1px solid rgba(21,128,61,0.25)" }}>
                       {cat?.icon} {name}
                     </span>
                   )
@@ -384,15 +384,15 @@ export default function OnboardingPage() {
             <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
               <button onClick={() => goToScreen(3)} disabled={saving}
                 style={{ padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600,
-                  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                  color: "#94a3b8", cursor: saving ? "not-allowed" : "pointer" }}>← Back</button>
+                  background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.1)",
+                  color: "#6B7C6C", cursor: saving ? "not-allowed" : "pointer" }}>← Back</button>
               <button onClick={finish} disabled={saving}
                 style={{ padding: "14px 40px", borderRadius: 8, fontSize: 15, fontWeight: 800,
-                  background: saving ? "rgba(59,130,246,0.5)" : "#3b82f6", border: "none", color: "#fff",
+                  background: saving ? "rgba(21,128,61,0.5)" : "#15803d", border: "none", color: "#fff",
                   cursor: saving ? "not-allowed" : "pointer",
                   letterSpacing: "-0.01em", transition: "all 0.2s" }}
                 onMouseEnter={e => { if (!saving) e.currentTarget.style.background = "#2563eb" }}
-                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = "#3b82f6" }}>
+                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = "#15803d" }}>
                 {saving ? "Saving…" : "See My Feed →"}
               </button>
             </div>

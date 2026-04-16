@@ -10,8 +10,8 @@ const supabase = createClient(
 
 const PARTY_STYLE = {
   R: { bg: "rgba(239,68,68,0.15)",  color: "#f87171", label: "Republican" },
-  D: { bg: "rgba(96,165,250,0.15)", color: "#60a5fa", label: "Democrat"   },
-  I: { bg: "rgba(148,163,184,0.12)",color: "#94a3b8", label: "Independent"},
+  D: { bg: "rgba(22,163,74,0.15)", color: "#16a34a", label: "Democrat"   },
+  I: { bg: "rgba(148,163,184,0.12)",color: "#6B7C6C", label: "Independent"},
 }
 
 function PartyBadge({ party }) {
@@ -34,8 +34,8 @@ function LegCard({ rep }) {
 
   return (
     <div style={{
-      background: "#111827",
-      border: "1px solid rgba(255,255,255,0.08)",
+      background: "#FDFAF3",
+      border: "1px solid rgba(0,0,0,0.08)",
       borderRadius: 8,
       padding: "24px",
       display: "flex", flexDirection: "column", gap: 16,
@@ -45,7 +45,7 @@ function LegCard({ rep }) {
       <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
         <div style={{
           width: 64, height: 78, borderRadius: 5, overflow: "hidden", flexShrink: 0,
-          background: "#0B1120",
+          background: "#F4F0E6",
         }}>
           {imgOk && rep.photo_url ? (
             <img
@@ -63,18 +63,18 @@ function LegCard({ rep }) {
           )}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#F5F1E8", lineHeight: 1.3, marginBottom: 6 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#1C2E1E", lineHeight: 1.3, marginBottom: 6 }}>
             {rep.name}
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <PartyBadge party={rep.party} />
-            <span style={{ fontSize: 11, color: "#64748b" }}>{chamberLabel}</span>
+            <span style={{ fontSize: 11, color: "#5A6B5B" }}>{chamberLabel}</span>
           </div>
         </div>
       </div>
 
       {/* Divider */}
-      <div style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
+      <div style={{ height: 1, background: "rgba(0,0,0,0.06)" }} />
 
       {/* Call button */}
       {rep.phone ? (
@@ -94,18 +94,18 @@ function LegCard({ rep }) {
           Call now · {rep.phone}
         </a>
       ) : (
-        <div style={{ fontSize: 12, color: "#475569", textAlign: "center" }}>Phone not available</div>
+        <div style={{ fontSize: 12, color: "#4A5C4B", textAlign: "center" }}>Phone not available</div>
       )}
 
       {/* Committees */}
       {rep.committees?.length > 0 && (
         <div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "#475569", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#4A5C4B", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>
             Committees
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {rep.committees.slice(0, 4).map((c, i) => (
-              <div key={i} style={{ fontSize: 11, color: "#64748b", lineHeight: 1.4 }}>· {c}</div>
+              <div key={i} style={{ fontSize: 11, color: "#5A6B5B", lineHeight: 1.4 }}>· {c}</div>
             ))}
           </div>
         </div>
@@ -116,7 +116,7 @@ function LegCard({ rep }) {
         <a
           href={rep.website}
           target="_blank" rel="noopener noreferrer"
-          style={{ fontSize: 11, color: "#60a5fa", textDecoration: "none", letterSpacing: "0.02em" }}
+          style={{ fontSize: 11, color: "#16a34a", textDecoration: "none", letterSpacing: "0.02em" }}
         >
           Official website ↗
         </a>
@@ -236,18 +236,18 @@ export default function CallPage() {
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#0B1120",
-      fontFamily: "'Inter', system-ui, sans-serif", color: "#EDE9E0",
+      minHeight: "100vh", background: "#F4F0E6",
+      fontFamily: "'Inter', system-ui, sans-serif", color: "#1C2E1E",
     }}>
       {/* Nav */}
       <header style={{
         position: "sticky", top: 0, zIndex: 30,
-        background: "rgba(11,17,32,0.95)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        background: "rgba(244,240,230,0.95)", backdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(0,0,0,0.06)",
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px", height: 52,
           display: "flex", alignItems: "center" }}>
-          <Link href="/" style={{ fontSize: 13, color: "#64748b", textDecoration: "none", display: "flex", alignItems: "center", gap: 7, fontWeight: 500 }}>
+          <Link href="/" style={{ fontSize: 13, color: "#5A6B5B", textDecoration: "none", display: "flex", alignItems: "center", gap: 7, fontWeight: 500 }}>
             <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M15 10H5M9 5l-5 5 5 5"/>
             </svg>
@@ -260,15 +260,15 @@ export default function CallPage() {
 
         {/* Header */}
         <div style={{ marginBottom: 40 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#475569", marginBottom: 10 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#4A5C4B", marginBottom: 10 }}>
             Take Action
           </div>
           <h1 style={{
             fontFamily: "var(--font-fraunces), Georgia, serif",
             fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 700,
-            color: "#F5F1E8", margin: "0 0 12px", letterSpacing: "-0.02em", lineHeight: 1.1,
+            color: "#1C2E1E", margin: "0 0 12px", letterSpacing: "-0.02em", lineHeight: 1.1,
           }}>Call your representatives</h1>
-          <p style={{ fontSize: 14, color: "#64748b", margin: 0, maxWidth: 560, lineHeight: 1.7 }}>
+          <p style={{ fontSize: 14, color: "#5A6B5B", margin: 0, maxWidth: 560, lineHeight: 1.7 }}>
             Your voice matters. Calls are more effective than emails — most offices track call volume on specific issues.
           </p>
         </div>
@@ -277,33 +277,33 @@ export default function CallPage() {
         <div style={{ marginBottom: 36, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           {zip ? (
             <>
-              <span style={{ fontSize: 13, color: "#64748b" }}>Showing reps for zip <strong style={{ color: "#94a3b8" }}>{zip}</strong></span>
+              <span style={{ fontSize: 13, color: "#5A6B5B" }}>Showing reps for zip <strong style={{ color: "#6B7C6C" }}>{zip}</strong></span>
               <form onSubmit={handleZipSubmit} style={{ display: "flex", gap: 8 }}>
                 <input
                   name="zipInput"
                   placeholder="Change zip…"
                   maxLength={5}
                   style={{
-                    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: 4, padding: "5px 10px", color: "#F5F1E8", fontSize: 12, width: 110,
+                    background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.1)",
+                    borderRadius: 4, padding: "5px 10px", color: "#1C2E1E", fontSize: 12, width: 110,
                   }}
                 />
                 <button type="submit" style={{
-                  background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 4, padding: "5px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer",
+                  background: "rgba(0,0,0,0.08)", border: "1px solid rgba(0,0,0,0.1)",
+                  borderRadius: 4, padding: "5px 12px", color: "#6B7C6C", fontSize: 12, cursor: "pointer",
                 }}>Update</button>
               </form>
             </>
           ) : (
             <form onSubmit={handleZipSubmit} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ fontSize: 13, color: "#64748b" }}>Enter your zip code to find your reps:</span>
+              <span style={{ fontSize: 13, color: "#5A6B5B" }}>Enter your zip code to find your reps:</span>
               <input
                 name="zipInput"
                 placeholder="e.g. 10001"
                 maxLength={5}
                 style={{
-                  background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)",
-                  borderRadius: 4, padding: "7px 12px", color: "#F5F1E8", fontSize: 13, width: 120,
+                  background: "rgba(0,0,0,0.04)", border: "1px solid rgba(255,255,255,0.12)",
+                  borderRadius: 4, padding: "7px 12px", color: "#1C2E1E", fontSize: 13, width: 120,
                 }}
               />
               <button type="submit" style={{
@@ -325,7 +325,7 @@ export default function CallPage() {
             <span>Multiple districts cover your zip — verify your exact rep at{" "}
               <a href="https://www.house.gov/representatives/find-your-representative" target="_blank" rel="noopener noreferrer" style={{ color: "#fbbf24" }}>house.gov</a>.
             </span>
-            <a href="#" style={{ marginLeft: "auto", color: "#94a3b8", fontSize: 11 }}>Enter street address for accuracy</a>
+            <a href="#" style={{ marginLeft: "auto", color: "#6B7C6C", fontSize: 11 }}>Enter street address for accuracy</a>
           </div>
         )}
 
@@ -336,17 +336,17 @@ export default function CallPage() {
             background: "rgba(29,78,216,0.08)", border: "1px solid rgba(29,78,216,0.2)",
             borderRadius: 8,
           }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#60a5fa", marginBottom: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#16a34a", marginBottom: 14 }}>
               Suggested script
             </div>
             <p style={{ fontSize: 14, color: "#cbd5e1", lineHeight: 1.9, margin: 0 }}>
-              "Hello, my name is <em style={{ color: "#94a3b8" }}>[your name]</em> and I'm a constituent calling from zip code {zip}.
-              I'm calling to urge {reps[0]?.name?.split(" ").slice(-1)[0]} to take action on <strong style={{ color: "#F5F1E8" }}>{topIssue}</strong>.
+              "Hello, my name is <em style={{ color: "#6B7C6C" }}>[your name]</em> and I'm a constituent calling from zip code {zip}.
+              I'm calling to urge {reps[0]?.name?.split(" ").slice(-1)[0]} to take action on <strong style={{ color: "#1C2E1E" }}>{topIssue}</strong>.
               This issue is critically important to me and my community.
               Can you tell me where {reps[0]?.name?.split(" ").slice(-1)[0]} stands on this, and what steps they're taking?"
             </p>
             {issues.length > 1 && (
-              <p style={{ fontSize: 12, color: "#475569", margin: "12px 0 0", lineHeight: 1.7 }}>
+              <p style={{ fontSize: 12, color: "#4A5C4B", margin: "12px 0 0", lineHeight: 1.7 }}>
                 Also consider asking about: {issues.slice(1).map(i => i.title).join(" · ")}
               </p>
             )}
@@ -355,7 +355,7 @@ export default function CallPage() {
 
         {/* Loading */}
         {loading && (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, color: "#475569", fontSize: 13, padding: "40px 0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, color: "#4A5C4B", fontSize: 13, padding: "40px 0" }}>
             <div style={{ width: 16, height: 16, border: "2px solid #1d4ed8", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
             Looking up your representatives…
           </div>
@@ -379,7 +379,7 @@ export default function CallPage() {
 
         {/* No zip yet */}
         {!zip && !loading && (
-          <div style={{ padding: "60px 0", textAlign: "center", color: "#374151" }}>
+          <div style={{ padding: "60px 0", textAlign: "center", color: "#6B7C6C" }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>📞</div>
             <p style={{ fontSize: 14, margin: 0 }}>Enter your zip code above to see your senators and house rep.</p>
           </div>

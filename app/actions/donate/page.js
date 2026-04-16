@@ -12,13 +12,13 @@ const ALL_CATS = [
 ]
 
 function NonprofitCard({ org }) {
-  const color = CAT_COLOR[org.category] || "#94a3b8"
+  const color = CAT_COLOR[org.category] || "#6B7C6C"
   const [imgError, setImgError] = useState(false)
 
   return (
     <div style={{
-      background: "#111827",
-      border: "1px solid rgba(255,255,255,0.07)",
+      background: "#FDFAF3",
+      border: "1px solid rgba(0,0,0,0.07)",
       borderRadius: 12,
       padding: "20px",
       display: "flex",
@@ -26,14 +26,14 @@ function NonprofitCard({ org }) {
       gap: 12,
       transition: "background 0.15s, border-color 0.15s",
     }}
-    onMouseEnter={e => { e.currentTarget.style.background = "#1F2937"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)" }}
-    onMouseLeave={e => { e.currentTarget.style.background = "#111827"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)" }}
+    onMouseEnter={e => { e.currentTarget.style.background = "#D8D4C6"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)" }}
+    onMouseLeave={e => { e.currentTarget.style.background = "#FDFAF3"; e.currentTarget.style.borderColor = "rgba(0,0,0,0.07)" }}
     >
       {/* Header: logo + name */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{
           width: 40, height: 40, borderRadius: 8,
-          background: "#0B1120",
+          background: "#F4F0E6",
           border: "1px solid #334155",
           display: "flex", alignItems: "center", justifyContent: "center",
           overflow: "hidden", flexShrink: 0,
@@ -52,18 +52,18 @@ function NonprofitCard({ org }) {
           )}
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#F5F1E8", lineHeight: 1.3 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#1C2E1E", lineHeight: 1.3 }}>
             {org.name}
           </div>
           {org.verified && (
             <div style={{
               display: "inline-flex", alignItems: "center", gap: 4,
               marginTop: 3, fontSize: 10, fontWeight: 600,
-              color: "#4ade80", letterSpacing: "0.04em",
+              color: "#16a34a", letterSpacing: "0.04em",
             }}>
               <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
-                <circle cx="6" cy="6" r="5.5" stroke="#4ade80" strokeWidth="1"/>
-                <path d="M3.5 6l2 2 3-3" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="6" cy="6" r="5.5" stroke="#16a34a" strokeWidth="1"/>
+                <path d="M3.5 6l2 2 3-3" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               501(c)(3) VERIFIED
             </div>
@@ -87,7 +87,7 @@ function NonprofitCard({ org }) {
 
       {/* Description */}
       <p style={{
-        fontSize: 13, color: "#94a3b8", lineHeight: 1.55,
+        fontSize: 13, color: "#6B7C6C", lineHeight: 1.55,
         margin: 0, flexGrow: 1,
         display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical",
         overflow: "hidden",
@@ -104,7 +104,7 @@ function NonprofitCard({ org }) {
             rel="noopener noreferrer"
             style={{
               display: "inline-flex", alignItems: "center", gap: 5,
-              background: "#22c55e", color: "#fff",
+              background: "#15803d", color: "#fff",
               fontSize: 12, fontWeight: 700,
               padding: "7px 14px", borderRadius: 6,
               textDecoration: "none", letterSpacing: "0.02em",
@@ -120,7 +120,7 @@ function NonprofitCard({ org }) {
             rel="noopener noreferrer"
             style={{
               display: "inline-flex", alignItems: "center", gap: 5,
-              background: "#22c55e", color: "#fff",
+              background: "#15803d", color: "#fff",
               fontSize: 12, fontWeight: 700,
               padding: "7px 14px", borderRadius: 6,
               textDecoration: "none", letterSpacing: "0.02em",
@@ -136,7 +136,7 @@ function NonprofitCard({ org }) {
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              fontSize: 11, color: "#475569",
+              fontSize: 11, color: "#4A5C4B",
               textDecoration: "none",
               overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
             }}
@@ -222,9 +222,9 @@ export default function DonatePage() {
   const chipStyle = (active) => ({
     padding: "6px 14px",
     borderRadius: 20,
-    border: `1px solid ${active ? "#475569" : "rgba(255,255,255,0.07)"}`,
-    background: active ? "#111827" : "transparent",
-    color: active ? "#F5F1E8" : "#64748b",
+    border: `1px solid ${active ? "#4A5C4B" : "rgba(0,0,0,0.07)"}`,
+    background: active ? "#FDFAF3" : "transparent",
+    color: active ? "#1C2E1E" : "#5A6B5B",
     fontSize: 12,
     fontWeight: 600,
     cursor: "pointer",
@@ -234,7 +234,7 @@ export default function DonatePage() {
   })
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0B1120", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#F4F0E6", fontFamily: "'Inter', system-ui, sans-serif" }}>
       <style>{`
         .np-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         @media (max-width: 1000px) { .np-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -247,12 +247,12 @@ export default function DonatePage() {
       {/* Sticky nav */}
       <header style={{
         position: "sticky", top: 0, zIndex: 30,
-        background: "rgba(11,17,32,0.95)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        background: "rgba(244,240,230,0.95)", backdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(0,0,0,0.06)",
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px", height: 52,
           display: "flex", alignItems: "center" }}>
-          <Link href="/" style={{ fontSize: 13, color: "#64748b", textDecoration: "none", display: "flex", alignItems: "center", gap: 7, fontWeight: 500 }}>
+          <Link href="/" style={{ fontSize: 13, color: "#5A6B5B", textDecoration: "none", display: "flex", alignItems: "center", gap: 7, fontWeight: 500 }}>
             <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M15 10H5M9 5l-5 5 5 5"/>
             </svg>
@@ -268,7 +268,7 @@ export default function DonatePage() {
           <h1 style={{
             fontSize: "clamp(28px, 5vw, 40px)",
             fontWeight: 800,
-            color: "#F5F1E8",
+            color: "#1C2E1E",
             fontFamily: "Georgia, 'Times New Roman', serif",
             margin: "0 0 10px",
             letterSpacing: "-0.02em",
@@ -276,7 +276,7 @@ export default function DonatePage() {
           }}>
             Explore Nonprofits
           </h1>
-          <p style={{ fontSize: 15, color: "#64748b", margin: 0, fontWeight: 400 }}>
+          <p style={{ fontSize: 15, color: "#5A6B5B", margin: 0, fontWeight: 400 }}>
             Vetted organizations working on the issues you care about.
           </p>
         </div>
@@ -287,9 +287,9 @@ export default function DonatePage() {
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
               <span style={{
                 fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
-                color: "#475569", textTransform: "uppercase",
+                color: "#4A5C4B", textTransform: "uppercase",
               }}>For You</span>
-              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+              <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.06)" }} />
               {/* Carousel arrows */}
               {!loading && forYouPool.length > 2 && (
                 <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
@@ -298,9 +298,9 @@ export default function DonatePage() {
                     disabled={carouselIdx === 0}
                     style={{
                       width: 28, height: 28, borderRadius: 6,
-                      border: "1px solid rgba(255,255,255,0.07)",
-                      background: carouselIdx === 0 ? "transparent" : "#111827",
-                      color: carouselIdx === 0 ? "#334155" : "#94a3b8",
+                      border: "1px solid rgba(0,0,0,0.07)",
+                      background: carouselIdx === 0 ? "transparent" : "#FDFAF3",
+                      color: carouselIdx === 0 ? "#334155" : "#6B7C6C",
                       cursor: carouselIdx === 0 ? "default" : "pointer",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       padding: 0,
@@ -315,9 +315,9 @@ export default function DonatePage() {
                     disabled={carouselIdx >= maxIdx}
                     style={{
                       width: 28, height: 28, borderRadius: 6,
-                      border: "1px solid rgba(255,255,255,0.07)",
-                      background: carouselIdx >= maxIdx ? "transparent" : "#111827",
-                      color: carouselIdx >= maxIdx ? "#334155" : "#94a3b8",
+                      border: "1px solid rgba(0,0,0,0.07)",
+                      background: carouselIdx >= maxIdx ? "transparent" : "#FDFAF3",
+                      color: carouselIdx >= maxIdx ? "#334155" : "#6B7C6C",
                       cursor: carouselIdx >= maxIdx ? "default" : "pointer",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       padding: 0,
@@ -332,9 +332,9 @@ export default function DonatePage() {
             </div>
 
             {loading ? (
-              <div style={{ color: "#475569", fontSize: 14 }}>Loading…</div>
+              <div style={{ color: "#4A5C4B", fontSize: 14 }}>Loading…</div>
             ) : visibleForYou.length === 0 ? (
-              <div style={{ color: "#475569", fontSize: 14 }}>
+              <div style={{ color: "#4A5C4B", fontSize: 14 }}>
                 No nonprofits found for your selected topics yet.
               </div>
             ) : (
@@ -352,10 +352,10 @@ export default function DonatePage() {
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
             <span style={{
               fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
-              color: "#475569", textTransform: "uppercase",
+              color: "#4A5C4B", textTransform: "uppercase",
               whiteSpace: "nowrap",
             }}>Browse by Cause</span>
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+            <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.06)" }} />
           </div>
 
           {/* Filter chips */}
@@ -389,11 +389,11 @@ export default function DonatePage() {
           </div>
 
           {loading ? (
-            <div style={{ color: "#475569", fontSize: 14 }}>Loading…</div>
+            <div style={{ color: "#4A5C4B", fontSize: 14 }}>Loading…</div>
           ) : browseOrgs.length === 0 ? (
             <div style={{
               textAlign: "center", padding: "48px 0",
-              color: "#475569", fontSize: 14,
+              color: "#4A5C4B", fontSize: 14,
             }}>
               No nonprofits in this category yet.
             </div>

@@ -10,7 +10,7 @@
 import { createClient } from "@supabase/supabase-js"
 
 const IMPACT_COLOR = {
-  NOTABLE:     "#22c55e",
+  NOTABLE:     "#15803d",
   SIGNIFICANT: "#eab308",
   MAJOR:       "#f97316",
   CRITICAL:    "#ef4444",
@@ -26,7 +26,7 @@ function impactLabel(score) {
 function buildEmail({ issues, categories }) {
   const issueBlocks = issues.map(issue => {
     const label  = issue.severity_label || impactLabel(issue.severity_score)
-    const color  = IMPACT_COLOR[label] || "#60a5fa"
+    const color  = IMPACT_COLOR[label] || "#16a34a"
     const actions = (issue.actions || []).slice(0, 3)
 
     const actionRows = actions.map(a => `
@@ -35,7 +35,7 @@ function buildEmail({ issues, categories }) {
           <table cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
               <td style="width: 60px; vertical-align: top; padding-right: 10px;">
-                <span style="display:inline-block; background: rgba(255,255,255,0.06); color: #9ca3af;
+                <span style="display:inline-block; background: rgba(0,0,0,0.06); color: #9ca3af;
                   font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
                   padding: 3px 7px; border-radius: 4px; white-space: nowrap;">${a.effort}</span>
               </td>
@@ -47,7 +47,7 @@ function buildEmail({ issues, categories }) {
 
     return `
       <table cellpadding="0" cellspacing="0" border="0" width="100%"
-        style="background: #1a2236; border: 1px solid rgba(255,255,255,0.07);
+        style="background: #E8E4D8; border: 1px solid rgba(0,0,0,0.07);
           border-radius: 12px; margin-bottom: 16px; overflow: hidden;">
         <tr>
           <td style="padding: 22px 24px;">
@@ -69,13 +69,13 @@ function buildEmail({ issues, categories }) {
               </tr>
             </table>
             <!-- Title -->
-            <h2 style="margin: 0 0 10px; font-size: 18px; font-weight: 800; color: #f1f5f9;
+            <h2 style="margin: 0 0 10px; font-size: 18px; font-weight: 800; color: #1C2E1E;
               letter-spacing: -0.02em; line-height: 1.3;">${issue.title}</h2>
             <!-- Description -->
             <p style="margin: 0 0 18px; font-size: 14px; color: #6b7280; line-height: 1.7;">${issue.description || ""}</p>
             <!-- Actions -->
             ${actions.length > 0 ? `
-            <p style="margin: 0 0 8px; font-size: 10px; font-weight: 700; color: #374151;
+            <p style="margin: 0 0 8px; font-size: 10px; font-weight: 700; color: #6B7C6C;
               text-transform: uppercase; letter-spacing: 0.1em;">What You Can Do</p>
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
               ${actionRows}
@@ -85,7 +85,7 @@ function buildEmail({ issues, categories }) {
               <tr>
                 <td>
                   <a href="https://howbadisite.vercel.app/issue/${issue.slug}"
-                    style="display: inline-block; background: #3b82f6; color: #ffffff;
+                    style="display: inline-block; background: #15803d; color: #ffffff;
                       font-size: 12px; font-weight: 700; text-decoration: none;
                       padding: 8px 18px; border-radius: 6px; letter-spacing: 0.02em;">
                     Read more →
@@ -99,9 +99,9 @@ function buildEmail({ issues, categories }) {
   }).join("")
 
   const categoryPills = categories.map(c =>
-    `<span style="display:inline-block; background: rgba(59,130,246,0.12); color: #93c5fd;
+    `<span style="display:inline-block; background: rgba(21,128,61,0.12); color: #16a34a;
       font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 99px;
-      border: 1px solid rgba(59,130,246,0.2); margin: 3px 4px 3px 0;">${c}</span>`
+      border: 1px solid rgba(21,128,61,0.2); margin: 3px 4px 3px 0;">${c}</span>`
   ).join("")
 
   return `<!DOCTYPE html>
@@ -111,9 +111,9 @@ function buildEmail({ issues, categories }) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Your Daily Digest — How Bad Is It?</title>
 </head>
-<body style="margin: 0; padding: 0; background: #111827; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+<body style="margin: 0; padding: 0; background: #FDFAF3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
   <table cellpadding="0" cellspacing="0" border="0" width="100%"
-    style="background: #111827; padding: 32px 16px;">
+    style="background: #FDFAF3; padding: 32px 16px;">
     <tr>
       <td align="center">
         <table cellpadding="0" cellspacing="0" border="0" width="600"
@@ -126,21 +126,21 @@ function buildEmail({ issues, categories }) {
                 <tr>
                   <td>
                     <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
-                      text-transform: uppercase; color: #374151;">How Bad Is It?</span>
+                      text-transform: uppercase; color: #6B7C6C;">How Bad Is It?</span>
                   </td>
                   <td align="right">
-                    <span style="font-size: 11px; color: #374151;">Daily Digest</span>
+                    <span style="font-size: 11px; color: #6B7C6C;">Daily Digest</span>
                   </td>
                 </tr>
               </table>
-              <div style="height: 1px; background: rgba(255,255,255,0.07); margin-top: 14px;"></div>
+              <div style="height: 1px; background: rgba(0,0,0,0.07); margin-top: 14px;"></div>
             </td>
           </tr>
 
           <!-- Headline -->
           <tr>
             <td style="padding-bottom: 24px;">
-              <h1 style="margin: 0 0 10px; font-size: 28px; font-weight: 900; color: #f1f5f9;
+              <h1 style="margin: 0 0 10px; font-size: 28px; font-weight: 900; color: #1C2E1E;
                 letter-spacing: -0.03em; line-height: 1.1;">
                 Today's top stories in your feed
               </h1>
@@ -159,8 +159,8 @@ function buildEmail({ issues, categories }) {
           <!-- Footer -->
           <tr>
             <td style="padding-top: 24px;">
-              <div style="height: 1px; background: rgba(255,255,255,0.05); margin-bottom: 20px;"></div>
-              <p style="margin: 0; font-size: 11px; color: #1f2937; line-height: 1.6;">
+              <div style="height: 1px; background: rgba(0,0,0,0.05); margin-bottom: 20px;"></div>
+              <p style="margin: 0; font-size: 11px; color: #3A4B3B; line-height: 1.6;">
                 You're receiving this because you signed up for daily digests.<br>
                 Not affiliated with any political party or organization.
               </p>

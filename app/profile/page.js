@@ -66,17 +66,17 @@ export default function ProfilePage() {
   const slugCount = Object.keys(bySlug).length
 
   const S = {
-    background: "#1a2236",
+    background: "#E8E4D8",
     borderRadius: 12,
-    border: "1px solid rgba(255,255,255,0.07)",
+    border: "1px solid rgba(0,0,0,0.07)",
     padding: "22px 24px",
     marginBottom: 12,
   }
 
   if (loading) {
     return (
-      <div style={{ background: "#111827", minHeight: "100vh", display: "flex", alignItems: "center",
-        justifyContent: "center", color: "#374151", fontFamily: "'Inter', system-ui, sans-serif" }}>
+      <div style={{ background: "#FDFAF3", minHeight: "100vh", display: "flex", alignItems: "center",
+        justifyContent: "center", color: "#6B7C6C", fontFamily: "'Inter', system-ui, sans-serif" }}>
         Loading…
       </div>
     )
@@ -89,23 +89,23 @@ export default function ProfilePage() {
   }
 
   return (
-    <div style={{ background: "#111827", minHeight: "100vh", color: "#e2e8f0",
+    <div style={{ background: "#FDFAF3", minHeight: "100vh", color: "#2A3E2C",
       fontFamily: "'Inter', system-ui, sans-serif" }}>
 
       {/* Nav */}
       <header style={{
-        background: "rgba(17,24,39,0.95)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        background: "rgba(244,240,230,0.95)", backdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(0,0,0,0.06)",
         position: "sticky", top: 0, zIndex: 30,
       }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px", height: 56,
           display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
+            <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#1C2E1E", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
             <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>Track. Act. Organize.</span>
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <Link href="/" style={{ fontSize: 13, color: "#4b5563", textDecoration: "none",
+            <Link href="/" style={{ fontSize: 13, color: "#4A5C4B", textDecoration: "none",
               display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
               <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
@@ -114,7 +114,7 @@ export default function ProfilePage() {
             </Link>
             <button
               onClick={handleSignOut}
-              style={{ fontSize: 12, fontWeight: 500, color: "#374151",
+              style={{ fontSize: 12, fontWeight: 500, color: "#6B7C6C",
                 background: "none", border: "none", cursor: "pointer", padding: 0 }}
             >
               Sign out
@@ -129,11 +129,11 @@ export default function ProfilePage() {
         <div style={{ marginBottom: 32 }}>
           {user?.email && (
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-              color: "#374151", marginBottom: 8 }}>{user.email}</div>
+              color: "#6B7C6C", marginBottom: 8 }}>{user.email}</div>
           )}
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-            color: "#3b82f6", marginBottom: 10 }}>Your Impact</div>
-          <h1 style={{ fontSize: "clamp(28px, 5vw, 40px)", fontWeight: 800, color: "#f1f5f9",
+            color: "#15803d", marginBottom: 10 }}>Your Impact</div>
+          <h1 style={{ fontSize: "clamp(28px, 5vw, 40px)", fontWeight: 800, color: "#1C2E1E",
             letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 12px" }}>
             {total === 0 ? "Start making a difference" : "You're making a difference"}
           </h1>
@@ -147,15 +147,15 @@ export default function ProfilePage() {
         {/* Stats row */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 24 }}>
           {[
-            { label: "Total Actions",   value: total,      color: "#60a5fa" },
-            { label: "Issues Acted On", value: slugCount,  color: "#4ade80" },
+            { label: "Total Actions",   value: total,      color: "#16a34a" },
+            { label: "Issues Acted On", value: slugCount,  color: "#16a34a" },
           ].map(stat => (
             <div key={stat.label} style={{ ...S, textAlign: "center", padding: "20px 16px" }}>
               <div style={{ fontSize: 48, fontWeight: 900, color: stat.color,
                 letterSpacing: "-0.04em", lineHeight: 1, marginBottom: 6 }}>
                 {stat.value}
               </div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#374151",
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7C6C",
                 textTransform: "uppercase", letterSpacing: "0.1em" }}>{stat.label}</div>
             </div>
           ))}
@@ -164,28 +164,28 @@ export default function ProfilePage() {
         {/* Actions list */}
         {total === 0 ? (
           <div style={{ ...S, textAlign: "center", padding: "48px 24px" }}>
-            <p style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>
+            <p style={{ fontSize: 16, fontWeight: 700, color: "#2A3E2C", marginBottom: 8 }}>
               No actions tracked yet
             </p>
-            <p style={{ fontSize: 14, color: "#4b5563", marginBottom: 24, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 14, color: "#4A5C4B", marginBottom: 24, lineHeight: 1.6 }}>
               Click any action item on an issue page to mark it done and track it here.
             </p>
             <Link href="/" style={{
               display: "inline-flex", alignItems: "center", gap: 8,
               fontSize: 13, fontWeight: 700, color: "#fff",
-              padding: "10px 22px", borderRadius: 8, background: "#3b82f6",
+              padding: "10px 22px", borderRadius: 8, background: "#15803d",
               textDecoration: "none",
             }}>Browse issues →</Link>
           </div>
         ) : (
           <div style={S}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: "#374151", textTransform: "uppercase",
+            <p style={{ fontSize: 10, fontWeight: 700, color: "#6B7C6C", textTransform: "uppercase",
               letterSpacing: "0.1em", margin: "0 0 16px" }}>
               Completed Actions by Issue
             </p>
             {Object.entries(bySlug).map(([slug, { indices, title }]) => (
               <div key={slug} style={{ marginBottom: 20 }}>
-                <Link href={`/issue/${slug}`} style={{ fontSize: 13, fontWeight: 700, color: "#93c5fd",
+                <Link href={`/issue/${slug}`} style={{ fontSize: 13, fontWeight: 700, color: "#16a34a",
                   textDecoration: "none", display: "block", marginBottom: 8 }}>
                   {title || slug} ↗
                 </Link>
@@ -194,10 +194,10 @@ export default function ProfilePage() {
                     <div key={idx} style={{
                       display: "flex", alignItems: "center", gap: 8,
                       padding: "8px 12px", borderRadius: 8,
-                      background: "rgba(34,197,94,0.06)",
-                      border: "1px solid rgba(34,197,94,0.15)",
+                      background: "rgba(21,128,61,0.06)",
+                      border: "1px solid rgba(21,128,61,0.15)",
                     }}>
-                      <span style={{ fontSize: 13, color: "#4ade80" }}>✓</span>
+                      <span style={{ fontSize: 13, color: "#16a34a" }}>✓</span>
                       <span style={{ fontSize: 12, color: "#9ca3af" }}>Action {idx + 1}</span>
                     </div>
                   ))}
@@ -209,12 +209,12 @@ export default function ProfilePage() {
 
       </main>
 
-      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+      <footer style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "28px 24px", display: "flex",
           justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 11, color: "#1f2937", fontWeight: 700, letterSpacing: "0.1em",
+          <span style={{ fontSize: 11, color: "#3A4B3B", fontWeight: 700, letterSpacing: "0.1em",
             textTransform: "uppercase" }}>How Bad Is It?</span>
-          <span style={{ fontSize: 11, color: "#1f2937" }}>Not affiliated with any political party.</span>
+          <span style={{ fontSize: 11, color: "#3A4B3B" }}>Not affiliated with any political party.</span>
         </div>
       </footer>
     </div>

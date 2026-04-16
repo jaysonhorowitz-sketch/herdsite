@@ -65,7 +65,7 @@ function severityTier(s) {
   if (s >= 9) return { label: "severe impact",  color: "#ef4444", bar: "rgba(220,38,38,0.6)"   }
   if (s >= 7) return { label: "major impact",   color: "#ea580c", bar: "rgba(234,88,12,0.6)"   }
   if (s >= 4) return { label: "notable impact", color: "#d97706", bar: "rgba(217,119,6,0.6)"   }
-  return             { label: "worth watching", color: "#64748b", bar: "rgba(100,116,139,0.6)" }
+  return             { label: "worth watching", color: "#5A6B5B", bar: "rgba(100,116,139,0.6)" }
 }
 
 function effortStyle(e) {
@@ -101,7 +101,7 @@ function IssueCard({ issue, weekCount }) {
           <span style={{ fontSize: 10, color: "#9ca3af" }}>{issue.date}</span>
         </div>
         {/* Headline */}
-        <h2 style={{ fontSize: 17, fontWeight: 500, margin: "0 0 5px", color: "#111827", lineHeight: 1.35, letterSpacing: "-0.01em" }}>{issue.title}</h2>
+        <h2 style={{ fontSize: 17, fontWeight: 500, margin: "0 0 5px", color: "#FDFAF3", lineHeight: 1.35, letterSpacing: "-0.01em" }}>{issue.title}</h2>
         {/* Description */}
         <p style={{ color: "#6b7280", fontSize: 13, lineHeight: 1.55, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{issue.description}</p>
       </div>
@@ -112,14 +112,14 @@ function IssueCard({ issue, weekCount }) {
           <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: tier.color, transform: "translateY(5px)", display: "inline-block" }}>{tier.label}</span>
           {weekCount > 0 && (
             <span style={{ fontSize: 11, color: "#9ca3af", display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ color: "#22c55e", fontSize: 7 }}>●</span>
+              <span style={{ color: "#15803d", fontSize: 7 }}>●</span>
               <strong style={{ color: "#6b7280", fontWeight: 600 }}>{weekCount}</strong>&nbsp;took action
             </span>
           )}
         </div>
         <span style={{
           fontSize: 12, fontWeight: 700, color: "#ffffff",
-          background: "#111827", border: "1px solid #111827",
+          background: "#FDFAF3", border: "1px solid #FDFAF3",
           padding: "6px 14px", borderRadius: 7,
           whiteSpace: "nowrap",
         }}>Take Action →</span>
@@ -214,12 +214,12 @@ export default function CategoryPage() {
   }, [])
 
   if (!catName) return (
-    <div style={{ background: "#111827", minHeight: "100vh", display: "flex", alignItems: "center",
+    <div style={{ background: "#FDFAF3", minHeight: "100vh", display: "flex", alignItems: "center",
       justifyContent: "center", fontFamily: "'Inter', system-ui, sans-serif" }}>
       <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 48, fontWeight: 900, color: "#1f2937", marginBottom: 12 }}>404</div>
-        <div style={{ fontSize: 16, color: "#374151", marginBottom: 24 }}>Category not found</div>
-        <Link href="/" style={{ fontSize: 13, color: "#60a5fa", textDecoration: "none" }}>← Back to home</Link>
+        <div style={{ fontSize: 48, fontWeight: 900, color: "#3A4B3B", marginBottom: 12 }}>404</div>
+        <div style={{ fontSize: 16, color: "#6B7C6C", marginBottom: 24 }}>Category not found</div>
+        <Link href="/" style={{ fontSize: 13, color: "#16a34a", textDecoration: "none" }}>← Back to home</Link>
       </div>
     </div>
   )
@@ -247,33 +247,33 @@ export default function CategoryPage() {
     <div style={{ minHeight: "100vh", fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
 
       {/* ── Dark section ── */}
-      <div style={{ background: "#111827", color: "#e2e8f0" }}>
+      <div style={{ background: "#FDFAF3", color: "#2A3E2C" }}>
 
         {/* Nav */}
         <nav style={{
           position: "sticky", top: 0, zIndex: 50,
-          background: scrolled ? "rgba(17,24,39,0.95)" : "rgba(17,24,39,0)",
+          background: scrolled ? "rgba(244,240,230,0.95)" : "rgba(244,240,230,0)",
           backdropFilter: scrolled ? "blur(20px)" : "none",
-          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
+          borderBottom: scrolled ? "1px solid rgba(0,0,0,0.07)" : "1px solid transparent",
           transition: "all 0.3s ease",
         }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", height: 60,
             display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
+                <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 22, fontWeight: 800, color: "#1C2E1E", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
                 <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 400 }}>Track. Act. Organize.</span>
               </Link>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-              <Link href="/profile" style={{ fontSize: 12, fontWeight: 600, color: "#60a5fa", textDecoration: "none" }}>⚡ My Impact</Link>
+              <Link href="/profile" style={{ fontSize: 12, fontWeight: 600, color: "#16a34a", textDecoration: "none" }}>⚡ My Impact</Link>
 
             </div>
           </div>
         </nav>
 
         {/* Hero */}
-        <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #1a2236 0%, #111827 100%)" }}>
+        <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #E8E4D8 0%, #FDFAF3 100%)" }}>
           {/* Grid overlay */}
           <div style={{
             position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.4,
@@ -284,13 +284,13 @@ export default function CategoryPage() {
           <div style={{
             position: "absolute", top: -60, left: "25%",
             width: 600, height: 400,
-            background: "radial-gradient(ellipse at center, rgba(59,130,246,0.08) 0%, transparent 70%)",
+            background: "radial-gradient(ellipse at center, rgba(21,128,61,0.08) 0%, transparent 70%)",
             pointerEvents: "none",
           }} />
 
           <div style={{ position: "relative", maxWidth: 1200, margin: "0 auto", padding: "40px 32px 20px" }}>
-            <div style={{ fontSize: 11, color: "#374151", marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
-              <Link href="/" style={{ color: "#374151", textDecoration: "none", fontWeight: 500 }}>All Issues</Link>
+            <div style={{ fontSize: 11, color: "#6B7C6C", marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
+              <Link href="/" style={{ color: "#6B7C6C", textDecoration: "none", fontWeight: 500 }}>All Issues</Link>
               <span>→</span>
               <span style={{ color: "#6b7280" }}>{catName}</span>
             </div>
@@ -298,12 +298,12 @@ export default function CategoryPage() {
             <h1 style={{
               fontSize: "clamp(18px, 3.6vw, 60px)",
               fontWeight: 800, lineHeight: 1.1, letterSpacing: "-0.03em",
-              margin: "0 0 8px", color: "#f1f5f9",
+              margin: "0 0 8px", color: "#1C2E1E",
             }}>
               {CAT_EMOJI[catName]} {catName}
             </h1>
             {!loading && (
-              <p style={{ fontSize: 14, color: "#4b5563", margin: "0 0 20px" }}>
+              <p style={{ fontSize: 14, color: "#4A5C4B", margin: "0 0 20px" }}>
                 {issues.length} issue{issues.length !== 1 ? "s" : ""} tracked · sorted by impact
               </p>
             )}
@@ -313,8 +313,8 @@ export default function CategoryPage() {
               <Link href="/" style={{
                 flexShrink: 0, display: "flex", alignItems: "center", gap: 6,
                 padding: "8px 16px", borderRadius: 99,
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(0,0,0,0.05)",
+                border: "1px solid rgba(0,0,0,0.08)",
                 color: "#6b7280", fontSize: 13, fontWeight: 400,
                 textDecoration: "none", whiteSpace: "nowrap",
               }}>🗂️ All</Link>
@@ -324,9 +324,9 @@ export default function CategoryPage() {
                   <Link key={c} href={`/category/${catSlug(c)}`} style={{
                     flexShrink: 0, display: "flex", alignItems: "center", gap: 6,
                     padding: "8px 16px", borderRadius: 99,
-                    background: isActive ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
-                    border: isActive ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.08)",
-                    color: isActive ? "#f1f5f9" : "#6b7280",
+                    background: isActive ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.05)",
+                    border: isActive ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(0,0,0,0.08)",
+                    color: isActive ? "#1C2E1E" : "#6b7280",
                     fontSize: 13, fontWeight: isActive ? 600 : 400,
                     textDecoration: "none", whiteSpace: "nowrap", transition: "all 0.15s",
                   }}>
@@ -362,12 +362,12 @@ export default function CategoryPage() {
                   paddingRight: 32, marginRight: 32,
                   borderRight: i < 3 ? "1px solid #e5e7eb" : "none",
                 }}>
-                  <span style={{ fontSize: 22, fontWeight: 800, color: "#111827", letterSpacing: "-0.03em" }}>{stat.value}</span>
+                  <span style={{ fontSize: 22, fontWeight: 800, color: "#FDFAF3", letterSpacing: "-0.03em" }}>{stat.value}</span>
                   <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 500 }}>{stat.label}</span>
                 </div>
               ))}
               <div style={{ marginLeft: "auto" }}>
-                <Link href="/" style={{ fontSize: 12, color: "#3b82f6", fontWeight: 600, textDecoration: "none" }}>← All issues</Link>
+                <Link href="/" style={{ fontSize: 12, color: "#15803d", fontWeight: 600, textDecoration: "none" }}>← All issues</Link>
               </div>
             </div>
           </div>
@@ -407,7 +407,7 @@ export default function CategoryPage() {
                   {/* Left: Top Action */}
                   <div style={{ padding: "24px 32px 24px 0" }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 }}>🔥 Top Action</div>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "#111827", letterSpacing: "-0.01em", lineHeight: 1.35, margin: "0 0 6px" }}>{featured.title}</h3>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "#FDFAF3", letterSpacing: "-0.01em", lineHeight: 1.35, margin: "0 0 6px" }}>{featured.title}</h3>
                     <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.55, margin: "0 0 16px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                       {featured.description?.split(/\.(?:\s|$)/)[0]?.trim()}.
                     </p>
@@ -418,7 +418,7 @@ export default function CategoryPage() {
                       style={{
                         display: "inline-flex", alignItems: "center", gap: 6,
                         padding: "8px 16px", borderRadius: 8,
-                        background: "#111827", color: "#ffffff",
+                        background: "#FDFAF3", color: "#ffffff",
                         fontSize: 12, fontWeight: 700, textDecoration: "none",
                       }}
                     >Take Action in 2 Minutes →</a>
@@ -430,9 +430,9 @@ export default function CategoryPage() {
                   {/* Right: Get Involved */}
                   <div style={{ padding: "24px 0 24px 32px" }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 }}>Get Involved</div>
-                    <div style={{ fontSize: 13, color: "#374151", marginBottom: 10 }}>
+                    <div style={{ fontSize: 13, color: "#6B7C6C", marginBottom: 10 }}>
                       {zipCode
-                        ? <>Volunteer near <strong style={{ color: "#111827" }}>{zipCode}</strong> in {catName}</>
+                        ? <>Volunteer near <strong style={{ color: "#FDFAF3" }}>{zipCode}</strong> in {catName}</>
                         : <>Volunteer opportunities in {catName}</>}
                     </div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
@@ -444,16 +444,16 @@ export default function CategoryPage() {
                         return (
                           <a href={url} target="_blank" rel="noopener noreferrer" style={{
                             fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 99,
-                            background: "#f3f4f6", color: "#374151", border: "1px solid #e5e7eb",
+                            background: "#f3f4f6", color: "#6B7C6C", border: "1px solid #e5e7eb",
                             textDecoration: "none",
                           }}>{CAT_EMOJI[catName]} {catName} →</a>
                         )
                       })()}
                     </div>
                     {communityCount > 0 && (
-                      <div style={{ fontSize: 13, color: "#374151", display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ color: "#22c55e", fontSize: 8 }}>●</span>
-                        <span><strong style={{ color: "#111827" }}>{communityCount.toLocaleString()}</strong> people took action in {catName} this week</span>
+                      <div style={{ fontSize: 13, color: "#6B7C6C", display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ color: "#15803d", fontSize: 8 }}>●</span>
+                        <span><strong style={{ color: "#FDFAF3" }}>{communityCount.toLocaleString()}</strong> people took action in {catName} this week</span>
                       </div>
                     )}
                   </div>

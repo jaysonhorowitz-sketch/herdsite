@@ -35,7 +35,7 @@ function toSlug(title) {
 }
 
 function severityLabel(s) {
-  if (s <= 3) return { text: "Notable",    color: "#4ade80" }
+  if (s <= 3) return { text: "Notable",    color: "#16a34a" }
   if (s <= 6) return { text: "Significant", color: "#facc15" }
   if (s <= 8) return { text: "Major",      color: "#fb923c" }
   return              { text: "Critical",   color: "#f87171" }
@@ -43,22 +43,22 @@ function severityLabel(s) {
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
 const INPUT = {
-  width: "100%", background: "#0f172a", border: "1px solid rgba(255,255,255,0.1)",
-  borderRadius: 6, padding: "8px 12px", color: "#e2e8f0", fontSize: 13,
+  width: "100%", background: "#0f172a", border: "1px solid rgba(0,0,0,0.1)",
+  borderRadius: 6, padding: "8px 12px", color: "#2A3E2C", fontSize: 13,
   outline: "none", boxSizing: "border-box",
 }
-const LABEL = { display: "block", fontSize: 11, fontWeight: 600, color: "#64748b",
+const LABEL = { display: "block", fontSize: 11, fontWeight: 600, color: "#5A6B5B",
   letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 5 }
 const BTN = (variant = "primary") => ({
   padding: "7px 16px", borderRadius: 6, fontSize: 12, fontWeight: 600,
   cursor: "pointer", border: "1px solid",
   ...(variant === "primary"
-    ? { background: "#3b82f6", borderColor: "#3b82f6", color: "#fff" }
+    ? { background: "#15803d", borderColor: "#15803d", color: "#fff" }
     : variant === "danger"
     ? { background: "rgba(239,68,68,0.1)", borderColor: "rgba(239,68,68,0.3)", color: "#f87171" }
     : variant === "ghost"
-    ? { background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.1)", color: "#94a3b8" }
-    : { background: "rgba(59,130,246,0.1)", borderColor: "rgba(59,130,246,0.3)", color: "#60a5fa" }),
+    ? { background: "rgba(0,0,0,0.05)", borderColor: "rgba(0,0,0,0.1)", color: "#6B7C6C" }
+    : { background: "rgba(21,128,61,0.1)", borderColor: "rgba(21,128,61,0.3)", color: "#16a34a" }),
 })
 
 export default function AdminPage() {
@@ -200,18 +200,18 @@ export default function AdminPage() {
 
   // ── Password gate ─────────────────────────────────────────────────────────
   if (!authed) return (
-    <div style={{ background: "#111827", minHeight: "100vh", display: "flex",
+    <div style={{ background: "#FDFAF3", minHeight: "100vh", display: "flex",
       alignItems: "center", justifyContent: "center", fontFamily: "'Inter', system-ui, sans-serif" }}>
-      <form onSubmit={submitPassword} style={{ background: "#1a2236", border: "1px solid rgba(255,255,255,0.08)",
+      <form onSubmit={submitPassword} style={{ background: "#E8E4D8", border: "1px solid rgba(0,0,0,0.08)",
         borderRadius: 12, padding: "40px 48px", width: 360, textAlign: "center" }}>
-        <div style={{ fontSize: 22, fontWeight: 700, color: "#f1f5f9", marginBottom: 6 }}>Admin</div>
-        <div style={{ fontSize: 13, color: "#4b5563", marginBottom: 28 }}>How Bad Is It?</div>
+        <div style={{ fontSize: 22, fontWeight: 700, color: "#1C2E1E", marginBottom: 6 }}>Admin</div>
+        <div style={{ fontSize: 13, color: "#4A5C4B", marginBottom: 28 }}>How Bad Is It?</div>
         <input
           type="password" value={password} placeholder="Password"
           onChange={e => { setPassword(e.target.value); setPwError(false) }}
           autoFocus
           style={{ ...INPUT, marginBottom: 8, textAlign: "center", fontSize: 14,
-            borderColor: pwError ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.1)" }}
+            borderColor: pwError ? "rgba(239,68,68,0.5)" : "rgba(0,0,0,0.1)" }}
         />
         {pwError && <div style={{ fontSize: 12, color: "#f87171", marginBottom: 10 }}>Incorrect password</div>}
         <button type="submit" style={{ ...BTN("primary"), width: "100%", padding: "10px 0",
@@ -224,23 +224,23 @@ export default function AdminPage() {
 
   // ── Main admin UI ─────────────────────────────────────────────────────────
   return (
-    <div style={{ background: "#111827", minHeight: "100vh", color: "#e2e8f0",
+    <div style={{ background: "#FDFAF3", minHeight: "100vh", color: "#2A3E2C",
       fontFamily: "'Inter', system-ui, sans-serif" }}>
 
       {/* Nav */}
-      <div style={{ background: "rgba(17,24,39,0.95)", borderBottom: "1px solid rgba(255,255,255,0.07)",
+      <div style={{ background: "rgba(244,240,230,0.95)", borderBottom: "1px solid rgba(0,0,0,0.07)",
         position: "sticky", top: 0, zIndex: 50, backdropFilter: "blur(16px)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 28px", height: 54,
           display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <a href="/" style={{ fontSize: 12, color: "#4b5563", textDecoration: "none",
+            <a href="/" style={{ fontSize: 12, color: "#4A5C4B", textDecoration: "none",
               letterSpacing: "0.04em" }}>← Site</a>
-            <span style={{ color: "#1f2937" }}>/</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8",
+            <span style={{ color: "#3A4B3B" }}>/</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#6B7C6C",
               letterSpacing: "0.06em", textTransform: "uppercase" }}>Admin</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 12, color: "#374151" }}>{issues.length} issues</span>
+            <span style={{ fontSize: 12, color: "#6B7C6C" }}>{issues.length} issues</span>
             <button onClick={openNew} style={BTN("primary")}>+ New Issue</button>
           </div>
         </div>
@@ -251,20 +251,20 @@ export default function AdminPage() {
         {/* Flash message */}
         {msg && (
           <div style={{ marginBottom: 20, padding: "12px 18px", borderRadius: 8, fontSize: 13,
-            background: msg.ok ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
-            border: `1px solid ${msg.ok ? "rgba(34,197,94,0.25)" : "rgba(239,68,68,0.25)"}`,
-            color: msg.ok ? "#4ade80" : "#f87171" }}>
+            background: msg.ok ? "rgba(21,128,61,0.1)" : "rgba(239,68,68,0.1)",
+            border: `1px solid ${msg.ok ? "rgba(21,128,61,0.25)" : "rgba(239,68,68,0.25)"}`,
+            color: msg.ok ? "#16a34a" : "#f87171" }}>
             {msg.text}
           </div>
         )}
 
         {/* ── Form ── */}
         {showForm && (
-          <div style={{ background: "#1a2236", border: "1px solid rgba(255,255,255,0.08)",
+          <div style={{ background: "#E8E4D8", border: "1px solid rgba(0,0,0,0.08)",
             borderRadius: 12, padding: "28px 32px", marginBottom: 32 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
               marginBottom: 24 }}>
-              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#f1f5f9" }}>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#1C2E1E" }}>
                 {editId ? "Edit Issue" : "New Issue"}
               </h2>
               <button onClick={cancelForm} style={BTN("ghost")}>Cancel</button>
@@ -315,8 +315,8 @@ export default function AdminPage() {
                   <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 8 }}>
                     <input type="checkbox" id="is_published" checked={form.is_published}
                       onChange={e => setField("is_published", e.target.checked)}
-                      style={{ width: 16, height: 16, cursor: "pointer", accentColor: "#3b82f6" }} />
-                    <label htmlFor="is_published" style={{ fontSize: 12, color: "#64748b", cursor: "pointer" }}>
+                      style={{ width: 16, height: 16, cursor: "pointer", accentColor: "#15803d" }} />
+                    <label htmlFor="is_published" style={{ fontSize: 12, color: "#5A6B5B", cursor: "pointer" }}>
                       {form.is_published ? "Live" : "Draft"}
                     </label>
                   </div>
@@ -375,30 +375,30 @@ export default function AdminPage() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
           marginBottom: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>All Issues</h2>
-            {loading && <span style={{ fontSize: 11, color: "#4b5563" }}>Loading…</span>}
+            <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#1C2E1E" }}>All Issues</h2>
+            {loading && <span style={{ fontSize: 11, color: "#4A5C4B" }}>Loading…</span>}
           </div>
           <input style={{ ...INPUT, width: 220 }} value={search}
             onChange={e => setSearch(e.target.value)} placeholder="Search title or category…" />
         </div>
 
         {/* ── Table ── */}
-        <div style={{ background: "#1a2236", border: "1px solid rgba(255,255,255,0.07)",
+        <div style={{ background: "#E8E4D8", border: "1px solid rgba(0,0,0,0.07)",
           borderRadius: 12, overflow: "hidden" }}>
           {/* Table head */}
           <div style={{ display: "grid",
             gridTemplateColumns: "3fr 1.4fr 52px 60px 54px 120px",
-            padding: "10px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)",
+            padding: "10px 20px", borderBottom: "1px solid rgba(0,0,0,0.06)",
             gap: 12 }}>
             {["Title", "Category", "Imp", "Date", "Live", ""].map(h => (
-              <span key={h} style={{ fontSize: 10, fontWeight: 700, color: "#374151",
+              <span key={h} style={{ fontSize: 10, fontWeight: 700, color: "#6B7C6C",
                 letterSpacing: "0.1em", textTransform: "uppercase" }}>{h}</span>
             ))}
           </div>
 
           {/* Rows */}
           {filtered.length === 0 && (
-            <div style={{ padding: "32px 20px", textAlign: "center", fontSize: 13, color: "#374151" }}>
+            <div style={{ padding: "32px 20px", textAlign: "center", fontSize: 13, color: "#6B7C6C" }}>
               {loading ? "Loading issues…" : "No issues found."}
             </div>
           )}
@@ -406,7 +406,7 @@ export default function AdminPage() {
             const sev = severityLabel(issue.severity_score)
             return (
               <div key={issue.id}>
-                {idx > 0 && <div style={{ height: 1, background: "rgba(255,255,255,0.04)", margin: "0 20px" }} />}
+                {idx > 0 && <div style={{ height: 1, background: "rgba(0,0,0,0.04)", margin: "0 20px" }} />}
                 <div style={{ display: "grid",
                   gridTemplateColumns: "3fr 1.4fr 52px 60px 54px 120px",
                   padding: "12px 20px", gap: 12, alignItems: "center",
@@ -416,15 +416,15 @@ export default function AdminPage() {
 
                   {/* Title */}
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0",
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#2A3E2C",
                       whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {issue.title}
                     </div>
-                    <div style={{ fontSize: 11, color: "#374151", marginTop: 1 }}>{issue.slug}</div>
+                    <div style={{ fontSize: 11, color: "#6B7C6C", marginTop: 1 }}>{issue.slug}</div>
                   </div>
 
                   {/* Category */}
-                  <div style={{ fontSize: 12, color: "#64748b",
+                  <div style={{ fontSize: 12, color: "#5A6B5B",
                     whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {issue.category}
                   </div>
@@ -435,16 +435,16 @@ export default function AdminPage() {
                   </div>
 
                   {/* Date */}
-                  <div style={{ fontSize: 12, color: "#4b5563" }}>{issue.date || "—"}</div>
+                  <div style={{ fontSize: 12, color: "#4A5C4B" }}>{issue.date || "—"}</div>
 
                   {/* Published toggle */}
                   <div>
                     <button onClick={() => togglePublished(issue)}
                       style={{ padding: "3px 10px", borderRadius: 99, fontSize: 11, fontWeight: 600,
                         cursor: "pointer", border: "1px solid",
-                        background: issue.is_published ? "rgba(34,197,94,0.1)" : "rgba(71,85,105,0.2)",
-                        borderColor: issue.is_published ? "rgba(34,197,94,0.25)" : "rgba(71,85,105,0.3)",
-                        color: issue.is_published ? "#4ade80" : "#475569" }}>
+                        background: issue.is_published ? "rgba(21,128,61,0.1)" : "rgba(71,85,105,0.2)",
+                        borderColor: issue.is_published ? "rgba(21,128,61,0.25)" : "rgba(71,85,105,0.3)",
+                        color: issue.is_published ? "#16a34a" : "#4A5C4B" }}>
                       {issue.is_published ? "Live" : "Draft"}
                     </button>
                   </div>
@@ -467,10 +467,10 @@ export default function AdminPage() {
 
         {/* Confirm cancel hint */}
         {confirm && (
-          <div style={{ marginTop: 12, fontSize: 12, color: "#4b5563" }}>
+          <div style={{ marginTop: 12, fontSize: 12, color: "#4A5C4B" }}>
             Click <strong style={{ color: "#f87171" }}>Confirm</strong> to delete, or click elsewhere to cancel.{" "}
             <button onClick={() => setConfirm(null)}
-              style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: 12 }}>
+              style={{ background: "none", border: "none", color: "#5A6B5B", cursor: "pointer", fontSize: 12 }}>
               Cancel
             </button>
           </div>
