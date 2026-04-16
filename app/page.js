@@ -508,18 +508,44 @@ export default function Home() {
     })
   }, [])
 
-  // Load category click history once on mount
+  // Load category click history — Supabase for logged-in users, localStorage for guests
   useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem("catClicks") || "{}")
-      setCatClicks(stored)
-    } catch {}
+    async function loadClicks() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from("user_prefs")
+          .select("cat_clicks")
+          .eq("user_id", user.id)
+          .maybeSingle()
+        if (data?.cat_clicks) {
+          setCatClicks(data.cat_clicks)
+          return
+        }
+      }
+      // Fall back to localStorage for guests
+      try {
+        const stored = JSON.parse(localStorage.getItem("catClicks") || "{}")
+        setCatClicks(stored)
+      } catch {}
+    }
+    loadClicks()
   }, [])
 
   const recordCatClick = useCallback((category) => {
     setCatClicks(prev => {
       const next = { ...prev, [category]: (prev[category] || 0) + 1 }
+      // Always persist locally
       try { localStorage.setItem("catClicks", JSON.stringify(next)) } catch {}
+      // If logged in, sync to Supabase
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          supabase.from("user_prefs")
+            .update({ cat_clicks: next })
+            .eq("user_id", user.id)
+            .catch(() => {})
+        }
+      })
       return next
     })
   }, [])
