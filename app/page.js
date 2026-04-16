@@ -554,9 +554,18 @@ export default function Home() {
 
     const scored = [...pool].sort((a, b) => blendScore(b) - blendScore(a))
 
+    // Cap each category so no topic dominates the feed
+    const uniqueCats = [...new Set(pool.map(i => i.category))]
+    const perCatCap  = Math.max(2, Math.ceil(scored.length / uniqueCats.length))
+    const catSeen    = {}
+    const capped     = scored.filter(i => {
+      catSeen[i.category] = (catSeen[i.category] || 0) + 1
+      return catSeen[i.category] <= perCatCap
+    })
+
     // Interleave: never place two issues from the same category back to back
     const interleaved = []
-    const remaining   = [...scored]
+    const remaining   = [...capped]
     let lastCat       = null
 
     while (remaining.length > 0) {
