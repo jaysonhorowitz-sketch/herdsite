@@ -70,34 +70,28 @@ function hexToRgb(hex) {
 // ─── Hardcoded action cards data ───────────────────────────────────────────────
 const ACTION_CARDS = [
   {
-    icon: "📞",
+    icon: "☎️",
     headline: "Call your representatives",
     body: "Find your senators and house rep, with a script for the issues you care about.",
     cta: "→ Get started",
     link: "/actions/call",
   },
   {
-    icon: <span style={{ filter: "grayscale(0.6)", fontSize: 20, lineHeight: 1 }}>🌳</span>,
+    icon: "🤝",
     headline: "Explore nonprofits",
     body: "Discover vetted organizations working on the issues you care about.",
     cta: "→ Browse causes",
     link: "/actions/donate",
   },
   {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
-        <line x1="8" y1="2" x2="8" y2="18"/>
-        <line x1="16" y1="6" x2="16" y2="22"/>
-      </svg>
-    ),
+    icon: "📍",
     headline: "Get Involved",
     body: "Events, actions, and opportunities near you.",
     cta: "→ Find events",
     link: "/actions/events",
   },
   {
-    icon: "📰",
+    icon: "📄",
     headline: "Stay informed",
     body: "Curated newsletters and Substacks covering the issues you follow — vetted by topic.",
     cta: "→ Browse newsletters",
@@ -886,18 +880,20 @@ export default function Home() {
               href={card.link}
               style={{
                 flex: 1,
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
+                display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center", gap: 6,
                 textDecoration: "none",
                 borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
-                padding: "0 20px",
+                padding: "0 28px",
                 transition: "background 0.15s",
               }}
               onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
-              <span style={{ fontSize: 28, lineHeight: 1 }}>{typeof card.icon === "string" ? card.icon : "🗺️"}</span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap", letterSpacing: "0.01em" }}>{card.headline}</span>
-              <span style={{ fontSize: 12, color: "#475569", textAlign: "center", lineHeight: 1.5 }}>{card.body}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 20, lineHeight: 1 }}>{card.icon}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0", letterSpacing: "0.01em" }}>{card.headline}</span>
+              </div>
+              <span style={{ fontSize: 12, color: "#475569", lineHeight: 1.5 }}>{card.body}</span>
             </Link>
           ))}
         </div>
