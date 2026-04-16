@@ -70,28 +70,16 @@ function hexToRgb(hex) {
 // ─── Hardcoded action cards data ───────────────────────────────────────────────
 const ACTION_CARDS = [
   {
-    icon: "📞",
-    headline: "Call your reps",
-    body: "Find your senators and house rep, with a script for the issues you care about.",
-    link: "/actions/call",
-  },
-  {
-    icon: "🌳",
-    headline: "Explore nonprofits",
+    icon: "🤝",
+    headline: "Explore Nonprofits",
     body: "Discover vetted organizations working on the issues you care about.",
     link: "/actions/donate",
   },
   {
-    icon: "🗺️",
+    icon: "📍",
     headline: "Get Involved",
     body: "Events, actions, and opportunities near you.",
     link: "/actions/events",
-  },
-  {
-    icon: "📰",
-    headline: "Stay informed",
-    body: "Curated newsletters and Substacks covering the issues you follow.",
-    link: "/actions/newsletters",
   },
 ]
 
@@ -938,36 +926,35 @@ export default function Home() {
         borderTop: "1px solid rgba(255,255,255,0.08)",
         padding: "0 24px",
       }}>
-        <div style={{
-          maxWidth: 1200, margin: "0 auto",
-          display: "flex", alignItems: "stretch",
-          height: 136,
-        }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "stretch", height: 100 }}>
           {ACTION_CARDS.map((card, i) => (
             <Link
               key={i}
               href={card.link}
               style={{
                 flex: 1,
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5,
+                display: "flex", alignItems: "center", gap: 16,
                 textDecoration: "none",
-                borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
-                padding: "0 20px",
+                borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.08)" : "none",
+                padding: "0 40px",
                 transition: "background 0.15s",
               }}
               onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
-              <span style={{ fontSize: 22, lineHeight: 1, filter: "grayscale(1)", opacity: 0.75 }}>{card.icon}</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap", letterSpacing: "0.01em" }}>{card.headline}</span>
-              <span style={{ fontSize: 11, color: "#475569", textAlign: "center", lineHeight: 1.5 }}>{card.body}</span>
+              <span style={{ fontSize: 28, lineHeight: 1, filter: "grayscale(1)", opacity: 0.7, flexShrink: 0 }}>{card.icon}</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0", letterSpacing: "-0.01em" }}>{card.headline}</span>
+                <span style={{ fontSize: 12, color: "#4b5563", lineHeight: 1.5 }}>{card.body}</span>
+              </div>
+              <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: "#475569", flexShrink: 0 }}>→</span>
             </Link>
           ))}
         </div>
       </div>
 
       {/* Spacer so content isn't hidden behind sticky bar */}
-      <div style={{ height: 136 }} />
+      <div style={{ height: 100 }} />
 
       <style>{`
         ::-webkit-scrollbar { display: none; }
