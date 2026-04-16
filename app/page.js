@@ -70,7 +70,7 @@ function hexToRgb(hex) {
 // ─── Hardcoded action cards data ───────────────────────────────────────────────
 const ACTION_CARDS = [
   {
-    icon: "🤝",
+    icon: "🌳",
     headline: "Explore Nonprofits",
     body: "Discover vetted organizations working on the issues you care about.",
     link: "/actions/donate",
@@ -943,7 +943,7 @@ export default function Home() {
               onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
-              <span style={{ fontSize: 28, lineHeight: 1, filter: "grayscale(1)", opacity: 0.7, flexShrink: 0 }}>{card.icon}</span>
+              <span style={{ fontSize: 28, lineHeight: 1, filter: "grayscale(0.4)", opacity: 0.85, flexShrink: 0 }}>{card.icon}</span>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <span style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0", letterSpacing: "-0.01em" }}>{card.headline}</span>
                 <span style={{ fontSize: 12, color: "#4b5563", lineHeight: 1.5 }}>{card.body}</span>
