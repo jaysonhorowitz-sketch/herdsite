@@ -573,7 +573,8 @@ export default function Home() {
       const sevRange  = Math.max(1, bounds.max - bounds.min)
       const severity  = (issue.severity_score - bounds.min) / sevRange  // relative within category
       const recency   = (parseDate(issue.date) - minDate) / dateRange
-      return (affinity + severity + recency) / 3
+      // Weights: recency 50%, severity 30%, affinity 20%
+      return (recency * 0.5) + (severity * 0.3) + (affinity * 0.2)
     }
 
     const scored = [...pool].sort((a, b) => blendScore(b) - blendScore(a))
