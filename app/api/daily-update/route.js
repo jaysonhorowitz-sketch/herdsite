@@ -32,7 +32,7 @@ Rules:
 2. Be specific — include real numbers, real names, real places.
 3. One story per card, no vague overarching themes.
 4. Severity scores: most things are 4-6, only rate 8+ if it's a genuine crisis affecting millions right now.
-5. Descriptions are 2 sentences max, plain English, no jargon.
+5. Descriptions are exactly 1 sentence, 20–25 words (never more than 30). Write a teaser that adds specific context the headline doesn't already give — not a restatement of the headline. Factually neutral, news-wire tone, one event only. Must end as a complete sentence.
 6. Action items must be specific and link somewhere real — 5calls.org for calling reps, change.org for petitions, congress.gov for tracking bills.
 7. Generate EXACTLY 10 issues from today's top political news stories.
 8. impact_label must be exactly one of: "NOTABLE", "SIGNIFICANT", "MAJOR", "CRITICAL"
@@ -52,7 +52,7 @@ Example shape (do not copy values, only structure):
     "category": "Environment",
     "impact_score": 7,
     "impact_label": "MAJOR",
-    "description": "Congress passed a budget slashing the EPA by 65%, cutting enforcement staff and shutting down regional offices. Air and water monitoring programs in 14 states will go dark by June.",
+    "description": "The cuts eliminate 1,200 enforcement positions and shut down air and water monitoring programs across 14 states by June.",
     "actions": [
       { "effort": "2 min", "text": "Call your senator at 5calls.org and tell them to restore EPA funding" },
       { "effort": "20 min", "text": "Track the EPA appropriations bill at congress.gov" },

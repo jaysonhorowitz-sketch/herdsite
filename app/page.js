@@ -161,7 +161,7 @@ function TickerLine({ topics, critWeekCount, activeCat, catCounts }) {
       <span className="sev-pulse" style={{ "--c": ACCENT }} />
       <span style={{ whiteSpace: "nowrap" }}>
         Now showing:{" "}
-        <strong style={{ color: "#6B7C6C", fontWeight: 600, opacity: visible ? 1 : 0, transition: "opacity 0.3s ease", display: "inline-block", width: "2.5em", textAlign: "right" }}>{count}</strong>
+        <strong style={{ color: "#6B7C6C", fontWeight: 600, opacity: visible ? 1 : 0, transition: "opacity 0.3s ease", display: "inline-block" }}>{count}</strong>
         {" "}issues in{" "}
         <strong style={{ color: catColor, fontWeight: 600, opacity: visible ? 1 : 0, transition: "opacity 0.3s ease", display: "inline-block", width: "155px" }}>{current?.name}</strong>
       </span>
@@ -219,6 +219,23 @@ function ActionCard({ card }) {
       {inner}
     </Link>
   )
+}
+
+// ─── Feed description truncation (complete sentences, ≤40 words) ──────────────
+function truncateToSentences(text, wordLimit = 30) {
+  if (!text) return text
+  const words = text.trim().split(/\s+/)
+  if (words.length <= wordLimit) return text
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text]
+  let result = ""
+  let count = 0
+  for (const s of sentences) {
+    const w = s.trim().split(/\s+/).length
+    if (count + w > wordLimit) break
+    result += (result ? " " : "") + s.trim()
+    count += w
+  }
+  return result || sentences[0].trim()
 }
 
 // ─── Severity tier ────────────────────────────────────────────────────────────
@@ -304,7 +321,7 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick, followA
           color: "#5A6B5B", fontSize: 13, lineHeight: 1.65,
           margin: "0 0 16px", flex: 1,
         }}>
-          {issue.description}
+          {truncateToSentences(issue.description)}
         </p>
 
         {/* Social proof */}
@@ -331,9 +348,9 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick, followA
           <span style={{
             display: "inline-flex", alignItems: "center", gap: 4,
             padding: "5px 12px", borderRadius: 6,
-            background: "#15803d",
-            border: "1px solid #15803d",
-            color: "#ffffff", fontSize: 10, fontWeight: 800,
+            background: "rgba(21,128,61,0.1)",
+            border: "1px solid rgba(21,128,61,0.3)",
+            color: "#15803d", fontSize: 10, fontWeight: 700,
             letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap",
             transition: "background 0.15s",
           }}>Take Action →</span>
@@ -1558,7 +1575,9 @@ export default function Home() {
               )}
               <div className="ticker-wrap" style={{ marginLeft: "auto", flexShrink: 0, alignSelf: "center", display: "flex", whiteSpace: "nowrap" }}>
                 <TickerLine
-                  topics={topics}
+                  topics={selectedCats.length > 0
+                    ? selectedCats.map(name => ({ name, count: catCounts[name] ?? 0 })).filter(t => t.count > 0)
+                    : topics}
                   critWeekCount={critWeekCount}
                   activeCat={cat}
                   catCounts={catCounts}
