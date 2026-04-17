@@ -10,12 +10,16 @@ const CATEGORY_QUERIES = {
   "Rule of Law":        "US courts justice corruption rule of law",
   "Economy":            "US economy trade tariffs fiscal policy",
   "Civil Rights":       "US civil rights voting discrimination",
-  "National Security":  "US military foreign policy national security",
+  "Elections":          "US elections 2026 midterms voting ballot local races",
+  "National Security":  "US military defense intelligence national security",
   "Healthcare":         "US healthcare public health Medicare",
   "Environment":        "US environment climate EPA energy",
-  "Education & Science":"US education science research funding",
+  "Education":          "US education schools universities higher ed policy",
+  "Science":            "US science research funding scientific agencies",
   "Immigration":        "US immigration border deportation asylum",
-  "Media & Democracy":  "US press freedom elections democracy disinformation",
+  "Democracy & Media":  "US press freedom elections democracy disinformation",
+  "Foreign Policy":     "US foreign policy diplomacy international relations alliances",
+  "Human Rights":       "US human rights civil liberties humanitarian law",
 }
 
 // Deterministic cache key from category name

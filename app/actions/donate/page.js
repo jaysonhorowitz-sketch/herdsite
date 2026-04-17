@@ -6,9 +6,9 @@ import { createClient } from "@/utils/supabase/client"
 import { CAT_COLOR } from "@/lib/colors"
 
 const ALL_CATS = [
-  "Civil Rights", "Healthcare", "Environment", "Education & Science",
+  "Civil Rights", "Elections", "Healthcare", "Environment", "Education", "Science",
   "Rule of Law", "Executive Power", "Economy", "National Security",
-  "Immigration", "Media & Democracy",
+  "Immigration", "Democracy & Media", "Foreign Policy", "Human Rights",
 ]
 
 function NonprofitCard({ org }) {

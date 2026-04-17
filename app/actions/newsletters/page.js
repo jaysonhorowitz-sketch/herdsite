@@ -6,9 +6,9 @@ import { NL_MAINSTREAM, NL_SUBSTACK } from "../../../lib/newsletters"
 import { CAT_COLOR } from "@/lib/colors"
 
 const ALL_CATS = [
-  "Executive Power", "Rule of Law", "Economy", "Civil Rights",
-  "National Security", "Healthcare", "Environment", "Education & Science",
-  "Immigration", "Media & Democracy",
+  "Executive Power", "Rule of Law", "Economy", "Civil Rights", "Elections",
+  "National Security", "Healthcare", "Environment", "Education", "Science",
+  "Immigration", "Democracy & Media", "Foreign Policy", "Human Rights",
 ]
 
 function NewsletterCard({ nl, isSubstack }) {

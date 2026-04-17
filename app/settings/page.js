@@ -8,9 +8,9 @@ import { CAT_COLOR } from "@/lib/colors"
 const supabase = createClient()
 
 const ALL_CATEGORIES = [
-  "Executive Power", "Rule of Law", "Economy", "Civil Rights",
-  "National Security", "Healthcare", "Environment", "Education & Science",
-  "Immigration", "Media & Democracy",
+  "Executive Power", "Rule of Law", "Economy", "Civil Rights", "Elections",
+  "National Security", "Healthcare", "Environment", "Education", "Science",
+  "Immigration", "Democracy & Media", "Foreign Policy", "Human Rights",
 ]
 
 function animalEntry(animalType) {

@@ -20,11 +20,12 @@ export default function LoginPage() {
     setSuccess(null)
 
     if (mode === "signup") {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email, password,
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       })
       if (error) setError(error.message)
+      else if (data.session) window.location.href = "/"
       else setSuccess("Check your email for a confirmation link, then come back and sign in.")
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -47,12 +48,21 @@ export default function LoginPage() {
       }}>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <span style={{
-            fontFamily: "var(--font-fraunces), Georgia, serif",
-            fontSize: 48, fontWeight: 900, color: "#1C2E1E",
-            letterSpacing: "-0.04em", display: "block", lineHeight: 1,
-          }}>Herd</span>
-          <span style={{ fontSize: 14, color: "#4A5C4B", marginTop: 10, display: "block", letterSpacing: "0.02em" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: 10 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 10, background: "#15803d", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <svg width="22" height="22" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="6" r="2.5" fill="white" opacity="0.9"/>
+                <circle cx="4" cy="10" r="2" fill="white" opacity="0.7"/>
+                <circle cx="12" cy="10" r="2" fill="white" opacity="0.7"/>
+              </svg>
+            </div>
+            <span style={{
+              fontFamily: "var(--font-fraunces), Georgia, serif",
+              fontSize: 48, fontWeight: 900, color: "#1C2E1E",
+              letterSpacing: "-0.04em", lineHeight: 1,
+            }}>Herd</span>
+          </div>
+          <span style={{ fontSize: 14, color: "#4A5C4B", display: "block", letterSpacing: "0.02em" }}>
             Track. Act. Organize.
           </span>
         </div>
@@ -126,9 +136,6 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <p style={{ marginTop: 40, fontSize: 11, color: "#3A4B3B", textAlign: "center" }}>
-          Not affiliated with any political party.
-        </p>
       </div>
     )
   }
@@ -157,12 +164,21 @@ export default function LoginPage() {
 
       {/* Logo */}
       <div style={{ marginBottom: 40, textAlign: "center" }}>
-        <span style={{
-          fontFamily: "var(--font-fraunces), Georgia, serif",
-          fontSize: 36, fontWeight: 900, color: "#1C2E1E",
-          letterSpacing: "-0.03em", display: "block", lineHeight: 1,
-        }}>Herd</span>
-        <span style={{ fontSize: 13, color: "#4A5C4B", marginTop: 6, display: "block" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: 6 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 8, background: "#15803d", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="6" r="2.5" fill="white" opacity="0.9"/>
+              <circle cx="4" cy="10" r="2" fill="white" opacity="0.7"/>
+              <circle cx="12" cy="10" r="2" fill="white" opacity="0.7"/>
+            </svg>
+          </div>
+          <span style={{
+            fontFamily: "var(--font-fraunces), Georgia, serif",
+            fontSize: 36, fontWeight: 900, color: "#1C2E1E",
+            letterSpacing: "-0.03em", lineHeight: 1,
+          }}>Herd</span>
+        </div>
+        <span style={{ fontSize: 13, color: "#4A5C4B", display: "block" }}>
           Track. Act. Organize.
         </span>
       </div>

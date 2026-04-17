@@ -136,11 +136,11 @@ const NONPROFITS = [
     verified: true,
   },
 
-  // ── Education & Science ───────────────────────────────────────────────────────
+  // ── Education ─────────────────────────────────────────────────────────────────
   {
     name: "DonorsChoose",
     ein: "13-4129457",
-    category: "Education & Science",
+    category: "Education",
     description: "Connects donors directly with public school classroom projects in need. Teachers post what they need; donors give to the projects that inspire them most.",
     logo_url: logo("donorschoose.org"),
     every_org_slug: "donorschoose",
@@ -150,7 +150,7 @@ const NONPROFITS = [
   {
     name: "Khan Academy",
     ein: "26-1544963",
-    category: "Education & Science",
+    category: "Education",
     description: "Provides a free, world-class education to anyone, anywhere. Offers practice exercises, instructional videos, and a personalized learning dashboard.",
     logo_url: logo("khanacademy.org"),
     every_org_slug: "khan-academy",
@@ -160,7 +160,7 @@ const NONPROFITS = [
   {
     name: "Union of Concerned Scientists",
     ein: "04-2535767",
-    category: "Education & Science",
+    category: "Science",
     description: "Puts rigorous, independent science to work to solve our planet's most pressing problems by combining technical analysis with effective advocacy.",
     logo_url: logo("ucsusa.org"),
     every_org_slug: "union-of-concerned-scientists",
@@ -298,11 +298,11 @@ const NONPROFITS = [
     verified: true,
   },
 
-  // ── Media & Democracy ─────────────────────────────────────────────────────────
+  // ── Democracy & Media ─────────────────────────────────────────────────────────
   {
     name: "Free Press",
     ein: "04-3609761",
-    category: "Media & Democracy",
+    category: "Democracy & Media",
     description: "Fights to ensure everyone can connect and communicate freely by promoting universal access to the internet, independent media, and diverse voices in our media landscape.",
     logo_url: logo("freepress.net"),
     every_org_slug: "free-press",
@@ -312,7 +312,7 @@ const NONPROFITS = [
   {
     name: "Reporters Committee for Freedom of the Press",
     ein: "52-1337840",
-    category: "Media & Democracy",
+    category: "Democracy & Media",
     description: "Provides pro bono legal representation and other resources to protect First Amendment freedoms and the newsgathering rights of journalists.",
     logo_url: logo("rcfp.org"),
     every_org_slug: "rcfp",

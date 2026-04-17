@@ -1,19 +1,24 @@
 "use client"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { SCHOOLS } from "@/lib/schools"
 import { createClient } from "@/utils/supabase/client"
 
 const CATEGORIES = [
-  { name: "Executive Power",       icon: "⚡", desc: "Presidential actions, executive orders" },
-  { name: "Rule of Law",           icon: "⚖️",  desc: "Courts, DOJ, constitutional norms"     },
-  { name: "Economy",               icon: "📈", desc: "Trade, tariffs, fiscal policy"           },
-  { name: "Civil Rights",          icon: "✊", desc: "Voting, discrimination, equal protection" },
-  { name: "National Security",     icon: "🛡️",  desc: "Military, intelligence, foreign policy" },
-  { name: "Healthcare",            icon: "🏥", desc: "Medicare, Medicaid, public health"       },
-  { name: "Environment",           icon: "🌍", desc: "EPA, climate, energy policy"             },
-  { name: "Education & Science",   icon: "🔬", desc: "Research funding, schools, universities" },
-  { name: "Immigration",           icon: "🌐", desc: "Border policy, deportation, asylum"      },
-  { name: "Media & Democracy",     icon: "📰", desc: "Press freedom, elections, disinformation" },
+  { name: "Economy",           icon: "📊", desc: "Trade, tariffs, fiscal policy"                   },
+  { name: "Civil Rights",      icon: "🗳️", desc: "Voting, discrimination, equal protection"        },
+  { name: "Elections",         icon: "🗓️", desc: "2026 midterms, local elections, ballot measures" },
+  { name: "Immigration",       icon: "🧭", desc: "Border policy, deportation, asylum"               },
+  { name: "Environment",       icon: "🌿", desc: "EPA, climate, energy policy"                      },
+  { name: "Education",         icon: "📖", desc: "Schools, universities, education policy"           },
+  { name: "Executive Power",   icon: "🏛️", desc: "Presidential actions, executive orders"          },
+  { name: "Rule of Law",       icon: "⚖️",  desc: "Courts, DOJ, constitutional norms"              },
+  { name: "National Security", icon: "🪖", desc: "Military, intelligence, defense policy"           },
+  { name: "Healthcare",        icon: "🩺", desc: "Medicare, Medicaid, public health"                },
+  { name: "Science",           icon: "🔬", desc: "Research funding, scientific agencies"            },
+  { name: "Democracy & Media", icon: "📰", desc: "Press freedom, elections, disinformation"         },
+  { name: "Foreign Policy",    icon: "🌐", desc: "Diplomacy, international relations, alliances"    },
+  { name: "Human Rights",      icon: "📜", desc: "Civil liberties, humanitarian law, equality"      },
 ]
 
 const ACTION_PREFS = [
@@ -43,6 +48,7 @@ export default function OnboardingPage() {
   const [selected,   setSelected]   = useState([])   // category names
   const [actionPref, setActionPref] = useState(null)  // key
   const [zipCode,    setZipCode]    = useState("")
+  const [school,     setSchool]     = useState("")
   const [leaving,    setLeaving]    = useState(false)
   const [saveError,  setSaveError]  = useState(null)
   const [saving,     setSaving]     = useState(false)
@@ -71,6 +77,7 @@ export default function OnboardingPage() {
       // Guest flow — save to localStorage only and go to the feed
       localStorage.setItem("howbadisite_prefs", JSON.stringify({ categories: selected, actionPref }))
       if (zipCode.trim()) localStorage.setItem("userZipCode", zipCode.trim())
+      if (school.trim())  localStorage.setItem("userSchool",  school.trim())
       localStorage.setItem("onboardingComplete", "true")
       window.location.href = "/"
       return
@@ -82,6 +89,7 @@ export default function OnboardingPage() {
         categories: selected,
         action_pref: actionPref,
         zip_code: zipCode.trim() || null,
+        school:   school.trim()  || null,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id" }
@@ -97,6 +105,7 @@ export default function OnboardingPage() {
     // Keep localStorage as a fast local cache
     localStorage.setItem("howbadisite_prefs", JSON.stringify({ categories: selected, actionPref }))
     if (zipCode.trim()) localStorage.setItem("userZipCode", zipCode.trim())
+    if (school.trim())  localStorage.setItem("userSchool",  school.trim())
     localStorage.setItem("onboardingComplete", "true")
 
     window.location.href = "/"
@@ -120,7 +129,7 @@ export default function OnboardingPage() {
         </div>
         {/* Step indicators */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {[1, 2, 3, 4].map(n => (
+          {[1, 2, 3].map(n => (
             <div key={n} style={{
               width: n === screen ? 24 : 8, height: 8, borderRadius: 99,
               background: n < screen ? "#15803d" : n === screen ? "#16a34a" : "rgba(0,0,0,0.1)",
@@ -148,7 +157,7 @@ export default function OnboardingPage() {
           <div style={{ width: "100%", maxWidth: 720 }}>
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-                color: "#15803d", marginBottom: 12 }}>Step 1 of 4</div>
+                color: "#15803d", marginBottom: 12 }}>Step 1 of 3</div>
               <h1 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 800, color: "#1C2E1E",
                 letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px" }}>
                 What issues do you care about?
@@ -158,7 +167,7 @@ export default function OnboardingPage() {
               </p>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10, marginBottom: 36 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10, marginBottom: 36 }}>
               {CATEGORIES.map(cat => {
                 const on = selected.includes(cat.name)
                 const maxed = !on && selected.length >= 5
@@ -169,23 +178,25 @@ export default function OnboardingPage() {
                     style={{
                       background: on ? "rgba(21,128,61,0.15)" : "#E8E4D8",
                       border: `1px solid ${on ? "rgba(21,128,61,0.5)" : "rgba(0,0,0,0.07)"}`,
-                      borderRadius: 12, padding: "16px 18px", textAlign: "left",
+                      borderRadius: 12, padding: "14px 16px", textAlign: "left",
                       cursor: maxed ? "not-allowed" : "pointer",
                       opacity: maxed ? 0.4 : 1,
                       transition: "all 0.15s",
+                      position: "relative",
+                      height: 80, overflow: "hidden",
+                      display: "flex", flexDirection: "column", justifyContent: "center",
                     }}
                     onMouseEnter={e => { if (!maxed) e.currentTarget.style.borderColor = on ? "rgba(21,128,61,0.7)" : "rgba(255,255,255,0.18)" }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = on ? "rgba(21,128,61,0.5)" : "rgba(0,0,0,0.07)" }}
                   >
-                    <div style={{ fontSize: 22, marginBottom: 8 }}>{cat.icon}</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: on ? "#16a34a" : "#2A3E2C", marginBottom: 4 }}>
-                      {cat.name}
+                    <div style={{ fontSize: 13, fontWeight: 700, color: on ? "#16a34a" : "#2A3E2C", marginBottom: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {cat.icon} {cat.name}
                     </div>
-                    <div style={{ fontSize: 11, color: "#6B7C6C", lineHeight: 1.4 }}>{cat.desc}</div>
+                    <div style={{ fontSize: 11, color: "#6B7C6C", lineHeight: 1.35, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{cat.desc}</div>
                     {on && (
-                      <div style={{ position: "absolute", top: 10, right: 10, width: 18, height: 18,
+                      <div style={{ position: "absolute", top: 8, right: 8, width: 16, height: 16,
                         borderRadius: "50%", background: "#15803d", display: "flex", alignItems: "center",
-                        justifyContent: "center", fontSize: 10, color: "#fff", fontWeight: 700 }}>✓</div>
+                        justifyContent: "center", fontSize: 9, color: "#fff", fontWeight: 700 }}>✓</div>
                     )}
                   </button>
                 )
@@ -216,7 +227,7 @@ export default function OnboardingPage() {
           <div style={{ width: "100%", maxWidth: 560 }}>
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-                color: "#15803d", marginBottom: 12 }}>Step 2 of 4</div>
+                color: "#15803d", marginBottom: 12 }}>Step 2 of 3</div>
               <h1 style={{ fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 800, color: "#1C2E1E",
                 letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px" }}>
                 How do you want to engage?
@@ -281,7 +292,7 @@ export default function OnboardingPage() {
           <div style={{ width: "100%", maxWidth: 480 }}>
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-                color: "#15803d", marginBottom: 12 }}>Step 3 of 4</div>
+                color: "#15803d", marginBottom: 12 }}>Step 3 of 3</div>
               <h1 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 800, color: "#1C2E1E",
                 letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px" }}>
                 Where are you located?
@@ -291,28 +302,53 @@ export default function OnboardingPage() {
               </p>
             </div>
 
-            <div style={{ marginBottom: 32 }}>
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={5}
-                value={zipCode}
-                onChange={e => setZipCode(e.target.value.replace(/\D/g, "").slice(0, 5))}
-                placeholder="Enter your zip code"
-                style={{
-                  width: "100%", boxSizing: "border-box",
-                  padding: "16px 20px", borderRadius: 12, fontSize: 22, fontWeight: 700,
-                  background: "#E8E4D8", border: "1px solid rgba(255,255,255,0.12)",
-                  color: "#1C2E1E", outline: "none", textAlign: "center",
-                  letterSpacing: "0.1em", caretColor: "#15803d",
-                }}
-                onFocus={e => e.target.style.borderColor = "rgba(21,128,61,0.6)"}
-                onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"}
-              />
-              <p style={{ fontSize: 12, color: "#6B7C6C", textAlign: "center", marginTop: 10 }}>
-                Optional — you can skip this step
-              </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 32 }}>
+              <div>
+                <label style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 600, color: "#6B7C6C", marginBottom: 8 }}>
+                  <span>ZIP code</span><span style={{ fontWeight: 400 }}>Optional</span>
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={5}
+                  value={zipCode}
+                  onChange={e => setZipCode(e.target.value.replace(/\D/g, "").slice(0, 5))}
+                  placeholder="e.g. 90210"
+                  style={{
+                    width: "100%", boxSizing: "border-box",
+                    padding: "16px 20px", borderRadius: 12, fontSize: 16,
+                    background: "#E8E4D8", border: "1px solid rgba(255,255,255,0.12)",
+                    color: "#1C2E1E", outline: "none", caretColor: "#15803d",
+                  }}
+                  onFocus={e => e.target.style.borderColor = "rgba(21,128,61,0.6)"}
+                  onBlur={e => e.target.style.borderColor  = "rgba(255,255,255,0.12)"}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 600, color: "#6B7C6C", marginBottom: 8 }}>
+                  <span>School <span style={{ fontWeight: 400, color: "#9aab9b" }}>(Help us build Herd for your campus)</span></span><span style={{ fontWeight: 400 }}>Optional</span>
+                </label>
+                <input
+                  type="text"
+                  list="school-list"
+                  value={school}
+                  onChange={e => setSchool(e.target.value)}
+                  placeholder="Search your school"
+                  style={{
+                    width: "100%", boxSizing: "border-box",
+                    padding: "16px 20px", borderRadius: 12, fontSize: 16,
+                    background: "#E8E4D8", border: "1px solid rgba(255,255,255,0.12)",
+                    color: "#1C2E1E", outline: "none", caretColor: "#15803d",
+                  }}
+                  onFocus={e => e.target.style.borderColor = "rgba(21,128,61,0.6)"}
+                  onBlur={e => e.target.style.borderColor  = "rgba(255,255,255,0.12)"}
+                />
+                <datalist id="school-list">
+                  {SCHOOLS.map(s => <option key={s} value={s} />)}
+                </datalist>
+              </div>
             </div>
 
             <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
@@ -334,27 +370,27 @@ export default function OnboardingPage() {
         {screen === 4 && (
           <div style={{ width: "100%", maxWidth: 560, textAlign: "center" }}>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-              color: "#15803d", marginBottom: 20 }}>Step 4 of 4 · You're all set</div>
+              color: "#15803d", marginBottom: 20 }}>You're all set</div>
 
             {/* Big summary card */}
-            <div style={{ background: "linear-gradient(135deg, #E8E4D8 0%, #0f172a 100%)",
-              border: "1px solid rgba(21,128,61,0.2)", borderRadius: 20, padding: "36px 40px",
+            <div style={{ background: "#1a2e1c",
+              border: "1px solid rgba(21,128,61,0.3)", borderRadius: 20, padding: "36px 40px",
               marginBottom: 32, position: "relative", overflow: "hidden" }}>
               {/* Glow */}
               <div style={{ position: "absolute", top: -40, left: "50%", transform: "translateX(-50%)",
-                width: 300, height: 200, background: "radial-gradient(ellipse, rgba(21,128,61,0.15) 0%, transparent 70%)",
+                width: 300, height: 200, background: "radial-gradient(ellipse, rgba(21,128,61,0.2) 0%, transparent 70%)",
                 pointerEvents: "none" }} />
 
               <div style={{ fontSize: 48, marginBottom: 20 }}>
                 {selected.map(c => CATEGORIES.find(x => x.name === c)?.icon).filter(Boolean).slice(0, 3).join(" ")}
               </div>
 
-              <h2 style={{ fontSize: "clamp(22px, 4vw, 32px)", fontWeight: 800, color: "#1C2E1E",
+              <h2 style={{ fontSize: "clamp(22px, 4vw, 32px)", fontWeight: 800, color: "#f0ede4",
                 letterSpacing: "-0.02em", lineHeight: 1.2, margin: "0 0 16px" }}>
                 You care about {word}
               </h2>
 
-              <p style={{ fontSize: 15, color: "#6b7280", lineHeight: 1.7, margin: "0 0 24px" }}>
+              <p style={{ fontSize: 15, color: "rgba(240,237,228,0.65)", lineHeight: 1.7, margin: "0 0 24px" }}>
                 {actionPref === "informed" && "We'll show you the most significant developments in your areas — clearly and without spin."}
                 {actionPref === "action"   && "Every issue in your feed comes with concrete actions ranked by how much time they take."}
                 {actionPref === "both"     && "You'll see what's happening and exactly what you can do about it."}

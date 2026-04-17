@@ -274,6 +274,12 @@ function NotFoundScreen() {
 // ─── Hardcoded resources by category ─────────────────────────────────────────
 
 const NL_MAINSTREAM = {
+  "Elections": [
+    { name: "Cook Political Report", description: "The gold standard for nonpartisan U.S. election forecasting and race ratings.", url: "https://www.cookpolitical.com" },
+    { name: "Politico Elections", description: "Comprehensive reporting on races, candidates, and election results nationwide.", url: "https://www.politico.com/elections" },
+    { name: "FiveThirtyEight", description: "Data-driven forecasting and analysis of elections, polling, and political trends.", url: "https://abcnews.go.com/538" },
+    { name: "Ballotpedia", description: "The encyclopedia of American politics — candidates, races, and ballot measures.", url: "https://ballotpedia.org" },
+  ],
   "Executive Power": [
     { name: "Politico Playbook", description: "The essential morning read for Washington insiders and policy watchers.", url: "https://www.politico.com/newsletter/playbook" },
     { name: "Axios AM", description: "Smart brevity on the biggest political stories of the day.", url: "https://www.axios.com/newsletters/axios-am" },
@@ -316,11 +322,17 @@ const NL_MAINSTREAM = {
     { name: "E&E News", description: "Definitive source for energy and environment policy coverage in Washington.", url: "https://www.eenews.net" },
     { name: "Yale Environment 360", description: "Opinion, analysis, and reporting on the environment from Yale.", url: "https://e360.yale.edu" },
   ],
-  "Education & Science": [
+  "Education": [
     { name: "Chronicle of Higher Education", description: "News and analysis on colleges, universities, and higher ed policy.", url: "https://www.chronicle.com" },
-    { name: "Science News", description: "Accessible coverage of scientific research, discoveries, and funding.", url: "https://www.sciencenews.org" },
     { name: "Inside Higher Ed", description: "Daily news on higher education policy, faculty, and campus life.", url: "https://www.insidehighered.com" },
+    { name: "The 74", description: "Nonprofit newsroom covering K–12 education policy, reform, and equity.", url: "https://www.the74million.org" },
+    { name: "Education Week", description: "Authoritative coverage of elementary and secondary education policy.", url: "https://www.edweek.org" },
+  ],
+  "Science": [
+    { name: "Science News", description: "Accessible coverage of scientific research, discoveries, and funding.", url: "https://www.sciencenews.org" },
     { name: "Nature News", description: "Research news and policy analysis from one of science's top journals.", url: "https://www.nature.com/news" },
+    { name: "Science Friday", description: "Science news and conversation from NPR's flagship science program.", url: "https://www.sciencefriday.com" },
+    { name: "Ars Technica", description: "Rigorous coverage of science, technology, and research policy.", url: "https://arstechnica.com/science" },
   ],
   "Immigration": [
     { name: "The Marshall Project", description: "Nonpartisan journalism covering immigration enforcement and policy.", url: "https://www.themarshallproject.org" },
@@ -328,15 +340,34 @@ const NL_MAINSTREAM = {
     { name: "Documented", description: "Journalism for and about immigrants navigating U.S. policy.", url: "https://documentedny.com" },
     { name: "Border Report", description: "On-the-ground coverage of the U.S.–Mexico border and immigration.", url: "https://www.bordereport.com" },
   ],
-  "Media & Democracy": [
+  "Democracy & Media": [
     { name: "Columbia Journalism Review", description: "Critical analysis of the press, media ethics, and journalism's future.", url: "https://www.cjr.org" },
     { name: "Nieman Lab", description: "Researching the future of journalism at Harvard's Nieman Foundation.", url: "https://www.niemanlab.org" },
     { name: "Press Gazette", description: "News about the news industry, media trends, and press freedom.", url: "https://pressgazette.co.uk" },
     { name: "Poynter", description: "Journalism ethics, fact-checking, and media industry news.", url: "https://www.poynter.org" },
   ],
+  "Foreign Policy": [
+    { name: "Foreign Affairs", description: "The premier journal of international relations and U.S. foreign policy.", url: "https://www.foreignaffairs.com" },
+    { name: "Foreign Policy", description: "Global affairs reporting and analysis from Washington and abroad.", url: "https://foreignpolicy.com" },
+    { name: "Responsible Statecraft", description: "Sober analysis of U.S. foreign policy from the Quincy Institute.", url: "https://responsiblestatecraft.org" },
+    { name: "World Politics Review", description: "Expert analysis of international affairs and geopolitical trends.", url: "https://www.worldpoliticsreview.com" },
+  ],
+  "Human Rights": [
+    { name: "Human Rights Watch Dispatch", description: "Reporting and analysis from HRW's global human rights investigations.", url: "https://www.hrw.org/news" },
+    { name: "Amnesty International News", description: "Updates from Amnesty's global campaigns on rights, justice, and dignity.", url: "https://www.amnesty.org/en/latest/news" },
+    { name: "Just Security", description: "Legal analysis at the intersection of national security and human rights.", url: "https://www.justsecurity.org" },
+    { name: "The Guardian (Rights)", description: "Investigative coverage of civil liberties and human rights worldwide.", url: "https://www.theguardian.com/law/human-rights" },
+  ],
 }
 
 const NL_SUBSTACK = {
+  "Elections": [
+    { name: "G. Elliott Morris", description: "ABC News/538 chief data analyst on polling, forecasting, and election science.", url: "https://gelliottmorris.substack.com" },
+    { name: "Sabato's Crystal Ball", description: "Larry Sabato's respected election handicapping and race ratings.", url: "https://centerforpolitics.org/crystalball" },
+    { name: "Election Law Blog", description: "Rick Hasen's authoritative coverage of voting rights and election administration.", url: "https://electionlawblog.org" },
+    { name: "Decision Desk HQ", description: "Real-time election results, forecasting models, and race analysis.", url: "https://decisiondeskhq.com" },
+    { name: "Niskanen Center", description: "Centrist policy analysis on democratic institutions, voting, and electoral reform.", url: "https://www.niskanencenter.org" },
+  ],
   "Executive Power": [
     { name: "Popular Information", description: "Judd Legum's accountability journalism on corporate and political power.", url: "https://popular.info" },
     { name: "Letters from an American", description: "Heather Cox Richardson's daily historical context on American politics.", url: "https://heathercoxrichardson.substack.com" },
@@ -386,12 +417,19 @@ const NL_SUBSTACK = {
     { name: "Climate Psychologist", description: "The psychology of climate change and how we respond to it.", url: "https://climatepsychologist.substack.com" },
     { name: "Heatmap News", description: "The energy transition and climate politics, explained.", url: "https://heatmap.news" },
   ],
-  "Education & Science": [
-    { name: "The Experimentalist", description: "How scientific research actually works — and what's going wrong.", url: "https://experimentalist.substack.com" },
+  "Education": [
     { name: "Aftermath", description: "Bryan Alexander on the future of higher education and learning.", url: "https://bryantalexander.substack.com" },
-    { name: "Lenny's Newsletter", description: "Lenny Rachitsky on product, growth, and how organizations learn.", url: "https://www.lennysnewsletter.com" },
     { name: "One Useful Thing", description: "Ethan Mollick on AI, education, and the science of learning.", url: "https://www.oneusefulthing.org" },
+    { name: "Doug Lederman", description: "Inside Higher Ed co-founder on higher ed policy, politics, and reform.", url: "https://douglederman.substack.com" },
+    { name: "The Grade", description: "Rigorous analysis of how education is covered — and miscovered — in the media.", url: "https://thegrade.substack.com" },
+    { name: "Higher Ed Dive", description: "Daily briefing on higher education strategy, policy, and finance.", url: "https://www.highereddive.com" },
+  ],
+  "Science": [
+    { name: "The Experimentalist", description: "How scientific research actually works — and what's going wrong.", url: "https://experimentalist.substack.com" },
     { name: "ScienceAlert", description: "Breaking science news and research explained for curious readers.", url: "https://www.sciencealert.com" },
+    { name: "Astral Codex Ten", description: "Scott Alexander on science, medicine, statistics, and policy.", url: "https://www.astralcodexten.com" },
+    { name: "Works in Progress", description: "Long-form essays on science, technology, and human progress.", url: "https://www.worksinprogress.news" },
+    { name: "The Prepared", description: "Research-backed analysis on science funding, R&D policy, and innovation.", url: "https://theprepared.substack.com" },
   ],
   "Immigration": [
     { name: "Immigration Uncovered", description: "Clear-eyed analysis of immigration law, enforcement, and policy.", url: "https://immigrationuncovered.substack.com" },
@@ -400,16 +438,35 @@ const NL_SUBSTACK = {
     { name: "Cato at Liberty", description: "Libertarian policy analysis on immigration reform and open borders.", url: "https://www.cato.org/blog" },
     { name: "Roberto Suro", description: "USC professor and veteran immigration journalist on policy and politics.", url: "https://robertosuro.substack.com" },
   ],
-  "Media & Democracy": [
+  "Democracy & Media": [
     { name: "Press Run", description: "Eric Boehlert on media failures, press accountability, and political journalism.", url: "https://pressrun.media" },
     { name: "The Present Age", description: "Parker Molloy on media, politics, and the information ecosystem.", url: "https://present.substack.com" },
     { name: "Platformer", description: "Casey Newton's essential newsletter on big tech and its political influence.", url: "https://www.platformer.news" },
     { name: "Garbage Day", description: "Ryan Broderick on internet culture, viral media, and online politics.", url: "https://www.garbageday.email" },
     { name: "Puck News", description: "Inside-the-room reporting on media, power, and Washington politics.", url: "https://puck.news" },
   ],
+  "Foreign Policy": [
+    { name: "Stay Sane America", description: "Tom Nichols on foreign policy, democracy, and the world beyond Washington.", url: "https://tom-nichols.substack.com" },
+    { name: "War on the Rocks", description: "Strategy and foreign policy analysis from practitioners and scholars.", url: "https://warontherocks.com" },
+    { name: "Anne Applebaum", description: "Atlantic staff writer on authoritarianism, democracy, and U.S. foreign policy.", url: "https://anneapplebaum.substack.com" },
+    { name: "Timothy Snyder", description: "Yale historian on tyranny, Ukraine, and the future of democracy.", url: "https://snyder.substack.com" },
+    { name: "CNAS", description: "Center for a New American Security — nonpartisan analysis on global security.", url: "https://www.cnas.org/publications" },
+  ],
+  "Human Rights": [
+    { name: "Facing History", description: "Education and analysis connecting history, human rights, and civic responsibility.", url: "https://www.facinghistory.org/resource-library" },
+    { name: "Rights as Usual", description: "Human rights law and policy explained for non-lawyers.", url: "https://rightsasusual.substack.com" },
+    { name: "The Dissenter", description: "Kevin Gosztola on civil liberties, press freedom, and accountability.", url: "https://thedissenter.substack.com" },
+    { name: "Freedom of the Press", description: "Updates from Freedom of the Press Foundation on surveillance and digital rights.", url: "https://freedom.press/news" },
+    { name: "Just Security", description: "Legal analysis bridging national security, rights, and accountability.", url: "https://www.justsecurity.org" },
+  ],
 }
 
 const NONPROFITS = {
+  "Elections": [
+    { name: "League of Women Voters", description: "Nonpartisan voter registration, education, and advocacy for fair elections since 1920.", url: "https://www.lwv.org/donate" },
+    { name: "Brennan Center for Justice", description: "Research and litigation on voting rights, election security, and campaign finance reform.", url: "https://www.brennancenter.org/donate" },
+    { name: "Common Cause", description: "Holds power accountable and fights for fair elections, redistricting reform, and voting access.", url: "https://www.commoncause.org/donate/" },
+  ],
   "Executive Power": [
     { name: "Common Cause", description: "Holds power accountable through nonpartisan government oversight and transparency advocacy.", url: "https://www.commoncause.org/donate/" },
     { name: "Brennan Center for Justice", description: "Researches and litigates on executive authority, voting rights, and constitutional limits.", url: "https://www.brennancenter.org/donate" },
@@ -445,20 +502,35 @@ const NONPROFITS = {
     { name: "Natural Resources Defense Council", description: "Uses law, science, and advocacy to protect the environment and public health.", url: "https://www.nrdc.org/donate" },
     { name: "Environmental Defense Fund", description: "Finds practical, nonpartisan solutions to environmental challenges.", url: "https://www.edf.org/donate" },
   ],
-  "Education & Science": [
+  "Education": [
     { name: "National Education Association Foundation", description: "Supports public education through grants, scholarships, and advocacy.", url: "https://www.neafoundation.org/donate/" },
+    { name: "PEN America", description: "Defends academic freedom, free expression, and open inquiry in schools.", url: "https://pen.org/donate/" },
+    { name: "DonorsChoose", description: "Connects donors directly with public school classroom projects in need.", url: "https://www.donorschoose.org" },
+  ],
+  "Science": [
     { name: "Union of Concerned Scientists", description: "Uses science to protect our health, safety, and the environment from political interference.", url: "https://www.ucsusa.org/donate" },
-    { name: "PEN America", description: "Defends free expression, including academic freedom and science communication.", url: "https://pen.org/donate/" },
+    { name: "American Association for the Advancement of Science", description: "Advances science and serves society through advocacy for research and evidence-based policy.", url: "https://www.aaas.org/donate" },
+    { name: "March for Science", description: "Advocates for evidence-based policy and the value of science in public life.", url: "https://marchforscience.org/donate" },
   ],
   "Immigration": [
     { name: "RAICES", description: "Provides legal services and advocates for immigrant families and asylum seekers.", url: "https://www.raicestexas.org/donate/" },
     { name: "National Immigration Law Center", description: "Defends and advances the rights of low-income immigrants through litigation and policy.", url: "https://www.nilc.org/donate/" },
     { name: "International Rescue Committee", description: "Helps refugees and displaced people rebuild their lives in safety and dignity.", url: "https://www.rescue.org/donate" },
   ],
-  "Media & Democracy": [
+  "Democracy & Media": [
     { name: "Committee to Protect Journalists", description: "Defends journalists and press freedom around the world.", url: "https://cpj.org/donate/" },
     { name: "Reporters Without Borders", description: "Advocates for freedom of the press and information worldwide.", url: "https://rsf.org/en/donate" },
     { name: "PEN America", description: "Champions free expression and fights censorship of writers and journalists.", url: "https://pen.org/donate/" },
+  ],
+  "Foreign Policy": [
+    { name: "Quincy Institute for Responsible Statecraft", description: "Advocates for a more restrained, diplomacy-first U.S. foreign policy.", url: "https://quincyinst.org/donate" },
+    { name: "Arms Control Association", description: "Advocates for arms control and disarmament to reduce global security threats.", url: "https://www.armscontrol.org/contribute" },
+    { name: "Council on Foreign Relations", description: "Independent think tank providing nonpartisan analysis on U.S. foreign policy.", url: "https://www.cfr.org/membership" },
+  ],
+  "Human Rights": [
+    { name: "Human Rights Watch", description: "Investigates and exposes human rights abuses around the world.", url: "https://www.hrw.org/donate" },
+    { name: "Amnesty International USA", description: "Campaigns globally for human rights, dignity, and justice.", url: "https://www.amnesty.org/en/donate" },
+    { name: "American Civil Liberties Union", description: "Defends civil liberties and human rights through litigation and advocacy.", url: "https://action.aclu.org/donate-aclu" },
   ],
 }
 
@@ -633,16 +705,20 @@ export default function IssuePage() {
   }
 
   const VOLUNTEER_KEYWORDS = {
-    "Environment":         "environment",
-    "Civil Rights":        "civil-rights",
-    "Economy":             "economic-justice",
-    "National Security":   "veterans",
-    "Healthcare":          "health",
-    "Immigration":         "immigration",
-    "Education & Science": "education",
-    "Media & Democracy":   "democracy",
-    "Executive Power":     "civic-engagement",
-    "Rule of Law":         "justice",
+    "Environment":      "environment",
+    "Civil Rights":     "civil-rights",
+    "Elections":        "voter-registration",
+    "Economy":          "economic-justice",
+    "National Security":"veterans",
+    "Healthcare":       "health",
+    "Immigration":      "immigration",
+    "Education":        "education",
+    "Science":          "research",
+    "Democracy & Media":"democracy",
+    "Executive Power":  "civic-engagement",
+    "Rule of Law":      "justice",
+    "Foreign Policy":   "international",
+    "Human Rights":     "human-rights",
   }
   const volunteerKeyword = VOLUNTEER_KEYWORDS[issue.category] || "civic-engagement"
   const idealistUrl = zipCode

@@ -118,7 +118,7 @@ async function evaluateWithClaude(articles, existing) {
 - Do NOT add opinion pieces, fundraising stories, or speculation
 - Severity should be CONSERVATIVE: most routine policy actions are 2–5. Reserve 6–7 for clearly consequential actions. Reserve 8–10 for genuinely severe institutional threats with concrete, documented impact — not speculation about potential impact.
 - Severity labels: "worth watching" (1–3), "notable impact" (4–6), "major impact" (7–8), "severe impact" (9–10)
-- Categories (pick exactly one): Executive Power, Rule of Law, Economy, Civil Rights, National Security, Healthcare, Environment, Education & Science, Immigration, Media & Democracy
+- Categories (pick exactly one): Executive Power, Rule of Law, Economy, Civil Rights, Elections, National Security, Healthcare, Environment, Education, Science, Immigration, Democracy & Media, Foreign Policy, Human Rights
 - Actions must be SPECIFIC and ACTIONABLE — real phone numbers, real organizations, real URLs when possible
 - Date format: "Mon YYYY" e.g. "Mar 2025"
 

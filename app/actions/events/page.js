@@ -8,7 +8,7 @@ const TYPE_COLOR = {
   "Political":    { bg: "rgba(251,146,60,0.12)",  color: "#fdba74", border: "rgba(251,146,60,0.25)" },
 }
 
-const ALL_FILTERS = ["All", "Volunteering", "Political", "Environment", "Healthcare", "Civil Rights", "Immigration", "Economy", "Education & Science"]
+const ALL_FILTERS = ["All", "Volunteering", "Political", "Environment", "Healthcare", "Civil Rights", "Elections", "Immigration", "Economy", "Education", "Science", "Foreign Policy", "Human Rights"]
 
 export default function EventsPage() {
   const mapContainer  = useRef(null)
@@ -68,7 +68,7 @@ export default function EventsPage() {
       mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
       const map = new mapboxgl.Map({
         container: mapContainer.current,
-        style: "mapbox://styles/mapbox/dark-v11",
+        style: "mapbox://styles/mapbox/outdoors-v12",
         center: [-98.5795, 39.8283],
         zoom: 4,
         attributionControl: false,

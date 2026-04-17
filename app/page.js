@@ -51,9 +51,9 @@ function parseDate(d) {
 }
 
 const CAT_ORDER = [
-  "All", "Executive Power", "Rule of Law", "Economy", "Civil Rights",
-  "National Security", "Healthcare", "Environment", "Education & Science",
-  "Immigration", "Media & Democracy",
+  "All", "Executive Power", "Rule of Law", "Economy", "Civil Rights", "Elections",
+  "National Security", "Healthcare", "Environment", "Education", "Science",
+  "Immigration", "Democracy & Media", "Foreign Policy", "Human Rights",
 ]
 
 
@@ -112,7 +112,7 @@ function TickerLine({ topics, critWeekCount, activeCat, catCounts }) {
     letterSpacing: "0.01em",
   }
 
-  const ACCENT = "#16a34a"
+  const ACCENT = "#15803d"
 
   // Static: a specific topic is selected via filter
   if (activeCat !== "All" && activeCat !== "home") {
@@ -120,7 +120,7 @@ function TickerLine({ topics, critWeekCount, activeCat, catCounts }) {
     const count = catCounts[activeCat] ?? 0
     return (
       <div style={baseStyle}>
-        <span style={{ color: ACCENT, fontSize: 9 }}>●</span>
+        <span className="sev-pulse" style={{ "--c": ACCENT }} />
         <span>Now showing: <strong style={{ color: "#6B7C6C", fontWeight: 600 }}>{count}</strong> issues in <strong style={{ color: catColor, fontWeight: 600 }}>{activeCat}</strong></span>
       </div>
     )
@@ -130,7 +130,7 @@ function TickerLine({ topics, critWeekCount, activeCat, catCounts }) {
   if (topics.length === 0) {
     return (
       <div style={baseStyle}>
-        <span style={{ color: ACCENT, fontSize: 9 }}>●</span>
+        <span className="sev-pulse" style={{ "--c": ACCENT }} />
         <span>Now showing: <strong style={{ color: "#6B7C6C", fontWeight: 600 }}>{critWeekCount}</strong> critical issues this week</span>
       </div>
     )
@@ -142,7 +142,7 @@ function TickerLine({ topics, critWeekCount, activeCat, catCounts }) {
     const count = catCounts[topics[0].name] ?? 0
     return (
       <div style={baseStyle}>
-        <span style={{ color: ACCENT, fontSize: 9 }}>●</span>
+        <span className="sev-pulse" style={{ "--c": ACCENT }} />
         <span>Now showing: <strong style={{ color: "#6B7C6C", fontWeight: 600 }}>{count}</strong> issues in <strong style={{ color: catColor, fontWeight: 600 }}>{topics[0].name}</strong></span>
       </div>
     )
@@ -158,12 +158,12 @@ function TickerLine({ topics, critWeekCount, activeCat, catCounts }) {
       onMouseLeave={() => setPaused(false)}
       style={baseStyle}
     >
-      <span style={{ color: ACCENT, fontSize: 9 }}>●</span>
-      <span>
+      <span className="sev-pulse" style={{ "--c": ACCENT }} />
+      <span style={{ whiteSpace: "nowrap" }}>
         Now showing:{" "}
-        <strong style={{ color: "#6B7C6C", fontWeight: 600, opacity: visible ? 1 : 0, transition: "opacity 0.3s ease", display: "inline-block" }}>{count}</strong>
+        <strong style={{ color: "#6B7C6C", fontWeight: 600, opacity: visible ? 1 : 0, transition: "opacity 0.3s ease", display: "inline-block", width: "2.5em", textAlign: "right" }}>{count}</strong>
         {" "}issues in{" "}
-        <strong style={{ color: catColor, fontWeight: 600, opacity: visible ? 1 : 0, transition: "opacity 0.3s ease", display: "inline-block" }}>{current?.name}</strong>
+        <strong style={{ color: catColor, fontWeight: 600, opacity: visible ? 1 : 0, transition: "opacity 0.3s ease", display: "inline-block", width: "155px" }}>{current?.name}</strong>
       </span>
     </div>
   )
@@ -193,7 +193,7 @@ function ActionCard({ card }) {
     >
       {/* Icon + headline on one row */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-        <span style={{ flexShrink: 0, lineHeight: 1 }}>{card.icon}</span>
+        <span style={{ flexShrink: 0, lineHeight: 1, fontSize: 22, filter: "none" }}>{card.icon}</span>
         <p style={{
           fontSize: 14, fontWeight: 700, color: "#1C2E1E",
           lineHeight: 1.4, margin: 0,
@@ -208,7 +208,7 @@ function ActionCard({ card }) {
 
       {/* CTA */}
       <p style={{
-        fontSize: 12, fontWeight: 600, color: "#16a34a",
+        fontSize: 12, fontWeight: 600, color: "#15803d",
         margin: 0, letterSpacing: "0.02em",
       }}>{card.cta}</p>
     </div>
@@ -264,7 +264,7 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick, followA
           height: "100%", minHeight: 220,
           background: hovered ? "#FDFAF3" : "#fff",
           borderRadius: 16,
-          borderTop: `3px solid ${catColor}`,
+          borderTop: `2px solid ${catColor}`,
           borderRight: `1px solid ${hovered ? `rgba(${rgb},0.25)` : "rgba(0,0,0,0.07)"}`,
           borderBottom: `1px solid ${hovered ? `rgba(${rgb},0.25)` : "rgba(0,0,0,0.07)"}`,
           borderLeft: `1px solid ${hovered ? `rgba(${rgb},0.25)` : "rgba(0,0,0,0.07)"}`,
@@ -279,10 +279,9 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick, followA
         {/* Top: category + date */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, paddingRight: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: catColor, flexShrink: 0 }} />
             <span style={{
               fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase",
-              color: catColor,
+              color: "#5A6B5B",
             }}>
               {issue.category}
             </span>
@@ -325,7 +324,7 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick, followA
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <span className="sev-pulse" style={{ "--c": tier.color }} />
-            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: tier.color }}>
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5A6B5B" }}>
               {tier.label}
             </span>
           </div>
@@ -1252,8 +1251,8 @@ export default function Home() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Link href="/profile" style={{
-              fontSize: 12, fontWeight: 700, color: "#16a34a",
-              background: "rgba(22,163,74,0.1)", border: "1px solid rgba(22,163,74,0.3)",
+              fontSize: 12, fontWeight: 700, color: "#15803d",
+              background: "rgba(21,128,61,0.1)", border: "1px solid rgba(21,128,61,0.3)",
               textDecoration: "none", padding: "7px 16px", borderRadius: 6,
               transition: "background 0.15s",
             }}
@@ -1408,11 +1407,11 @@ export default function Home() {
           }} />
         </div>
 
-        <div style={{ position: "relative", maxWidth: 1200, margin: "0 auto", padding: "28px 32px 12px" }}>
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#4A5C4B", marginBottom: 8 }}>
-              Civic Intelligence Feed
-            </div>
+        <div style={{ position: "relative", maxWidth: 1200, margin: "0 auto", padding: "14px 32px 8px" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#4A5C4B", marginBottom: 4 }}>
+            Civic Intelligence Feed
+          </div>
+          <div style={{ marginBottom: 6 }}>
             <h1 style={{
               fontFamily: "var(--font-fraunces), Georgia, serif",
               fontSize: "clamp(36px, 5vw, 64px)",
@@ -1423,52 +1422,43 @@ export default function Home() {
               color: "#1C2E1E",
             }}>Act<br/><span style={{ color: "#15803d" }}>Now.</span></h1>
           </div>
-
-          {/* Ticker — secondary status line */}
-          <div style={{ marginBottom: 12 }}>
-            <TickerLine
-              topics={topics}
-              critWeekCount={critWeekCount}
-              activeCat={cat}
-              catCounts={catCounts}
-            />
-          </div>
-
         </div>
       </div>
 
       {/* Tab strip */}
       <div style={{ borderBottom: "1px solid rgba(0,0,0,0.07)", background: "rgba(244,240,230,0.97)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", display: "flex", gap: 0 }}>
-          {[
-            { id: "feed", label: "What's Happening" },
-            { id: "network", label: "Network" },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id)
-                if (tab.id === "network") {
-                  setHasNewActivity(false)
-                  localStorage.setItem("lastNetworkCheck", new Date().toISOString())
-                }
-              }}
-              style={{
-                background: "none", border: "none", cursor: "pointer",
-                padding: "12px 16px", fontSize: 13, fontWeight: activeTab === tab.id ? 700 : 500,
-                color: activeTab === tab.id ? "#1C2E1E" : "#6B7C6C",
-                borderBottom: activeTab === tab.id ? "2px solid #15803d" : "2px solid transparent",
-                marginBottom: -1, transition: "color 0.15s, border-color 0.15s",
-                display: "flex", alignItems: "center", gap: 6,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {tab.label}
-              {tab.id === "network" && hasNewActivity && (
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#16a34a", flexShrink: 0, display: "inline-block" }} />
-              )}
-            </button>
-          ))}
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", gap: 0 }}>
+            {[
+              { id: "feed", label: "What's Happening" },
+              { id: "network", label: "Network" },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id)
+                  if (tab.id === "network") {
+                    setHasNewActivity(false)
+                    localStorage.setItem("lastNetworkCheck", new Date().toISOString())
+                  }
+                }}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  padding: "12px 16px", fontSize: 13, fontWeight: activeTab === tab.id ? 700 : 500,
+                  color: activeTab === tab.id ? "#1C2E1E" : "#6B7C6C",
+                  borderBottom: activeTab === tab.id ? "2px solid #15803d" : "2px solid transparent",
+                  marginBottom: -1, transition: "color 0.15s, border-color 0.15s",
+                  display: "flex", alignItems: "center", gap: 6,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {tab.label}
+                {tab.id === "network" && hasNewActivity && (
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#16a34a", flexShrink: 0, display: "inline-block" }} />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1484,8 +1474,8 @@ export default function Home() {
           minHeight: 32,
           borderRadius: 20,
           border: active ? `1px solid ${color}` : "1px solid rgba(0,0,0,0.09)",
-          background: active ? `rgba(${hexToRgb(color)},0.1)` : "transparent",
-          color: active ? color : "#6B7C6C",
+          background: active ? `rgba(${hexToRgb(color)},0.18)` : "transparent",
+          color: active ? "#1C2E1E" : "#6B7C6C",
           fontSize: 11, fontWeight: active ? 700 : 500,
           cursor: "pointer",
           letterSpacing: "0.02em",
@@ -1566,6 +1556,14 @@ export default function Home() {
                   {showMore ? "Less ▴" : `+${otherCats.length} more ▾`}
                 </button>
               )}
+              <div className="ticker-wrap" style={{ marginLeft: "auto", flexShrink: 0, alignSelf: "center", display: "flex", whiteSpace: "nowrap" }}>
+                <TickerLine
+                  topics={topics}
+                  critWeekCount={critWeekCount}
+                  activeCat={cat}
+                  catCounts={catCounts}
+                />
+              </div>
             </div>
           </div>
         )
@@ -1651,14 +1649,14 @@ export default function Home() {
               onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.04)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
-              <span style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, filter: "grayscale(0.6) saturate(0.6)" }}>{card.icon}</span>
+              <span style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, filter: "saturate(0.7)" }}>{card.icon}</span>
               <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: "#1C2E1E", letterSpacing: "-0.01em" }}>{card.headline}</span>
                 <span style={{ fontSize: 11, color: "#6B7C6C", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{card.body}</span>
               </div>
               <span style={{
                 flexShrink: 0, fontSize: 11, fontWeight: 700, color: "#15803d",
-                background: "rgba(21,128,61,0.1)", border: "1px solid rgba(21,128,61,0.2)",
+                background: "rgba(21,128,61,0.1)", border: "1px solid rgba(21,128,61,0.3)",
                 padding: "4px 10px", borderRadius: 20, letterSpacing: "0.02em",
               }}>Go →</span>
             </Link>
@@ -1685,6 +1683,7 @@ export default function Home() {
         }
 
         .pill-ctrl:hover { background: rgba(0,0,0,0.05) !important; }
+        @media (max-width: 860px) { .ticker-wrap { display: none !important; } }
 
         @keyframes sev-pulse {
           0%   { transform: scale(1);   opacity: 1; }

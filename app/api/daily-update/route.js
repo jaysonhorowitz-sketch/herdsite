@@ -20,9 +20,9 @@ const DOMAINS = [
 ].join(",")
 
 const CATEGORIES = [
-  "Executive Power", "Rule of Law", "Economy", "Civil Rights",
-  "National Security", "Healthcare", "Environment", "Education & Science",
-  "Immigration", "Media & Democracy",
+  "Executive Power", "Rule of Law", "Economy", "Civil Rights", "Elections",
+  "National Security", "Healthcare", "Environment", "Education", "Science",
+  "Immigration", "Democracy & Media", "Foreign Policy", "Human Rights",
 ]
 
 const CLAUDE_PROMPT = `You are a sharp, nonpartisan editor at a civic engagement app for Gen Z and Millennials. Your job is to take today's biggest political news and turn it into clear, human issue cards.
