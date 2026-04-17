@@ -71,7 +71,7 @@ function hexToRgb(hex) {
 // ─── Hardcoded action cards data ───────────────────────────────────────────────
 const ACTION_CARDS = [
   {
-    icon: "🌳",
+    icon: "🌱",
     headline: "Explore Nonprofits",
     body: "Discover vetted organizations working on the issues you care about.",
     link: "/actions/donate",
