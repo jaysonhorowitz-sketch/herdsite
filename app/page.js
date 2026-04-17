@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback, useRef } from "react"
 import { createClient } from "@/utils/supabase/client"
 import Link from "next/link"
 import { CAT_COLOR } from "@/lib/colors"
+import { ANIMAL_MAP, DEFAULT_ANIMAL } from "@/lib/animals"
 
 const supabase = createClient()
 
@@ -229,7 +230,7 @@ function severityTier(s) {
 }
 
 // ─── FeedCard ─────────────────────────────────────────────────────────────────
-function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick }) {
+function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick, followActionCount }) {
   const tier     = severityTier(issue.severity_score)
   const catColor = CAT_COLOR[issue.category] || "#6B7C6C"
   const rgb      = hexToRgb(catColor)
@@ -307,6 +308,16 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick }) {
           {issue.description}
         </p>
 
+        {/* Social proof */}
+        {followActionCount > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 12 }}>
+            <span style={{ fontSize: 13 }}>👥</span>
+            <span style={{ fontSize: 11, color: "#6B7C6C", fontWeight: 600 }}>
+              {followActionCount} {followActionCount === 1 ? "person" : "people"} you follow took action
+            </span>
+          </div>
+        )}
+
         {/* Divider */}
         <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginBottom: 14 }} />
 
@@ -321,14 +332,468 @@ function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick }) {
           <span style={{
             display: "inline-flex", alignItems: "center", gap: 4,
             padding: "5px 12px", borderRadius: 6,
-            background: `rgba(${rgb},0.1)`,
-            border: `1px solid rgba(${rgb},0.25)`,
-            color: catColor, fontSize: 10, fontWeight: 800,
+            background: "#15803d",
+            border: "1px solid #15803d",
+            color: "#ffffff", fontSize: 10, fontWeight: 800,
             letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap",
             transition: "background 0.15s",
           }}>Take Action →</span>
         </div>
       </Link>
+    </div>
+  )
+}
+
+// ─── Animal emoji lookup ──────────────────────────────────────────────────────
+function animalEmoji(animalType) {
+  if (!animalType) return DEFAULT_ANIMAL.emoji
+  const entry = ANIMAL_MAP.find(a => a.animal === animalType)
+  return entry ? entry.emoji : DEFAULT_ANIMAL.emoji
+}
+
+function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return "just now"
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.floor(h / 24)}d ago`
+}
+
+// ─── ActivityItem ─────────────────────────────────────────────────────────────
+function ActivityItem({ activity, hasClapped, clapCount, onClap }) {
+  const user = activity.user_prefs || {}
+  const emoji = animalEmoji(user.animal_type)
+  const name = user.display_name || (user.username ? `@${user.username}` : "Someone")
+  const handle = user.username ? `@${user.username}` : null
+  const [hovRow, setHovRow]   = useState(false)
+  const [pressing, setPressing] = useState(false)
+  const profileHref = user.username ? `/profile/${user.username}` : null
+
+  const verb = activity.activity_type === "saved_issue" ? "saved"
+    : activity.activity_type === "completed_action" ? "took action on"
+    : "interacted with"
+
+  return (
+    <div
+      onMouseEnter={() => setHovRow(true)}
+      onMouseLeave={() => setHovRow(false)}
+      style={{
+        display: "flex", alignItems: "flex-start", gap: 12,
+        padding: "14px 10px", margin: "0 -10px",
+        borderBottom: "1px solid rgba(0,0,0,0.055)",
+        borderRadius: 8,
+        background: hovRow ? "rgba(0,0,0,0.025)" : "transparent",
+        transition: "background 0.15s",
+      }}
+    >
+      {/* Avatar */}
+      {profileHref ? (
+        <Link href={profileHref} style={{ flexShrink: 0, width: 44, height: 44, borderRadius: "50%", background: "rgba(21,128,61,0.09)", border: "1.5px solid rgba(21,128,61,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, textDecoration: "none", transition: "border-color 0.15s", boxShadow: hovRow ? "0 0 0 3px rgba(21,128,61,0.08)" : "none" }}>{emoji}</Link>
+      ) : (
+        <div style={{ flexShrink: 0, width: 44, height: 44, borderRadius: "50%", background: "rgba(21,128,61,0.09)", border: "1.5px solid rgba(21,128,61,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{emoji}</div>
+      )}
+
+      {/* Content */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, lineHeight: 1.5, color: "#1C2E1E" }}>
+          {profileHref ? (
+            <Link href={profileHref} style={{ fontWeight: 700, color: "#1C2E1E", textDecoration: "none" }}
+              onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
+              onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}
+            >{name}</Link>
+          ) : <strong>{name}</strong>}
+          {handle && <span style={{ color: "#A8B5A9", fontWeight: 400, marginLeft: 5, fontSize: 12 }}>{handle}</span>}
+        </div>
+        <div style={{ fontSize: 13, color: "#6B7C6C", lineHeight: 1.5, marginTop: 1 }}>
+          {verb}{" "}
+          {activity.issue_slug && activity.issue_title ? (
+            <Link href={`/issue/${activity.issue_slug}`}
+              style={{ color: "#15803d", fontWeight: 600, textDecoration: "none" }}
+              onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
+              onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}
+            >{activity.issue_title}</Link>
+          ) : <span>an issue</span>}
+        </div>
+        <div style={{ fontSize: 11, color: "#A8B5A9", marginTop: 4, letterSpacing: "0.01em" }}>
+          {timeAgo(activity.created_at)}
+        </div>
+      </div>
+
+      {/* Clap */}
+      <button
+        onClick={() => onClap?.(activity.id)}
+        onMouseDown={() => setPressing(true)}
+        onMouseUp={() => setPressing(false)}
+        onMouseLeave={() => setPressing(false)}
+        style={{
+          flexShrink: 0, alignSelf: "center",
+          background: hasClapped ? "rgba(21,128,61,0.1)" : "transparent",
+          border: hasClapped ? "1px solid rgba(21,128,61,0.25)" : "1px solid transparent",
+          borderRadius: 20, cursor: "pointer",
+          padding: "5px 10px", minWidth: 44, minHeight: 44,
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+          transform: pressing ? "scale(0.92)" : "scale(1)",
+          transition: "transform 0.1s, background 0.15s, border-color 0.15s",
+        }}
+        title="Clap"
+      >
+        <span style={{ fontSize: 16, display: "block", transition: "transform 0.15s", transform: hasClapped ? "rotate(-10deg)" : "none" }}>👏</span>
+        {clapCount > 0 && (
+          <span style={{ fontSize: 12, color: hasClapped ? "#15803d" : "#9CAD9C", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{clapCount}</span>
+        )}
+      </button>
+    </div>
+  )
+}
+
+// ─── UserCard ─────────────────────────────────────────────────────────────────
+function UserCard({ user, isFollowing, isPending, onToggle, commonTopics }) {
+  const [hov, setHov] = useState(false)
+  const emoji   = animalEmoji(user.animal_type)
+  const href    = user.username ? `/profile/${user.username}` : null
+  const nameEl  = user.display_name || user.username
+
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: "flex", alignItems: "center", gap: 12, padding: "12px 16px",
+        background: "#fff", borderRadius: 14, marginBottom: 8,
+        border: "1px solid rgba(0,0,0,0.07)",
+        boxShadow: hov ? "0 4px 16px rgba(0,0,0,0.08)" : "0 1px 4px rgba(0,0,0,0.04)",
+        transform: hov ? "translateY(-1px)" : "translateY(0)",
+        transition: "box-shadow 0.2s, transform 0.2s",
+      }}
+    >
+      {href ? (
+        <Link href={href} style={{ flexShrink: 0, width: 48, height: 48, borderRadius: "50%", background: "rgba(21,128,61,0.08)", border: "1.5px solid rgba(21,128,61,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, textDecoration: "none" }}>{emoji}</Link>
+      ) : (
+        <div style={{ flexShrink: 0, width: 48, height: 48, borderRadius: "50%", background: "rgba(21,128,61,0.08)", border: "1.5px solid rgba(21,128,61,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{emoji}</div>
+      )}
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {href ? (
+          <Link href={href} style={{ fontSize: 14, fontWeight: 700, color: "#1C2E1E", lineHeight: 1.3, textDecoration: "none", display: "block" }}>{nameEl}</Link>
+        ) : (
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#1C2E1E", lineHeight: 1.3 }}>{nameEl}</div>
+        )}
+        {user.username && (
+          <div style={{ fontSize: 12, color: "#A8B5A9", marginTop: 1 }}>@{user.username}</div>
+        )}
+        {commonTopics > 0 ? (
+          <div style={{ fontSize: 11, color: "#15803d", fontWeight: 600, marginTop: 4 }}>
+            {commonTopics} topic{commonTopics !== 1 ? "s" : ""} in common
+          </div>
+        ) : user.categories?.length > 0 && (
+          <div style={{ fontSize: 11, color: "#6B7C6C", marginTop: 4 }}>
+            {user.categories.slice(0, 2).join(" · ")}
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={() => onToggle(user.user_id, user.is_private)}
+        style={{
+          flexShrink: 0, padding: "8px 18px", borderRadius: 20,
+          fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all 0.15s",
+          minHeight: 36,
+          ...(isFollowing
+            ? { background: "rgba(21,128,61,0.1)", border: "1px solid rgba(21,128,61,0.3)", color: "#15803d" }
+            : isPending
+            ? { background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.12)", color: "#6B7C6C" }
+            : { background: "#15803d", border: "1px solid #15803d", color: "#fff" }),
+        }}
+      >
+        {isFollowing ? "Following" : isPending ? "Requested" : "Follow"}
+      </button>
+    </div>
+  )
+}
+
+// ─── Skeleton feed row ────────────────────────────────────────────────────────
+function SkeletonRow() {
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 0", borderBottom: "1px solid rgba(0,0,0,0.055)" }}>
+      <div className="skeleton" style={{ flexShrink: 0, width: 44, height: 44, borderRadius: "50%" }} />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
+        <div className="skeleton" style={{ height: 13, width: "40%", borderRadius: 4 }} />
+        <div className="skeleton" style={{ height: 13, width: "70%", borderRadius: 4 }} />
+        <div className="skeleton" style={{ height: 11, width: "20%", borderRadius: 4 }} />
+      </div>
+    </div>
+  )
+}
+
+// ─── NetworkTab ───────────────────────────────────────────────────────────────
+function NetworkTab({ userId, userCategories }) {
+  const [search,        setSearch]        = useState("")
+  const [searchResults, setSearchResults] = useState([])
+  const [feed,          setFeed]          = useState([])
+  const [following,     setFollowing]     = useState(new Set())
+  const [pending,       setPending]       = useState(new Set())
+  const [loadingFeed,   setLoadingFeed]   = useState(true)
+  const [searching,     setSearching]     = useState(false)
+  const [clapMap,       setClapMap]       = useState({ mySet: new Set(), countMap: {} })
+  const [suggested,     setSuggested]     = useState([])
+  const searchRef = useRef(null)
+
+  // Load who current user follows
+  useEffect(() => {
+    if (!userId) { setLoadingFeed(false); return }
+    supabase.from("follows")
+      .select("following_id, status")
+      .eq("follower_id", userId)
+      .then(({ data }) => {
+        if (data) {
+          setFollowing(new Set(data.filter(f => f.status === "accepted").map(f => f.following_id)))
+          setPending(new Set(data.filter(f => f.status === "pending").map(f => f.following_id)))
+        }
+        setLoadingFeed(false)
+      })
+  }, [userId])
+
+  // Load activity feed from followed users
+  useEffect(() => {
+    if (!userId || following.size === 0) return
+    supabase.from("user_activity")
+      .select("id, user_id, activity_type, issue_slug, issue_title, created_at, user_prefs(display_name, username, animal_type)")
+      .in("user_id", [...following])
+      .order("created_at", { ascending: false })
+      .limit(40)
+      .then(({ data }) => setFeed(data || []))
+  }, [userId, following])
+
+  // Load clap counts + whether current user clapped
+  useEffect(() => {
+    if (!feed.length || !userId) return
+    const ids = feed.map(f => f.id)
+    Promise.all([
+      supabase.from("activity_likes").select("activity_id").in("activity_id", ids).eq("user_id", userId),
+      supabase.from("activity_likes").select("activity_id").in("activity_id", ids),
+    ]).then(([mine, all]) => {
+      const mySet = new Set((mine.data || []).map(l => l.activity_id))
+      const countMap = {}
+      for (const l of (all.data || [])) countMap[l.activity_id] = (countMap[l.activity_id] || 0) + 1
+      setClapMap({ mySet, countMap })
+    })
+  }, [feed, userId])
+
+  // Load suggested users (people with similar categories not yet followed)
+  useEffect(() => {
+    if (!userId || !userCategories?.length) return
+    supabase.from("user_prefs")
+      .select("user_id, display_name, username, animal_type, categories, is_private")
+      .neq("user_id", userId)
+      .limit(40)
+      .then(({ data }) => {
+        if (!data) return
+        const scored = data
+          .filter(u => u.username) // only show users with a username
+          .map(u => {
+            const overlap = (u.categories || []).filter(c => userCategories.includes(c)).length
+            return { ...u, overlap }
+          })
+          .filter(u => u.overlap > 0)
+          .sort((a, b) => b.overlap - a.overlap)
+          .slice(0, 5)
+        setSuggested(scored)
+      })
+  }, [userId, userCategories])
+
+  // Debounced search — supports username, name, and 5-digit zip
+  useEffect(() => {
+    if (!search.trim()) { setSearchResults([]); return }
+    setSearching(true)
+    const t = setTimeout(async () => {
+      const q = search.trim()
+      const isZip = /^\d{5}$/.test(q)
+      let query = supabase.from("user_prefs")
+        .select("user_id, display_name, username, animal_type, categories, is_private")
+        .neq("user_id", userId || "00000000-0000-0000-0000-000000000000")
+        .limit(10)
+
+      if (isZip) {
+        query = query.eq("zip_code", q)
+      } else {
+        query = query.or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
+      }
+
+      const { data } = await query
+      setSearchResults(data || [])
+      setSearching(false)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [search, userId])
+
+  async function toggleFollow(targetId, isPrivate) {
+    if (following.has(targetId) || pending.has(targetId)) {
+      await supabase.from("follows").delete()
+        .eq("follower_id", userId).eq("following_id", targetId)
+      setFollowing(p => { const s = new Set(p); s.delete(targetId); return s })
+      setPending(p => { const s = new Set(p); s.delete(targetId); return s })
+    } else {
+      const status = isPrivate ? "pending" : "accepted"
+      await supabase.from("follows").insert({ follower_id: userId, following_id: targetId, status })
+      if (status === "accepted") setFollowing(p => new Set([...p, targetId]))
+      else setPending(p => new Set([...p, targetId]))
+    }
+  }
+
+  async function handleClap(activityId) {
+    if (!userId) return
+    const hasClapped = clapMap.mySet.has(activityId)
+    if (hasClapped) {
+      await supabase.from("activity_likes").delete().eq("user_id", userId).eq("activity_id", activityId)
+      setClapMap(prev => ({
+        mySet: new Set([...prev.mySet].filter(id => id !== activityId)),
+        countMap: { ...prev.countMap, [activityId]: Math.max(0, (prev.countMap[activityId] || 1) - 1) },
+      }))
+    } else {
+      await supabase.from("activity_likes").insert({ user_id: userId, activity_id: activityId })
+      setClapMap(prev => ({
+        mySet: new Set([...prev.mySet, activityId]),
+        countMap: { ...prev.countMap, [activityId]: (prev.countMap[activityId] || 0) + 1 },
+      }))
+    }
+  }
+
+  const showSearch = search.trim().length > 0
+
+  return (
+    <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 32px 120px" }}>
+      {/* Search bar */}
+      <div style={{ marginBottom: 20, position: "relative" }}>
+        <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#9CAD9C", fontSize: 14, pointerEvents: "none" }}>🔍</span>
+        <input
+          ref={searchRef}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search by username or name…"
+          style={{
+            width: "100%", boxSizing: "border-box",
+            padding: "12px 36px 12px 40px",
+            fontSize: 14, color: "#1C2E1E",
+            background: "#fff", border: "1px solid rgba(0,0,0,0.1)",
+            borderRadius: 12, outline: "none",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+            transition: "border-color 0.15s, box-shadow 0.15s",
+          }}
+          onFocus={e => { e.target.style.borderColor = "rgba(21,128,61,0.4)"; e.target.style.boxShadow = "0 0 0 3px rgba(21,128,61,0.08)" }}
+          onBlur={e => { e.target.style.borderColor = "rgba(0,0,0,0.1)"; e.target.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)" }}
+        />
+        {search && (
+          <button onClick={() => setSearch("")}
+            style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9CAD9C", fontSize: 18, lineHeight: 1, padding: "0 4px" }}>
+            ×
+          </button>
+        )}
+      </div>
+
+      {/* Search results */}
+      {showSearch && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6B7C6C" }}>
+              {searching ? "Searching…" : `${searchResults.length} result${searchResults.length !== 1 ? "s" : ""}`}
+            </div>
+            {/^\d{5}$/.test(search.trim()) && (
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#15803d", background: "rgba(21,128,61,0.08)", border: "1px solid rgba(21,128,61,0.2)", padding: "3px 10px", borderRadius: 20 }}>
+                📍 By zip code
+              </div>
+            )}
+          </div>
+          {searching && [1,2].map(i => <SkeletonRow key={i} />)}
+          {!searching && searchResults.map(user => (
+            <UserCard key={user.user_id} user={user}
+              isFollowing={following.has(user.user_id)}
+              isPending={pending.has(user.user_id)}
+              onToggle={toggleFollow}
+            />
+          ))}
+          {!searching && searchResults.length === 0 && (
+            <p style={{ color: "#6B7C6C", fontSize: 13, textAlign: "center", padding: "20px 0" }}>
+              No users found for &ldquo;{search}&rdquo;
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Feed / empty state */}
+      {!showSearch && (
+        loadingFeed ? (
+          <div>
+            {[1,2,3].map(i => <SkeletonRow key={i} />)}
+          </div>
+        ) : following.size === 0 ? (
+          <div>
+            <div style={{ textAlign: "center", padding: "40px 20px 28px" }}>
+              <div style={{ fontSize: 52, marginBottom: 16 }}>🦌</div>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: "#1C2E1E", margin: "0 0 8px", fontFamily: "var(--font-fraunces), Georgia, serif" }}>
+                Find your herd
+              </h3>
+              <p style={{ fontSize: 14, color: "#6B7C6C", lineHeight: 1.65, margin: "0 0 20px", maxWidth: 300, marginInline: "auto" }}>
+                Follow others who share your issues to see their actions here.
+              </p>
+              <button
+                onClick={() => searchRef.current?.focus()}
+                style={{ padding: "10px 24px", borderRadius: 20, fontSize: 13, fontWeight: 700, background: "#15803d", color: "#fff", border: "none", cursor: "pointer", transition: "background 0.15s" }}
+                onMouseEnter={e => e.currentTarget.style.background = "#166534"}
+                onMouseLeave={e => e.currentTarget.style.background = "#15803d"}
+              >Search for people →</button>
+            </div>
+
+            {suggested.length > 0 && (
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6B7C6C", marginBottom: 10 }}>
+                  Suggested for you
+                </div>
+                {suggested.map(user => (
+                  <UserCard
+                    key={user.user_id}
+                    user={user}
+                    isFollowing={following.has(user.user_id)}
+                    isPending={pending.has(user.user_id)}
+                    onToggle={toggleFollow}
+                    commonTopics={user.overlap || 0}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : feed.length === 0 ? (
+          <div>
+            <div style={{ padding: "32px 0 24px", textAlign: "center", color: "#9CAD9C", fontSize: 13 }}>
+              No recent activity from people you follow yet.
+            </div>
+            {suggested.filter(u => !following.has(u.user_id)).length > 0 && (
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6B7C6C", marginBottom: 10 }}>
+                  More people to follow
+                </div>
+                {suggested.filter(u => !following.has(u.user_id)).map(user => (
+                  <UserCard key={user.user_id} user={user}
+                    isFollowing={false} isPending={pending.has(user.user_id)}
+                    onToggle={toggleFollow}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          feed.map(activity => (
+            <ActivityItem
+              key={activity.id}
+              activity={activity}
+              hasClapped={clapMap.mySet.has(activity.id)}
+              clapCount={clapMap.countMap[activity.id] || 0}
+              onClap={handleClap}
+            />
+          ))
+        )
+      )}
     </div>
   )
 }
@@ -346,10 +811,18 @@ export default function Home() {
   const [completedKeys, setCompletedKeys] = useState(new Set())
   const [archivedSlugs, setArchivedSlugs] = useState(new Set())
   const [catClicks,     setCatClicks]     = useState({})
-  const [selectedCats,  setSelectedCats]  = useState([])
-  const [accountOpen,   setAccountOpen]   = useState(false)
-  const [showMore,      setShowMore]      = useState(false)
+  const [selectedCats,      setSelectedCats]      = useState([])
+  const [accountOpen,       setAccountOpen]       = useState(false)
+  const [showMore,          setShowMore]          = useState(false)
+  const [activeTab,         setActiveTab]         = useState("feed")
+  const [userId,            setUserId]            = useState(null)
+  const [hasNewActivity,    setHasNewActivity]    = useState(false)
+  const [notifOpen,         setNotifOpen]         = useState(false)
+  const [notifCount,        setNotifCount]        = useState(0)
+  const [notifItems,        setNotifItems]        = useState([])
+  const [socialProof,       setSocialProof]       = useState({})
   const accountRef     = useRef(null)
+  const notifRef       = useRef(null)
 
   useEffect(() => {
     async function loadPrefs() {
@@ -360,7 +833,6 @@ export default function Home() {
           window.location.href = "/login"
           return
         }
-        // Guest who finished onboarding — load prefs from localStorage
         try {
           const raw = localStorage.getItem("howbadisite_prefs")
           const parsed = raw ? JSON.parse(raw) : {}
@@ -370,6 +842,57 @@ export default function Home() {
         }
         setLoading(false)
         return
+      }
+
+      setUserId(user.id)
+
+      // Load notifications (new followers + likes since last check)
+      const lastNotifCheck = localStorage.getItem("lastNotifCheck") || new Date(0).toISOString()
+      const [newFollowsRes, newLikesRes] = await Promise.all([
+        supabase.from("follows")
+          .select("follower_id, created_at")
+          .eq("following_id", user.id)
+          .eq("status", "accepted")
+          .gt("created_at", lastNotifCheck)
+          .order("created_at", { ascending: false })
+          .limit(10),
+        supabase.from("activity_likes")
+          .select("created_at, activity_id")
+          .eq("activity_id", user.id)
+          .gt("created_at", lastNotifCheck)
+          .limit(10),
+      ])
+      const followerIds = (newFollowsRes.data || []).map(f => f.follower_id)
+      let followerProfiles = []
+      if (followerIds.length) {
+        const { data: fp } = await supabase.from("user_prefs")
+          .select("user_id, display_name, username, animal_type")
+          .in("user_id", followerIds)
+        followerProfiles = fp || []
+      }
+      const notifs = (newFollowsRes.data || []).map(f => {
+        const p = followerProfiles.find(x => x.user_id === f.follower_id)
+        return { type: "follow", name: p?.display_name || p?.username || "Someone", username: p?.username, created_at: f.created_at }
+      })
+      setNotifCount(notifs.length)
+      setNotifItems(notifs)
+
+      // Check for new network activity since last visit
+      const lastCheck = localStorage.getItem("lastNetworkCheck")
+      if (lastCheck) {
+        supabase.from("follows").select("following_id").eq("follower_id", user.id).eq("status", "accepted")
+          .then(({ data: follows }) => {
+            if (follows?.length) {
+              supabase.from("user_activity")
+                .select("id")
+                .in("user_id", follows.map(f => f.following_id))
+                .gt("created_at", lastCheck)
+                .limit(1)
+                .then(({ data: newActs }) => { if (newActs?.length) setHasNewActivity(true) })
+            }
+          })
+      } else {
+        setHasNewActivity(true)
       }
 
       const { data } = await supabase
@@ -384,6 +907,7 @@ export default function Home() {
       }
 
       setPrefs({ categories: data.categories || [], actionPref: data.action_pref })
+      if (data.categories?.length) setSelectedCats(data.categories)
       if (data.zip_code) localStorage.setItem("userZipCode", data.zip_code)
       setLoading(false)
     }
@@ -394,6 +918,33 @@ export default function Home() {
     supabase.from("issues").select("*").eq("is_published", true)
       .then(({ data }) => { if (data) setIssues(data) })
   }, [])
+
+  // Social proof: count how many followed users took action on each issue
+  useEffect(() => {
+    if (!userId) return
+    async function loadSocialProof() {
+      const { data: follows } = await supabase
+        .from("follows")
+        .select("following_id")
+        .eq("follower_id", userId)
+        .eq("status", "accepted")
+      if (!follows?.length) return
+      const ids = follows.map(f => f.following_id)
+      const { data: acts } = await supabase
+        .from("user_activity")
+        .select("issue_slug")
+        .in("user_id", ids)
+        .eq("activity_type", "completed_action")
+        .not("issue_slug", "is", null)
+      if (!acts?.length) return
+      const map = {}
+      for (const a of acts) {
+        if (a.issue_slug) map[a.issue_slug] = (map[a.issue_slug] || 0) + 1
+      }
+      setSocialProof(map)
+    }
+    loadSocialProof()
+  }, [userId])
 
   // Dedicated query for total per-category counts (used by ticker only)
   useEffect(() => {
@@ -463,6 +1014,9 @@ export default function Home() {
       if (accountRef.current && !accountRef.current.contains(e.target)) {
         setAccountOpen(false)
       }
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false)
+      }
     }
     document.addEventListener("mousedown", handleClick)
     return () => document.removeEventListener("mousedown", handleClick)
@@ -503,6 +1057,15 @@ export default function Home() {
               { user_id: user.id, issue_slug: issueSlug, action_index: actionIndex, completed_at: new Date().toISOString() },
               { onConflict: "user_id,issue_slug,action_index" }
             ).catch(() => {})
+            // Log to activity feed
+            const issue = issues.find(i => i.slug === issueSlug)
+            supabase.from("user_activity").insert({
+              user_id: user.id,
+              activity_type: "completed_action",
+              issue_slug: issueSlug,
+              issue_title: issue?.title || null,
+              created_at: new Date().toISOString(),
+            }).catch(() => {})
           }
         })
       }
@@ -513,11 +1076,32 @@ export default function Home() {
   const toggleArchive = useCallback((slug) => {
     setArchivedSlugs(prev => {
       const next = new Set(prev)
-      if (next.has(slug)) { next.delete(slug) } else { next.add(slug) }
+      const adding = !prev.has(slug)
+      if (adding) { next.add(slug) } else { next.delete(slug) }
       try { localStorage.setItem("archivedIssues", JSON.stringify([...next])) } catch {}
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user) return
+        if (adding) {
+          const issue = issues.find(i => i.slug === slug)
+          supabase.from("user_activity").insert({
+            user_id: user.id,
+            activity_type: "saved_issue",
+            issue_slug: slug,
+            issue_title: issue?.title || null,
+            created_at: new Date().toISOString(),
+          }).catch(() => {})
+        } else {
+          supabase.from("user_activity")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("activity_type", "saved_issue")
+            .eq("issue_slug", slug)
+            .catch(() => {})
+        }
+      })
       return next
     })
-  }, [])
+  }, [issues])
 
   // Load category click history — Supabase for logged-in users, localStorage for guests
   useEffect(() => {
@@ -639,21 +1223,6 @@ export default function Home() {
     i.severity_score >= 8 && i.created_at && new Date(i.created_at).getTime() >= since7
   ).length
 
-  const visibleActionCards = ACTION_CARDS
-
-  const filterBtnStyle = (active) => ({
-    background: "none", border: "none", cursor: "pointer",
-    padding: "4px 0",
-    fontSize: 13, fontWeight: active ? 600 : 400,
-    color: active ? "#1C2E1E" : "#5A6B5B",
-    textDecorationLine: active ? "underline" : "none",
-    textDecorationColor: "rgba(255,255,255,0.35)",
-    textUnderlineOffset: "5px",
-    whiteSpace: "nowrap",
-    transition: "color 0.15s",
-    letterSpacing: "0.01em",
-  })
-
   return (
     <div style={{ minHeight: "100vh", background: "#F4F0E6", fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: "#1C2E1E" }}>
 
@@ -691,6 +1260,81 @@ export default function Home() {
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(22,163,74,0.18)" }}
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(22,163,74,0.1)" }}
             >My Impact</Link>
+
+            {/* Notification bell */}
+            {userId && (
+              <div ref={notifRef} style={{ position: "relative" }}>
+                <button
+                  onClick={() => {
+                    setNotifOpen(v => !v)
+                    if (!notifOpen) {
+                      localStorage.setItem("lastNotifCheck", new Date().toISOString())
+                      setNotifCount(0)
+                    }
+                  }}
+                  style={{
+                    position: "relative", background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.1)",
+                    borderRadius: 8, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: "pointer", transition: "background 0.15s",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.08)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "rgba(0,0,0,0.04)"}
+                  aria-label="Notifications"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A5C4B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                  </svg>
+                  {notifCount > 0 && (
+                    <span style={{
+                      position: "absolute", top: -4, right: -4,
+                      background: "#ef4444", color: "#fff", borderRadius: "50%",
+                      width: 16, height: 16, fontSize: 9, fontWeight: 700,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      border: "2px solid #F4F0E6",
+                    }}>{notifCount > 9 ? "9+" : notifCount}</span>
+                  )}
+                </button>
+
+                {notifOpen && (
+                  <div style={{
+                    position: "absolute", top: "calc(100% + 8px)", right: 0,
+                    background: "#E8E4D8", border: "1px solid rgba(0,0,0,0.1)",
+                    borderRadius: 12, minWidth: 280, maxWidth: 320,
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.14)", zIndex: 100,
+                    overflow: "hidden",
+                  }}>
+                    <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#1C2E1E" }}>Notifications</span>
+                    </div>
+                    <div style={{ maxHeight: 320, overflowY: "auto" }}>
+                      {notifItems.length === 0 ? (
+                        <div style={{ padding: "28px 16px", textAlign: "center", fontSize: 13, color: "#9CAD9C" }}>
+                          You&rsquo;re all caught up!
+                        </div>
+                      ) : notifItems.map((n, i) => (
+                        <div key={i} style={{
+                          display: "flex", alignItems: "center", gap: 10,
+                          padding: "12px 16px", borderBottom: i < notifItems.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+                        }}>
+                          <div style={{ fontSize: 20, flexShrink: 0 }}>👤</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: "#1C2E1E" }}>
+                              {n.username
+                                ? <Link href={`/profile/${n.username}`} style={{ color: "#15803d", textDecoration: "none" }} onClick={() => setNotifOpen(false)}>{n.name}</Link>
+                                : n.name}
+                            </span>
+                            <span style={{ fontSize: 13, color: "#6B7C6C" }}> started following you</span>
+                            <div style={{ fontSize: 11, color: "#A8B5A9", marginTop: 2 }}>{timeAgo(n.created_at)}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
           <div ref={accountRef} style={{ position: "relative" }}>
             <button
               onClick={() => setAccountOpen(v => !v)}
@@ -720,20 +1364,15 @@ export default function Home() {
                 borderRadius: 10, padding: "6px", minWidth: 160,
                 boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 100,
               }}>
-                {[
-                  { label: "My Impact", href: "/profile" },
-                  { label: "Archive",   href: "/archive" },
-                ].map(item => (
-                  <Link key={item.label} href={item.href} onClick={() => setAccountOpen(false)}
-                    style={{
-                      display: "block", padding: "9px 14px", borderRadius: 7,
-                      fontSize: 13, fontWeight: 600, color: "#2A3E2C",
-                      textDecoration: "none", transition: "background 0.12s",
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.06)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                  >{item.label}</Link>
-                ))}
+                <Link href="/settings" onClick={() => setAccountOpen(false)}
+                  style={{
+                    display: "block", padding: "9px 14px", borderRadius: 7,
+                    fontSize: 13, fontWeight: 600, color: "#2A3E2C",
+                    textDecoration: "none", transition: "background 0.12s",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.06)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                >Settings</Link>
                 <div style={{ height: 1, background: "rgba(0,0,0,0.07)", margin: "4px 0" }} />
                 <button
                   onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login" }}
@@ -798,24 +1437,55 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Category filter strip */}
-      {(() => {
+      {/* Tab strip */}
+      <div style={{ borderBottom: "1px solid rgba(0,0,0,0.07)", background: "rgba(244,240,230,0.97)" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", display: "flex", gap: 0 }}>
+          {[
+            { id: "feed", label: "What's Happening" },
+            { id: "network", label: "Network" },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id)
+                if (tab.id === "network") {
+                  setHasNewActivity(false)
+                  localStorage.setItem("lastNetworkCheck", new Date().toISOString())
+                }
+              }}
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                padding: "12px 16px", fontSize: 13, fontWeight: activeTab === tab.id ? 700 : 500,
+                color: activeTab === tab.id ? "#1C2E1E" : "#6B7C6C",
+                borderBottom: activeTab === tab.id ? "2px solid #15803d" : "2px solid transparent",
+                marginBottom: -1, transition: "color 0.15s, border-color 0.15s",
+                display: "flex", alignItems: "center", gap: 6,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {tab.label}
+              {tab.id === "network" && hasNewActivity && (
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#16a34a", flexShrink: 0, display: "inline-block" }} />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Category filter strip — feed tab only */}
+      {activeTab === "feed" && (() => {
         const personalizedCats = CAT_ORDER.filter(c => c !== "All" && userCats.includes(c))
         const otherCats = CAT_ORDER.filter(c => c !== "All" && !userCats.includes(c))
         const allCats = showMore ? [...personalizedCats, ...otherCats] : personalizedCats
 
-        const pillStyle = (active, color, isAll) => ({
+        const pillStyle = (active, color) => ({
           flexShrink: 0,
           padding: "5px 14px",
           minHeight: 32,
           borderRadius: 20,
-          border: active
-            ? `1px solid ${isAll ? "rgba(0,0,0,0.2)" : color}`
-            : "1px solid rgba(0,0,0,0.09)",
-          background: active
-            ? isAll ? "rgba(0,0,0,0.06)" : `rgba(${hexToRgb(color)},0.1)`
-            : "transparent",
-          color: active ? (isAll ? "#1C2E1E" : color) : "#6B7C6C",
+          border: active ? `1px solid ${color}` : "1px solid rgba(0,0,0,0.09)",
+          background: active ? `rgba(${hexToRgb(color)},0.1)` : "transparent",
+          color: active ? color : "#6B7C6C",
           fontSize: 11, fontWeight: active ? 700 : 500,
           cursor: "pointer",
           letterSpacing: "0.02em",
@@ -823,7 +1493,6 @@ export default function Home() {
           whiteSpace: "nowrap",
         })
 
-        const allActive = selectedCats.length === 0 && (cat === "home" || !userCats.includes(cat) === false)
         const allSelected = selectedCats.length === CAT_ORDER.filter(c => c !== "All").length
 
         return (
@@ -837,12 +1506,6 @@ export default function Home() {
               maxWidth: 1200, margin: "0 auto", padding: "8px 32px",
               display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap",
             }}>
-              {/* All */}
-              <button
-                onClick={() => { setSelectedCats([]); setCat("home") }}
-                style={pillStyle(allActive, "#6B7C6C", true)}
-              >All</button>
-
               {/* Personalized + expanded cats */}
               {allCats.map(c => {
                 const active = selectedCats.includes(c)
@@ -856,7 +1519,7 @@ export default function Home() {
                       )
                       setCat("home")
                     }}
-                    style={pillStyle(active, color, false)}
+                    style={pillStyle(active, color)}
                   >{c}</button>
                 )
               })}
@@ -908,38 +1571,40 @@ export default function Home() {
         )
       })()}
 
-      {/* Section header */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 32px 10px", display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 3, height: 16, background: "#15803d", borderRadius: 2 }} />
-          <span style={{ fontSize: 11, fontWeight: 800, color: "#2A3E2C", letterSpacing: "0.14em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-            What&apos;s Happening
-          </span>
-        </div>
-        <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.06)" }} />
-        <span style={{ fontSize: 11, color: "#6B7C6C", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
-          <strong style={{ color: "#3A4B3B" }}>{feedIssues.length}</strong> issues
-        </span>
-      </div>
+      {activeTab === "feed" ? (
+        <>
+          {/* Section sub-header */}
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 32px 10px", display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.06)" }} />
+            <span style={{ fontSize: 11, color: "#6B7C6C", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+              <strong style={{ color: "#3A4B3B" }}>{feedIssues.length}</strong> issues
+            </span>
+          </div>
 
-      {/* Flat feed */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 40px" }}>
-        {feedIssues.length === 0 && (
-          <p style={{ color: "#4A5C4B", fontSize: 14, padding: "40px 0", textAlign: "center" }}>No issues match your current filter.</p>
-        )}
-        <div className="feed-grid" style={{ alignItems: "stretch" }}>
-          {feedIssues.map(issue => (
-            <FeedCard
-              key={issue.id}
-              issue={issue}
-              weekCount={actionCounts[issue.slug] || 0}
-              isArchived={archivedSlugs.has(issue.slug)}
-              onArchive={toggleArchive}
-              onCatClick={recordCatClick}
-            />
-          ))}
-        </div>
-      </div>
+          {/* Feed grid */}
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 40px" }}>
+            {feedIssues.length === 0 && (
+              <p style={{ color: "#4A5C4B", fontSize: 14, padding: "40px 0", textAlign: "center" }}>No issues match your current filter.</p>
+            )}
+            <div className="feed-grid" style={{ alignItems: "stretch" }}>
+              {feedIssues.map(issue => (
+                <FeedCard
+                  key={issue.id}
+                  issue={issue}
+                  weekCount={actionCounts[issue.slug] || 0}
+                  isArchived={archivedSlugs.has(issue.slug)}
+                  onArchive={toggleArchive}
+                  onCatClick={recordCatClick}
+                  followActionCount={socialProof[issue.slug] || 0}
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        /* Network tab */
+        <NetworkTab userId={userId} userCategories={userCats} />
+      )}
 
       {/* Footer */}
       <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", background: "#EAE6DA" }}>
@@ -1044,7 +1709,29 @@ export default function Home() {
         }
         @media (prefers-reduced-motion: reduce) {
           .sev-pulse::after { animation: none; }
+          .skeleton { animation: none; }
           * { transition-duration: 0.01ms !important; }
+        }
+
+        /* Skeleton shimmer */
+        @keyframes shimmer {
+          0%   { background-position: -400px 0; }
+          100% { background-position: 400px 0; }
+        }
+        .skeleton {
+          background: linear-gradient(90deg, #E0DCD0 25%, #EAE6DA 50%, #E0DCD0 75%);
+          background-size: 800px 100%;
+          animation: shimmer 1.6s ease-in-out infinite;
+        }
+
+        /* Focus-visible rings */
+        button:focus-visible, a:focus-visible {
+          outline: 2px solid #15803d;
+          outline-offset: 2px;
+          border-radius: 4px;
+        }
+        button:focus:not(:focus-visible), a:focus:not(:focus-visible) {
+          outline: none;
         }
       `}</style>
     </div>

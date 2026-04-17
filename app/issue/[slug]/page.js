@@ -592,6 +592,21 @@ export default function IssuePage() {
       supabase.from("action_clicks").insert({
         issue_slug: params.slug, action_index: actionIndex, clicked_at: new Date().toISOString(),
       }).then(() => setWeekCount(c => (c || 0) + 1)).catch(() => {})
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          supabase.from("user_actions").upsert(
+            { user_id: user.id, issue_slug: params.slug, action_index: actionIndex, completed_at: new Date().toISOString() },
+            { onConflict: "user_id,issue_slug,action_index" }
+          ).catch(() => {})
+          supabase.from("user_activity").insert({
+            user_id: user.id,
+            activity_type: "completed_action",
+            issue_slug: params.slug,
+            issue_title: issue?.title || null,
+            created_at: new Date().toISOString(),
+          }).catch(() => {})
+        }
+      })
       return next
     })
   }
@@ -714,7 +729,7 @@ export default function IssuePage() {
             {/* 1. What Is Happening */}
             <section>
               <p style={SH}>What Is Happening</p>
-              <p style={{ color: "#FDFAF3", lineHeight: 1.85, fontSize: 18, margin: 0, fontWeight: 400, letterSpacing: "-0.01em" }}>
+              <p style={{ color: "#374151", lineHeight: 1.85, fontSize: 18, margin: 0, fontWeight: 400, letterSpacing: "-0.01em" }}>
                 {issue.description}
               </p>
             </section>
@@ -796,7 +811,7 @@ export default function IssuePage() {
                       onMouseEnter={e => e.currentTarget.style.borderColor = "#cbd5e1"}
                       onMouseLeave={e => e.currentTarget.style.borderColor = "#e5e7eb"}
                     >
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#FDFAF3", marginBottom: 6 }}>{org.name}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#1C2E1E", marginBottom: 6 }}>{org.name}</div>
                       <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5, marginBottom: 12, flex: 1 }}>{org.description}</div>
                       <a
                         href={org.url}
@@ -841,7 +856,7 @@ export default function IssuePage() {
               >
                 {zipCode && (
                   <p style={{ fontSize: 13, color: "#6B7C6C", lineHeight: 1.65, margin: "0 0 16px" }}>
-                    Showing opportunities for <strong style={{ color: "#FDFAF3" }}>{zipCode}</strong>. Your zip is also pre-filled in the Call My Rep button.
+                    Showing opportunities for <strong style={{ color: "#1C2E1E" }}>{zipCode}</strong>. Your zip is also pre-filled in the Call My Rep button.
                   </p>
                 )}
                 <a
@@ -850,7 +865,7 @@ export default function IssuePage() {
                   rel="noopener noreferrer"
                   style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
-                    fontSize: 13, fontWeight: 700, color: "#FDFAF3", textDecoration: "none",
+                    fontSize: 13, fontWeight: 700, color: "#15803d", textDecoration: "none",
                   }}
                 >
                   <span>Find Volunteer Opportunities Near You</span>
@@ -904,7 +919,7 @@ export default function IssuePage() {
                         onMouseLeave={e => e.currentTarget.style.borderColor = "#e5e7eb"}
                       >
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "#FDFAF3", lineHeight: 1.3 }}>{nl.name}</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#1C2E1E", lineHeight: 1.3 }}>{nl.name}</div>
                           <span style={{
                             fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
                             padding: "2px 7px", borderRadius: 4, flexShrink: 0,
