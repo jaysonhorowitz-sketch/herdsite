@@ -1,17 +1,9 @@
 "use client"
 import { useEffect, useState, useCallback, useRef } from "react"
-import { createClient } from "@/utils/supabase/client"
+import { supabase } from "@/lib/supabase"
 import Link from "next/link"
-import dynamic from "next/dynamic"
 import { CAT_COLOR } from "@/lib/colors"
 import { ANIMAL_MAP, DEFAULT_ANIMAL } from "@/lib/animals"
-import FeedCard from "@/components/FeedCard"
-import EventCard from "@/components/EventCard"
-import NonprofitCard from "@/components/NonprofitCard"
-
-const MobilizeMap = dynamic(() => import("@/components/MobilizeMap"), { ssr: false })
-
-const supabase = createClient()
 
 
 // ─── Action URL derivation (mirrors issue detail page logic) ──────────────────
@@ -62,79 +54,6 @@ const CAT_ORDER = [
   "Immigration", "Democracy & Media", "Foreign Policy", "Human Rights",
 ]
 
-const NONPROFITS = {
-  "Elections":         [
-    { name: "League of Women Voters",    description: "Nonpartisan voter registration, education, and advocacy for fair elections since 1920.", url: "https://www.lwv.org/donate" },
-    { name: "Brennan Center for Justice",description: "Research and litigation on voting rights, election security, and campaign finance reform.", url: "https://www.brennancenter.org/donate" },
-    { name: "Common Cause",              description: "Holds power accountable and fights for fair elections, redistricting reform, and voting access.", url: "https://www.commoncause.org/donate/" },
-  ],
-  "Executive Power":   [
-    { name: "Common Cause",              description: "Holds power accountable through nonpartisan government oversight and transparency advocacy.", url: "https://www.commoncause.org/donate/" },
-    { name: "Brennan Center for Justice",description: "Researches and litigates on executive authority, voting rights, and constitutional limits.", url: "https://www.brennancenter.org/donate" },
-    { name: "Campaign Legal Center",     description: "Advances democracy through litigation and policy work on campaign finance and ethics.", url: "https://campaignlegal.org/donate" },
-  ],
-  "Rule of Law":       [
-    { name: "ACLU",                              description: "Defends individual rights and liberties in courts and legislatures nationwide.", url: "https://action.aclu.org/donate-aclu" },
-    { name: "Brennan Center for Justice",        description: "Works to reform and protect American democratic institutions and rule of law.", url: "https://www.brennancenter.org/donate" },
-    { name: "Project on Government Oversight",   description: "Investigates and exposes government abuses to advance accountability.", url: "https://www.pogo.org/donate" },
-  ],
-  "Economy":           [
-    { name: "Economic Policy Institute",         description: "Research and policy advocacy to improve economic conditions for low- and middle-income workers.", url: "https://www.epi.org/donate/" },
-    { name: "Center on Budget and Policy Priorities", description: "Analyzes federal and state budget policies and their effects on low-income households.", url: "https://www.cbpp.org/donate" },
-    { name: "Demos",                             description: "Advocates for economic opportunity, democracy, and an inclusive society.", url: "https://www.demos.org/donate" },
-  ],
-  "Civil Rights":      [
-    { name: "ACLU",                              description: "Defends civil liberties and civil rights through litigation, advocacy, and education.", url: "https://action.aclu.org/donate-aclu" },
-    { name: "NAACP Legal Defense Fund",          description: "Litigates to achieve racial justice and advance civil rights in America.", url: "https://www.naacpldf.org/donate/" },
-    { name: "Southern Poverty Law Center",       description: "Monitors hate groups and pursues civil rights litigation across the South.", url: "https://www.splcenter.org/donate" },
-  ],
-  "National Security": [
-    { name: "Arms Control Association",          description: "Advocates for arms control and disarmament to reduce global security threats.", url: "https://www.armscontrol.org/contribute" },
-    { name: "Project on Government Oversight",   description: "Oversees Pentagon and intelligence community spending and accountability.", url: "https://www.pogo.org/donate" },
-    { name: "Human Rights Watch",                description: "Investigates and exposes human rights abuses linked to military and security operations.", url: "https://www.hrw.org/donate" },
-  ],
-  "Healthcare":        [
-    { name: "Families USA",                      description: "National advocacy organization working to achieve high-quality, affordable healthcare.", url: "https://familiesusa.org/donate/" },
-    { name: "National Patient Advocate Foundation", description: "Helps patients access and afford the health care they need.", url: "https://www.npaf.org/donate/" },
-    { name: "Doctors Without Borders",           description: "Delivers emergency medical care in health crises regardless of politics.", url: "https://donate.doctorswithoutborders.org/" },
-  ],
-  "Environment":       [
-    { name: "Sierra Club",                       description: "America's oldest and largest grassroots environmental organization.", url: "https://www.sierraclub.org/donate" },
-    { name: "Natural Resources Defense Council", description: "Uses law, science, and advocacy to protect the environment and public health.", url: "https://www.nrdc.org/donate" },
-    { name: "Environmental Defense Fund",        description: "Finds practical, nonpartisan solutions to environmental challenges.", url: "https://www.edf.org/donate" },
-  ],
-  "Education":         [
-    { name: "National Education Association Foundation", description: "Supports public education through grants, scholarships, and advocacy.", url: "https://www.neafoundation.org/donate/" },
-    { name: "PEN America",                       description: "Defends academic freedom, free expression, and open inquiry in schools.", url: "https://pen.org/donate/" },
-    { name: "DonorsChoose",                      description: "Connects donors directly with public school classroom projects in need.", url: "https://www.donorschoose.org" },
-  ],
-  "Science":           [
-    { name: "Union of Concerned Scientists",     description: "Uses science to protect our health, safety, and the environment from political interference.", url: "https://www.ucsusa.org/donate" },
-    { name: "American Association for the Advancement of Science", description: "Advances science and serves society through advocacy for research and evidence-based policy.", url: "https://www.aaas.org/donate" },
-    { name: "March for Science",                 description: "Advocates for evidence-based policy and the value of science in public life.", url: "https://marchforscience.org/donate" },
-  ],
-  "Immigration":       [
-    { name: "RAICES",                            description: "Provides legal services and advocates for immigrant families and asylum seekers.", url: "https://www.raicestexas.org/donate/" },
-    { name: "National Immigration Law Center",   description: "Defends and advances the rights of low-income immigrants through litigation and policy.", url: "https://www.nilc.org/donate/" },
-    { name: "International Rescue Committee",    description: "Helps refugees and displaced people rebuild their lives in safety and dignity.", url: "https://www.rescue.org/donate" },
-  ],
-  "Democracy & Media": [
-    { name: "Committee to Protect Journalists",  description: "Defends journalists and press freedom around the world.", url: "https://cpj.org/donate/" },
-    { name: "Reporters Without Borders",         description: "Advocates for freedom of the press and information worldwide.", url: "https://rsf.org/en/donate" },
-    { name: "PEN America",                       description: "Champions free expression and fights censorship of writers and journalists.", url: "https://pen.org/donate/" },
-  ],
-  "Foreign Policy":    [
-    { name: "Quincy Institute for Responsible Statecraft", description: "Advocates for a more restrained, diplomacy-first U.S. foreign policy.", url: "https://quincyinst.org/donate" },
-    { name: "Arms Control Association",          description: "Advocates for arms control and disarmament to reduce global security threats.", url: "https://www.armscontrol.org/contribute" },
-    { name: "Council on Foreign Relations",      description: "Independent think tank providing nonpartisan analysis on U.S. foreign policy.", url: "https://www.cfr.org/membership" },
-  ],
-  "Human Rights":      [
-    { name: "Human Rights Watch",                description: "Investigates and exposes human rights abuses around the world.", url: "https://www.hrw.org/donate" },
-    { name: "Amnesty International USA",         description: "Campaigns globally for human rights, dignity, and justice.", url: "https://www.amnesty.org/en/donate" },
-    { name: "American Civil Liberties Union",    description: "Defends civil liberties and human rights through litigation and advocacy.", url: "https://action.aclu.org/donate-aclu" },
-  ],
-}
-
 
 function catSlug(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
@@ -152,14 +71,8 @@ const ACTION_CARDS = [
   {
     icon: "🌱",
     headline: "Explore Nonprofits",
-    body: "Discover vetted organizations, engage, and donate.",
+    body: "Discover vetted organizations working on the issues you care about.",
     link: "/actions/donate",
-  },
-  {
-    icon: "⚡",
-    headline: "My Impact",
-    body: "Track your actions, saved issues, and civic progress.",
-    link: "/profile",
   },
   {
     icon: "📍",
@@ -303,6 +216,145 @@ function ActionCard({ card }) {
     <Link href={card.link} style={{ flex: 1, textDecoration: "none", color: "inherit", display: "flex" }}>
       {inner}
     </Link>
+  )
+}
+
+// ─── Feed description truncation (complete sentences, ≤40 words) ──────────────
+function truncateToSentences(text, wordLimit = 30) {
+  if (!text) return text
+  const words = text.trim().split(/\s+/)
+  if (words.length <= wordLimit) return text
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text]
+  let result = ""
+  let count = 0
+  for (const s of sentences) {
+    const w = s.trim().split(/\s+/).length
+    if (count + w > wordLimit) break
+    result += (result ? " " : "") + s.trim()
+    count += w
+  }
+  return result || sentences[0].trim()
+}
+
+// ─── Severity tier ────────────────────────────────────────────────────────────
+function severityTier(s) {
+  if (s >= 9) return { label: "severe impact",  color: "#ef4444", bar: "rgba(220,38,38,0.6)"    }
+  if (s >= 7) return { label: "major impact",   color: "#fb923c", bar: "rgba(234,88,12,0.6)"    }
+  if (s >= 4) return { label: "notable impact", color: "#fbbf24", bar: "rgba(217,119,6,0.6)"    }
+  return             { label: "worth watching", color: "#6B7C6C", bar: "rgba(100,116,139,0.6)"  }
+}
+
+// ─── FeedCard ─────────────────────────────────────────────────────────────────
+function FeedCard({ issue, weekCount, isArchived, onArchive, onCatClick, followActionCount }) {
+  const tier     = severityTier(issue.severity_score)
+  const catColor = CAT_COLOR[issue.category] || "#6B7C6C"
+  const rgb      = hexToRgb(catColor)
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <div style={{ position: "relative", height: "100%" }}>
+      {/* Archive bookmark */}
+      <button
+        onClick={e => { e.preventDefault(); e.stopPropagation(); onArchive(issue.slug) }}
+        style={{
+          position: "absolute", top: 16, right: 16, zIndex: 2,
+          background: isArchived ? `rgba(${rgb},0.12)` : "none",
+          border: "none", cursor: "pointer",
+          color: isArchived ? catColor : "#C5BFB0",
+          fontSize: 15, padding: "4px 5px", lineHeight: 1,
+          transition: "color 0.15s, background 0.15s",
+          borderRadius: 4,
+        }}
+        title={isArchived ? "Remove from archive" : "Save to archive"}
+      >{isArchived ? "★" : "☆"}</button>
+
+      <Link
+        href={"/issue/" + issue.slug}
+        onClick={() => onCatClick(issue.category)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          textDecoration: "none", color: "inherit",
+          display: "flex", flexDirection: "column",
+          height: "100%", minHeight: 220,
+          background: hovered ? "#FDFAF3" : "#fff",
+          borderRadius: 16,
+          borderTop: `2px solid ${catColor}`,
+          borderRight: `1px solid ${hovered ? `rgba(${rgb},0.25)` : "rgba(0,0,0,0.07)"}`,
+          borderBottom: `1px solid ${hovered ? `rgba(${rgb},0.25)` : "rgba(0,0,0,0.07)"}`,
+          borderLeft: `1px solid ${hovered ? `rgba(${rgb},0.25)` : "rgba(0,0,0,0.07)"}`,
+          boxShadow: hovered
+            ? `0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(${rgb},0.12)`
+            : "0 2px 8px rgba(0,0,0,0.05)",
+          padding: "20px 20px 18px",
+          transform: hovered ? "translateY(-3px)" : "translateY(0)",
+          transition: "box-shadow 0.2s, transform 0.2s, border-color 0.2s, background 0.2s",
+        }}
+      >
+        {/* Top: category + date */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, paddingRight: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{
+              fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase",
+              color: "#5A6B5B",
+            }}>
+              {issue.category}
+            </span>
+          </div>
+          <span style={{ fontSize: 10, color: "#A8B5A9", fontWeight: 500, letterSpacing: "0.02em" }}>{issue.date}</span>
+        </div>
+
+        {/* Headline */}
+        <h2 style={{
+          fontSize: 17, fontWeight: 800, margin: "0 0 12px", color: "#1a2e1c",
+          lineHeight: 1.35, letterSpacing: "-0.02em",
+          fontFamily: "var(--font-fraunces), Georgia, serif",
+          flex: "0 0 auto",
+        }}>
+          {issue.title}
+        </h2>
+
+        {/* Description */}
+        <p style={{
+          color: "#5A6B5B", fontSize: 13, lineHeight: 1.65,
+          margin: "0 0 16px", flex: 1,
+        }}>
+          {truncateToSentences(issue.description)}
+        </p>
+
+        {/* Social proof */}
+        {followActionCount > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 12 }}>
+            <span style={{ fontSize: 13 }}>👥</span>
+            <span style={{ fontSize: 11, color: "#6B7C6C", fontWeight: 600 }}>
+              {followActionCount} {followActionCount === 1 ? "person" : "people"} you follow took action
+            </span>
+          </div>
+        )}
+
+        {/* Divider */}
+        <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginBottom: 14 }} />
+
+        {/* Bottom row */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <span className="sev-pulse" style={{ "--c": tier.color }} />
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5A6B5B" }}>
+              {tier.label}
+            </span>
+          </div>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 4,
+            padding: "5px 12px", borderRadius: 6,
+            background: "rgba(21,128,61,0.1)",
+            border: "1px solid rgba(21,128,61,0.3)",
+            color: "#15803d", fontSize: 10, fontWeight: 700,
+            letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap",
+            transition: "background 0.15s",
+          }}>Take Action →</span>
+        </div>
+      </Link>
+    </div>
   )
 }
 
@@ -760,8 +812,8 @@ function NetworkTab({ userId, userCategories }) {
   )
 }
 
-// ─── Home ─────────────────────────────────────────────────────────────────────
-export default function Home() {
+// ─── Full Feed ────────────────────────────────────────────────────────────────
+export default function FeedPage() {
   const [issues,        setIssues]        = useState([])
   const [cat,           setCat]           = useState("home")
   const [scrolled,      setScrolled]      = useState(false)
@@ -783,16 +835,7 @@ export default function Home() {
   const [notifCount,        setNotifCount]        = useState(0)
   const [notifItems,        setNotifItems]        = useState([])
   const [socialProof,       setSocialProof]       = useState({})
-  const [previewPage,       setPreviewPage]       = useState(0)
-  const [spotlightPage,     setSpotlightPage]     = useState(0)
-  const [mapZip,            setMapZip]            = useState("")
-  const [mapEvents,         setMapEvents]         = useState([])
   const accountRef     = useRef(null)
-
-  useEffect(() => {
-    const saved = localStorage.getItem("userZipCode")
-    if (saved) setMapZip(saved)
-  }, [])
   const notifRef       = useRef(null)
 
   useEffect(() => {
@@ -1120,69 +1163,79 @@ export default function Home() {
 
   const userCats = prefs?.categories || []
 
+  // Feed pool — filtered by current pill/dropdown state
+  const pool = selectedCats.length > 0
+               ? issues.filter(i => selectedCats.includes(i.category))
+               : cat === "home" ? issues.filter(i => userCats.includes(i.category))
+               : issues.filter(i => i.category === cat)
+
+  const isHome = cat === "home" || selectedCats.length > 0
+
+  let feedIssues
+
+  if (isHome) {
+    // ── Home / multi-filter: blended score + interleave (no back-to-back category) ──
+    const maxClicks = Math.max(1, ...Object.values(catClicks))
+    const poolDates = pool.map(i => parseDate(i.date))
+    const minDate   = poolDates.length ? Math.min(...poolDates) : 0
+    const dateRange = Math.max(1, (poolDates.length ? Math.max(...poolDates) : 1) - minDate)
+
+    // Per-category severity ranges so each topic competes on equal footing
+    const catSevBounds = {}
+    pool.forEach(i => {
+      if (!catSevBounds[i.category]) catSevBounds[i.category] = { min: i.severity_score, max: i.severity_score }
+      if (i.severity_score > catSevBounds[i.category].max) catSevBounds[i.category].max = i.severity_score
+      if (i.severity_score < catSevBounds[i.category].min) catSevBounds[i.category].min = i.severity_score
+    })
+
+    function blendScore(issue) {
+      const affinity  = (catClicks[issue.category] || 0) / maxClicks
+      const bounds    = catSevBounds[issue.category] || { min: 1, max: 10 }
+      const sevRange  = Math.max(1, bounds.max - bounds.min)
+      const severity  = (issue.severity_score - bounds.min) / sevRange  // relative within category
+      const recency   = (parseDate(issue.date) - minDate) / dateRange
+      // Weights: recency 50%, severity 30%, affinity 20%
+      return (recency * 0.5) + (severity * 0.3) + (affinity * 0.2)
+    }
+
+    const scored = [...pool].sort((a, b) => blendScore(b) - blendScore(a))
+
+    // Cap each category so no topic dominates the feed
+    const uniqueCats = [...new Set(pool.map(i => i.category))]
+    const perCatCap  = Math.max(2, Math.ceil(scored.length / uniqueCats.length))
+    const catSeen    = {}
+    const capped     = scored.filter(i => {
+      catSeen[i.category] = (catSeen[i.category] || 0) + 1
+      return catSeen[i.category] <= perCatCap
+    })
+
+    // Interleave: never place two issues from the same category back to back
+    const interleaved = []
+    const remaining   = [...capped]
+    let lastCat       = null
+
+    while (remaining.length > 0) {
+      const idx = remaining.findIndex(i => i.category !== lastCat)
+      if (idx === -1) { interleaved.push(...remaining); break }
+      interleaved.push(remaining[idx])
+      lastCat = remaining[idx].category
+      remaining.splice(idx, 1)
+    }
+
+    feedIssues = interleaved
+  } else {
+    // ── Single category pill: newest first, severity breaks ties ──
+    feedIssues = [...pool].sort((a, b) => {
+      const dateDiff = parseDate(b.date) - parseDate(a.date)
+      if (dateDiff !== 0) return dateDiff
+      return b.severity_score - a.severity_score
+    })
+  }
+
   const since7 = Date.now() - 7 * 24 * 3600 * 1000
   const critWeekCount = issues.filter(i =>
     i.severity_score >= 8 && i.created_at && new Date(i.created_at).getTime() >= since7
   ).length
-
-  // 4-card preview — flat sequence guarantees every card changes on each click
-  const { happeningNow, previewTotalPages } = (() => {
-    const cats = selectedCats
-    if (!cats.length) return { happeningNow: [], previewTotalPages: 1 }
-    const n = cats.length
-    let slots
-    if (n === 1)      slots = [{ cat: cats[0], count: 4 }]
-    else if (n === 2) slots = [{ cat: cats[0], count: 2 }, { cat: cats[1], count: 2 }]
-    else if (n === 3) slots = [{ cat: cats[0], count: 2 }, { cat: cats[1], count: 1 }, { cat: cats[2], count: 1 }]
-    else              slots = cats.slice(0, 4).map(c => ({ cat: c, count: 1 }))
-
-    // Per-category sorted pools with independent read pointers
-    const catPool = {}
-    const catIdx  = {}
-    for (const { cat } of slots) {
-      catPool[cat] = [...issues]
-        .filter(i => i.category === cat)
-        .sort((a, b) => b.severity_score - a.severity_score || parseDate(b.date) - parseDate(a.date))
-      catIdx[cat] = 0
-    }
-
-    // Global fallback: all user-cat issues sorted, used when a cat pool is exhausted
-    const globalSorted = [...issues]
-      .filter(i => cats.includes(i.category))
-      .sort((a, b) => b.severity_score - a.severity_score || parseDate(b.date) - parseDate(a.date))
-    const totalUnique = globalSorted.length
-    if (totalUnique === 0) return { happeningNow: [], previewTotalPages: 1 }
-
-    // Build a flat ordered sequence: follow slot distribution, fall back to global
-    // when a category is exhausted so every position holds a distinct issue
-    const usedIds  = new Set()
-    const sequence = []
-    while (usedIds.size < totalUnique) {
-      let progressed = false
-      for (const { cat, count } of slots) {
-        for (let j = 0; j < count; j++) {
-          if (usedIds.size >= totalUnique) break
-          const pool = catPool[cat]
-          // Skip any pool items already consumed as fallbacks
-          while (catIdx[cat] < pool.length && usedIds.has(pool[catIdx[cat]].id)) catIdx[cat]++
-          const issue = catIdx[cat] < pool.length
-            ? pool[catIdx[cat]++]
-            : globalSorted.find(i => !usedIds.has(i.id))
-          if (issue && !usedIds.has(issue.id)) {
-            usedIds.add(issue.id)
-            sequence.push(issue)
-            progressed = true
-          }
-        }
-      }
-      if (!progressed) break
-    }
-
-    const previewTotalPages = Math.max(1, Math.ceil(sequence.length / 4))
-    const page        = previewPage % previewTotalPages
-    const happeningNow = sequence.slice(page * 4, page * 4 + 4)
-    return { happeningNow, previewTotalPages }
-  })()
 
   return (
     <div style={{ minHeight: "100vh", background: "#F4F0E6", fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: "#1C2E1E" }}>
@@ -1209,9 +1262,19 @@ export default function Home() {
               <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 20, fontWeight: 800, color: "#1C2E1E", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
             </div>
             <div style={{ width: 1, height: 16, background: "rgba(0,0,0,0.12)" }} />
-            <span style={{ fontSize: 10, color: "#4A5C4B", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase" }}>Civic Intelligence</span>
+            <span style={{ fontSize: 11, color: "#6B7C6C", fontWeight: 500, letterSpacing: "0.04em" }}>Civic Intelligence</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Link href="/profile" style={{
+              fontSize: 12, fontWeight: 700, color: "#15803d",
+              background: "rgba(21,128,61,0.1)", border: "1px solid rgba(21,128,61,0.3)",
+              textDecoration: "none", padding: "7px 16px", borderRadius: 6,
+              transition: "background 0.15s",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(22,163,74,0.18)" }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(22,163,74,0.1)" }}
+            >My Impact</Link>
+
             {/* Notification bell */}
             {userId && (
               <div ref={notifRef} style={{ position: "relative" }}>
@@ -1315,15 +1378,6 @@ export default function Home() {
                 borderRadius: 10, padding: "6px", minWidth: 160,
                 boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 100,
               }}>
-                <Link href="/profile" onClick={() => setAccountOpen(false)}
-                  style={{
-                    display: "block", padding: "9px 14px", borderRadius: 7,
-                    fontSize: 13, fontWeight: 600, color: "#2A3E2C",
-                    textDecoration: "none", transition: "background 0.12s",
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.06)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                >My Impact</Link>
                 <Link href="/settings" onClick={() => setAccountOpen(false)}
                   style={{
                     display: "block", padding: "9px 14px", borderRadius: 7,
@@ -1369,6 +1423,9 @@ export default function Home() {
         </div>
 
         <div style={{ position: "relative", maxWidth: 1200, margin: "0 auto", padding: "14px 32px 8px" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#4A5C4B", marginBottom: 4 }}>
+            Civic Intelligence Feed
+          </div>
           <div style={{ marginBottom: 6 }}>
             <h1 style={{
               fontFamily: "var(--font-fraunces), Georgia, serif",
@@ -1378,7 +1435,7 @@ export default function Home() {
               letterSpacing: "-0.04em",
               margin: 0,
               color: "#1C2E1E",
-            }}>Act <span style={{ color: "#15803d" }}>Now.</span></h1>
+            }}>Act<br/><span style={{ color: "#15803d" }}>Now.</span></h1>
           </div>
         </div>
       </div>
@@ -1386,7 +1443,7 @@ export default function Home() {
       {/* Tab strip */}
       <div style={{ borderBottom: "1px solid rgba(0,0,0,0.07)", background: "rgba(244,240,230,0.97)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+          <div style={{ display: "flex", gap: 0 }}>
             {[
               { id: "feed", label: "What's Happening" },
               { id: "network", label: "Network" },
@@ -1400,13 +1457,11 @@ export default function Home() {
                     localStorage.setItem("lastNetworkCheck", new Date().toISOString())
                   }
                 }}
-                onMouseEnter={e => { if (activeTab !== tab.id) e.currentTarget.style.color = "#4A5C4B" }}
-                onMouseLeave={e => { if (activeTab !== tab.id) e.currentTarget.style.color = "#9CAD9C" }}
                 style={{
                   background: "none", border: "none", cursor: "pointer",
-                  padding: "12px 16px", fontSize: 13, fontWeight: activeTab === tab.id ? 800 : 500,
-                  color: activeTab === tab.id ? "#1C2E1E" : "#9CAD9C",
-                  borderBottom: activeTab === tab.id ? "3px solid #15803d" : "3px solid transparent",
+                  padding: "12px 16px", fontSize: 13, fontWeight: activeTab === tab.id ? 700 : 500,
+                  color: activeTab === tab.id ? "#1C2E1E" : "#6B7C6C",
+                  borderBottom: activeTab === tab.id ? "2px solid #15803d" : "2px solid transparent",
                   marginBottom: -1, transition: "color 0.15s, border-color 0.15s",
                   display: "flex", alignItems: "center", gap: 6,
                   whiteSpace: "nowrap",
@@ -1533,231 +1588,33 @@ export default function Home() {
 
       {activeTab === "feed" ? (
         <>
-          {/* 4-card preview */}
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 32px 0" }}>
-            {selectedCats.length === 0 ? (
-              <div style={{ padding: "32px 0", textAlign: "center", color: "#6B7C6C", fontSize: 13 }}>
-                Select at least one category above to see issues.
-              </div>
-            ) : (
-            <div style={{ display: "flex", alignItems: "stretch", gap: 10 }}>
-              <div className="preview-grid" style={{ alignItems: "stretch", flex: 1 }}>
-                {happeningNow.map(issue => (
-                  <FeedCard
-                    key={issue.id}
-                    issue={issue}
-                    weekCount={actionCounts[issue.slug] || 0}
-                    isArchived={archivedSlugs.has(issue.slug)}
-                    onArchive={toggleArchive}
-                    onCatClick={recordCatClick}
-                    followActionCount={socialProof[issue.slug] || 0}
-                    flippable={true}
-                  />
-                ))}
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
-                <button
-                  onClick={() => setPreviewPage(p => Math.max(0, p - 1))}
-                  style={{
-                    flex: 1, width: 36, border: "1px solid rgba(21,128,61,0.2)",
-                    borderRadius: 8, background: "rgba(21,128,61,0.07)", color: "#15803d",
-                    cursor: "pointer", fontSize: 16, fontWeight: 700,
-                    transition: "background 0.15s",
-                    visibility: previewPage > 0 ? "visible" : "hidden",
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.14)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "rgba(21,128,61,0.07)"}
-                >←</button>
-                <button
-                  onClick={() => setPreviewPage(p => p + 1)}
-                  style={{
-                    flex: 1, width: 36, border: "1px solid rgba(21,128,61,0.2)",
-                    borderRadius: 8, background: "rgba(21,128,61,0.07)", color: "#15803d",
-                    cursor: "pointer", fontSize: 16, fontWeight: 700,
-                    transition: "background 0.15s",
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.14)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "rgba(21,128,61,0.07)"}
-                >→</button>
-              </div>
-            </div>
+          {/* Section sub-header */}
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 32px 10px", display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.06)" }} />
+            <span style={{ fontSize: 11, color: "#6B7C6C", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+              <strong style={{ color: "#3A4B3B" }}>{feedIssues.length}</strong> issues
+            </span>
+          </div>
+
+          {/* Feed grid */}
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 40px" }}>
+            {feedIssues.length === 0 && (
+              <p style={{ color: "#4A5C4B", fontSize: 14, padding: "40px 0", textAlign: "center" }}>No issues match your current filter.</p>
             )}
+            <div className="feed-grid" style={{ alignItems: "stretch" }}>
+              {feedIssues.map(issue => (
+                <FeedCard
+                  key={issue.id}
+                  issue={issue}
+                  weekCount={actionCounts[issue.slug] || 0}
+                  isArchived={archivedSlugs.has(issue.slug)}
+                  onArchive={toggleArchive}
+                  onCatClick={recordCatClick}
+                  followActionCount={socialProof[issue.slug] || 0}
+                />
+              ))}
+            </div>
           </div>
-
-          {/* Open full feed button */}
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2px 32px 4px", display: "flex", justifyContent: "flex-end" }}>
-            <Link href="/feed" style={{
-              display: "inline-flex", alignItems: "center", gap: 4,
-              padding: "7px 18px",
-              background: "rgba(21,128,61,0.07)", border: "1px solid rgba(21,128,61,0.2)",
-              borderRadius: 99, color: "#15803d", fontSize: 12, fontWeight: 700,
-              textDecoration: "none", letterSpacing: "0.03em",
-              transition: "background 0.15s",
-            }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.13)"}
-              onMouseLeave={e => e.currentTarget.style.background = "rgba(21,128,61,0.07)"}
-            >Open full feed →</Link>
-          </div>
-
-          {/* Happening Here — unified */}
-          {(() => {
-            function parseEventDate(d) {
-              if (!d || d === "Flexible" || d === "Upcoming") return Infinity
-              try {
-                const parsed = new Date(`${d} ${new Date().getFullYear()}`)
-                if (isNaN(parsed)) return Infinity
-                if (parsed < new Date()) parsed.setFullYear(parsed.getFullYear() + 1)
-                return parsed.getTime()
-              } catch { return Infinity }
-            }
-            const sorted = mapEvents.slice().sort((a, b) => parseEventDate(a.date) - parseEventDate(b.date))
-            const inCat = sorted.filter(e => selectedCats.length === 0 || selectedCats.includes(e.category))
-            const featured = inCat.length >= 4
-              ? inCat.slice(0, 4)
-              : [...inCat, ...sorted.filter(e => !inCat.includes(e))].slice(0, 4)
-
-            return (
-              <div style={{ maxWidth: 1200, margin: "0 auto", padding: "4px 32px 20px" }}>
-                {/* Heading + zip */}
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                  <div style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 20, fontWeight: 800, color: "#1C2E1E", letterSpacing: "-0.02em" }}>
-                    Happening Here
-                  </div>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={5}
-                    defaultValue={mapZip}
-                    placeholder="zip"
-                    onBlur={e => {
-                      const v = e.target.value.replace(/\D/g, "").slice(0, 5)
-                      if (v.length === 5) { setMapZip(v); localStorage.setItem("userZipCode", v) }
-                      e.target.style.borderColor = "rgba(0,0,0,0.12)"
-                    }}
-                    onKeyDown={e => {
-                      if (e.key === "Enter") {
-                        const v = e.target.value.replace(/\D/g, "").slice(0, 5)
-                        if (v.length === 5) { setMapZip(v); localStorage.setItem("userZipCode", v) }
-                        e.target.blur()
-                      }
-                    }}
-                    onFocus={e => e.target.style.borderColor = "rgba(21,128,61,0.5)"}
-                    style={{
-                      width: 72, padding: "3px 10px", fontSize: 11, fontWeight: 600,
-                      color: "#4A5C4B", background: "rgba(0,0,0,0.04)",
-                      border: "1px solid rgba(0,0,0,0.12)", borderRadius: 99,
-                      outline: "none", letterSpacing: "0.08em", textAlign: "center",
-                      transition: "border-color 0.15s",
-                    }}
-                  />
-                </div>
-
-                {/* Map */}
-                <MobilizeMap zip={mapZip} height={300} onEventsLoaded={setMapEvents} />
-
-                {/* Featured label */}
-                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#9CAD9C", margin: "14px 0 8px" }}>
-                  Featured — hand-picked for you
-                </div>
-
-                {/* Event cards */}
-                {featured.length === 0 ? (
-                  <div style={{ fontSize: 12, color: "#9CAD9C", padding: "6px 0 10px" }}>
-                    {mapZip.length === 5 ? "No matching events found. Check back soon." : "Enter a zip code above to see events."}
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", gap: 10, alignItems: "stretch", marginBottom: 10 }}>
-                    {featured.map(event => <EventCard key={event.id} event={event} />)}
-                  </div>
-                )}
-
-                {/* See all events button */}
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: featured.length > 0 ? 8 : 10 }}>
-                  <Link href="/actions/events" style={{
-                    display: "inline-flex", alignItems: "center", gap: 4,
-                    padding: "7px 18px",
-                    background: "rgba(21,128,61,0.07)", border: "1px solid rgba(21,128,61,0.2)",
-                    borderRadius: 99, color: "#15803d", fontSize: 12, fontWeight: 700,
-                    textDecoration: "none", letterSpacing: "0.03em",
-                    transition: "background 0.15s",
-                  }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.13)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "rgba(21,128,61,0.07)"}
-                  >See all events near you →</Link>
-                </div>
-              </div>
-            )
-          })()}
-
-          {/* Spotlights */}
-          {(() => {
-            const cats = selectedCats.filter(c => NONPROFITS[c])
-            // Build pool with distribution logic
-            let pool = []
-            if (cats.length === 0) {
-              // no filter — pull 1 from each category up to 4
-              pool = Object.entries(NONPROFITS).flatMap(([cat, orgs]) =>
-                orgs.slice(0, 1).map(o => ({ org: o, category: cat }))
-              )
-            } else if (cats.length === 1) {
-              pool = (NONPROFITS[cats[0]] || []).map(o => ({ org: o, category: cats[0] }))
-            } else if (cats.length === 2) {
-              pool = [
-                ...(NONPROFITS[cats[0]] || []).slice(0, 2).map(o => ({ org: o, category: cats[0] })),
-                ...(NONPROFITS[cats[1]] || []).slice(0, 2).map(o => ({ org: o, category: cats[1] })),
-              ]
-            } else if (cats.length === 3) {
-              pool = [
-                ...(NONPROFITS[cats[0]] || []).slice(0, 2).map(o => ({ org: o, category: cats[0] })),
-                ...(NONPROFITS[cats[1]] || []).slice(0, 1).map(o => ({ org: o, category: cats[1] })),
-                ...(NONPROFITS[cats[2]] || []).slice(0, 1).map(o => ({ org: o, category: cats[2] })),
-              ]
-            } else {
-              pool = cats.slice(0, 4).flatMap(cat =>
-                (NONPROFITS[cat] || []).slice(0, 1).map(o => ({ org: o, category: cat }))
-              )
-            }
-
-            const totalPages = Math.max(1, Math.ceil(pool.length / 4))
-            const page = spotlightPage % totalPages
-            const visible = pool.slice(page * 4, page * 4 + 4)
-
-            return (
-              <div style={{ maxWidth: 1200, margin: "0 auto", padding: "8px 32px 32px" }}>
-                {/* Heading row */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                    <div style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 20, fontWeight: 800, color: "#1C2E1E", letterSpacing: "-0.02em" }}>
-                      Spotlights
-                    </div>
-                    <span style={{ fontSize: 12, color: "#9CAD9C", fontWeight: 500 }}>
-                      Organizations making change in the causes you care about
-                    </span>
-                  </div>
-                  {totalPages > 1 && (
-                    <button
-                      onClick={() => setSpotlightPage(p => (p + 1) % totalPages)}
-                      style={{
-                        width: 36, height: 36, border: "1px solid rgba(21,128,61,0.2)",
-                        borderRadius: 8, background: "rgba(21,128,61,0.07)", color: "#15803d",
-                        cursor: "pointer", fontSize: 16, fontWeight: 700,
-                        transition: "background 0.15s", flexShrink: 0,
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.14)"}
-                      onMouseLeave={e => e.currentTarget.style.background = "rgba(21,128,61,0.07)"}
-                    >→</button>
-                  )}
-                </div>
-
-                {/* Cards */}
-                <div className="preview-grid" style={{ alignItems: "stretch" }}>
-                  {visible.map((item, i) => (
-                    <NonprofitCard key={item.org.name + i} org={item.org} category={item.category} />
-                  ))}
-                </div>
-              </div>
-            )
-          })()}
         </>
       ) : (
         /* Network tab */
@@ -1791,76 +1648,55 @@ export default function Home() {
         backdropFilter: "blur(24px)",
         borderTop: "1px solid rgba(0,0,0,0.09)",
         boxShadow: "0 -4px 24px rgba(0,0,0,0.06)",
-        overflow: "hidden",
+        padding: "0 24px",
       }}>
-        <div className="sbar-inner" style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", alignItems: "stretch", height: 80 }}>
-          {ACTION_CARDS.map((card, i) => {
-            const isImpact = i === 1
-            return (
-              <Link
-                key={i}
-                href={card.link}
-                className="sbar-item"
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  gap: 14,
-                  textDecoration: "none",
-                  borderLeft: i > 0 ? "1px solid rgba(0,0,0,0.07)" : "none",
-                  padding: "0 32px",
-                  transition: "background 0.15s",
-                  overflow: "hidden",
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.04)"}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-              >
-                <div style={{
-                  display: "flex", flexDirection: "column", gap: 2,
-                  flex: "0 0 auto",
-                  minWidth: 0, textAlign: "center",
-                }}>
-                  <span className="sbar-headline" style={{ fontSize: 14, fontWeight: 700, color: isImpact ? "#15803d" : "#1C2E1E", letterSpacing: "-0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                    {i === 0 && <span style={{ fontSize: 14, lineHeight: 1, filter: "saturate(0.7)" }}>🌱</span>}
-                    {i === 2 && <span style={{ fontSize: 14, lineHeight: 1, filter: "saturate(0.7)" }}>📍</span>}
-                    {card.headline}
-                  </span>
-                  <span className="sbar-body" style={{ fontSize: 11, color: "#6B7C6C", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{card.body}</span>
-                </div>
-              </Link>
-            )
-          })}
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "stretch", height: 80 }}>
+          {ACTION_CARDS.map((card, i) => (
+            <Link
+              key={i}
+              href={card.link}
+              style={{
+                flex: 1,
+                display: "flex", alignItems: "center", gap: 14,
+                textDecoration: "none",
+                borderLeft: i > 0 ? "1px solid rgba(0,0,0,0.07)" : "none",
+                padding: "0 32px",
+                transition: "background 0.15s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.04)"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+            >
+              <span style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, filter: "saturate(0.7)" }}>{card.icon}</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#1C2E1E", letterSpacing: "-0.01em" }}>{card.headline}</span>
+                <span style={{ fontSize: 11, color: "#6B7C6C", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{card.body}</span>
+              </div>
+              <span style={{
+                flexShrink: 0, fontSize: 11, fontWeight: 700, color: "#15803d",
+                background: "rgba(21,128,61,0.1)", border: "1px solid rgba(21,128,61,0.3)",
+                padding: "4px 10px", borderRadius: 20, letterSpacing: "0.02em",
+              }}>Go →</span>
+            </Link>
+          ))}
         </div>
       </div>
 
       {/* Spacer so content isn't hidden behind sticky bar */}
-      <div className="sbar-spacer" style={{ height: 80 }} />
+      <div style={{ height: 80 }} />
 
       <style>{`
         ::-webkit-scrollbar { display: none; }
 
-        .preview-grid {
+        .feed-grid {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
+          grid-template-columns: repeat(2, 1fr);
           gap: 14px;
         }
-        @media (max-width: 1080px) {
-          .preview-grid { grid-template-columns: repeat(2, 1fr); }
+        @media (min-width: 1080px) {
+          .feed-grid { grid-template-columns: repeat(3, 1fr); }
         }
-
-        @media (max-width: 700px) {
-          .sbar-inner { height: 68px !important; }
-          .sbar-item  { padding: 0 14px !important; gap: 8px !important; }
-          .sbar-icon  { font-size: 18px !important; }
-          .sbar-headline { font-size: 12px !important; }
-          .sbar-body  { font-size: 10px !important; }
-          .sbar-spacer { height: 68px !important; }
-        }
-        @media (max-width: 460px) {
-          .sbar-inner { height: 60px !important; }
-          .sbar-item  { padding: 0 8px !important; gap: 5px !important; }
-          .sbar-icon  { display: none !important; }
-          .sbar-headline { font-size: 11px !important; }
-          .sbar-body  { display: none !important; }
-          .sbar-spacer { height: 60px !important; }
+        @media (max-width: 640px) {
+          .feed-grid { grid-template-columns: 1fr; }
         }
 
         .pill-ctrl:hover { background: rgba(0,0,0,0.05) !important; }

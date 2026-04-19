@@ -1,7 +1,10 @@
 "use client"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 import { CAT_COLOR } from "@/lib/colors"
+
+const MobilizeMap = dynamic(() => import("@/components/MobilizeMap"), { ssr: false })
 
 const TYPE_COLOR = {
   "Volunteering": { bg: "rgba(22,163,74,0.12)", color: "#16a34a", border: "rgba(22,163,74,0.25)" },
@@ -11,26 +14,10 @@ const TYPE_COLOR = {
 const ALL_FILTERS = ["All", "Volunteering", "Political", "Environment", "Healthcare", "Civil Rights", "Elections", "Immigration", "Economy", "Education", "Science", "Foreign Policy", "Human Rights"]
 
 export default function EventsPage() {
-  const mapContainer  = useRef(null)
-  const mapInstance   = useRef(null)
-  const markers       = useRef([])
-  const hubMarker     = useRef(null)
-  const expandedRef   = useRef(false)
-  const eventsRef     = useRef([])
-  const filterRef     = useRef("All")
-  const mapCenterRef  = useRef(null)
-  const [zip,       setZip]       = useState("")
-  const [filter,    setFilter]    = useState("All")
-  const [mapReady,  setMapReady]  = useState(false)
-  const [events,    setEvents]    = useState([])
-  const [loading,   setLoading]   = useState(false)
-  const [error,     setError]     = useState(null)
-  const [mapCenter, setMapCenter] = useState(null)
-
-  // Keep refs in sync with state so closures always have fresh values
-  eventsRef.current   = events
-  filterRef.current   = filter
-  mapCenterRef.current = mapCenter
+  const [zip,    setZip]    = useState("")
+  const [filter, setFilter] = useState("All")
+  const [events, setEvents] = useState([])
+  const [error,  setError]  = useState(null)
 
   // Load saved zip
   useEffect(() => {
@@ -38,196 +25,10 @@ export default function EventsPage() {
     if (saved) setZip(saved)
   }, [])
 
-  // Debounced live fetch when zip changes
-  useEffect(() => {
-    if (!zip || zip.length !== 5) {
-      setEvents([])
-      expandedRef.current = false
-      return
-    }
-    setLoading(true)
-    setError(null)
-    expandedRef.current = false
-    const timer = setTimeout(() => {
-      fetch(`/api/events?zip=${zip}`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.error) throw new Error(data.error)
-          setEvents(data.events || [])
-        })
-        .catch(() => setError("Couldn't load events. Try again."))
-        .finally(() => setLoading(false))
-    }, 700)
-    return () => clearTimeout(timer)
-  }, [zip])
-
-  // Init Mapbox map
-  useEffect(() => {
-    if (!mapContainer.current || mapInstance.current) return
-    import("mapbox-gl").then(({ default: mapboxgl }) => {
-      mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-      const map = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: "mapbox://styles/mapbox/outdoors-v12",
-        center: [-98.5795, 39.8283],
-        zoom: 4,
-        attributionControl: false,
-      })
-      map.on("load", () => {
-        mapInstance.current = map
-        setMapReady(true)
-      })
-    })
-    return () => {
-      if (mapInstance.current) { mapInstance.current.remove(); mapInstance.current = null }
-    }
-  }, [])
-
-  // When zip changes → fly map, show hub dot, clear old markers
-  useEffect(() => {
-    if (!zip || zip.length !== 5 || !mapReady || !mapInstance.current) return
-    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-    fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${zip}.json?country=us&types=postcode&access_token=${token}`)
-      .then(r => r.json())
-      .then(data => {
-        const center = data.features?.[0]?.center
-        if (!center) return
-        setMapCenter(center)
-        mapInstance.current.flyTo({ center, zoom: 12, duration: 1000 })
-      })
-      .catch(() => {})
-  }, [zip, mapReady])
-
-  // Show hub dot when center + events are ready
-  useEffect(() => {
-    if (!mapReady || !mapInstance.current || !mapCenter) return
-    import("mapbox-gl").then(({ default: mapboxgl }) => {
-      if (hubMarker.current) { hubMarker.current.remove(); hubMarker.current = null }
-      markers.current.forEach(m => m.remove())
-      markers.current = []
-      expandedRef.current = false
-
-      if (events.length === 0) return
-
-      const hub = document.createElement("div")
-      hub.style.cssText = `
-        width: 26px; height: 26px; border-radius: 50%;
-        background: white;
-        box-shadow: 0 0 16px rgba(255,255,255,0.9), 0 0 0 0 rgba(255,255,255,0.5);
-        animation: hub-pulse 1.6s ease-out infinite;
-        cursor: pointer;
-        position: relative;
-        z-index: 10;
-        border: 2px solid rgba(255,255,255,0.4);
-        overflow: visible;
-      `
-      hub.title = `${events.length} events in this area`
-      hub.onclick = () => {
-        if (expandedRef.current) return
-        expandedRef.current = true
-        hub.style.animation = "none"
-
-        // Burst colored category dots out from the white hub using CSS transforms
-        const cats = [...new Set(eventsRef.current.map(e => e.category))]
-        const radius = 44
-        cats.forEach((cat, i) => {
-          const angle = (i / cats.length) * 2 * Math.PI - Math.PI / 2
-          const x = Math.cos(angle) * radius
-          const y = Math.sin(angle) * radius
-          const color = CAT_COLOR[cat] || "#6B7C6C"
-
-          const dot = document.createElement("div")
-          dot.style.cssText = `
-            position: absolute;
-            width: 12px; height: 12px; border-radius: 50%;
-            background: ${color};
-            box-shadow: 0 2px 8px ${color}88;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            transition: transform 0.45s cubic-bezier(0.34,1.56,0.64,1);
-            transition-delay: ${i * 35}ms;
-            z-index: 5; cursor: default;
-          `
-          hub.appendChild(dot)
-          requestAnimationFrame(() => requestAnimationFrame(() => {
-            dot.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`
-          }))
-        })
-      }
-
-      hubMarker.current = new mapboxgl.Marker(hub)
-        .setLngLat(mapCenter)
-        .addTo(mapInstance.current)
-    })
-  }, [mapReady, mapCenter, events])
-
-
-  function placeDots(mapboxgl, center, eventsToShow) {
-    const [cLng, cLat] = center
-    // Correct for longitude shrinkage at higher latitudes
-    const lngScale = Math.cos(cLat * Math.PI / 180)
-
-    eventsToShow.forEach((event, i) => {
-      const catColor = CAT_COLOR[event.category] || "#6B7C6C"
-
-      // Tight cluster — evenly spread in a circle, ~150-400m from hub
-      const angle  = (i / eventsToShow.length) * 2 * Math.PI + (Math.random() - 0.5) * 0.4
-      const radiusMeters = 150 + Math.random() * 250   // 150–400m
-      const radiusDeg    = radiusMeters / 111320        // convert meters → degrees
-      const lat = cLat + radiusDeg * Math.sin(angle)
-      const lng = cLng + (radiusDeg / lngScale) * Math.cos(angle)
-
-      const el = document.createElement("div")
-      el.style.cssText = `
-        width: 13px; height: 13px; border-radius: 50%;
-        background: ${catColor};
-        border: 2px solid rgba(255,255,255,0.5);
-        box-shadow: 0 0 8px ${catColor}99;
-        cursor: pointer;
-        transition: transform 0.15s;
-        animation: dot-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
-        animation-delay: ${i * 30}ms;
-      `
-      el.onmouseenter = () => { el.style.transform = "scale(1.7)" }
-      el.onmouseleave = () => { el.style.transform = "scale(1)" }
-
-      const popup = new mapboxgl.Popup({ offset: 14, closeButton: false, maxWidth: "240px" })
-        .setHTML(`
-          <div style="font-family: Inter, sans-serif; padding: 2px;">
-            <div style="font-size: 10px; font-weight: 700; color: ${catColor};
-              text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px;">
-              ${event.category}
-            </div>
-            <div style="font-size: 13px; font-weight: 700; color: #1C2E1E; line-height: 1.35; margin-bottom: 5px;">
-              ${event.title}
-            </div>
-            <div style="font-size: 11px; color: #6b7280; margin-bottom: 8px;">
-              ${event.org}${event.date !== "Flexible" && event.date !== "Upcoming" ? " · " + event.date : ""}
-            </div>
-            <a href="${event.url}" target="_blank" rel="noopener noreferrer"
-              style="display:inline-block; font-size:11px; font-weight:700; color:#16a34a;
-              text-decoration:none; background:rgba(21,128,61,0.15);
-              border:1px solid rgba(21,128,61,0.3); padding:4px 10px; border-radius:5px;">
-              View event →
-            </a>
-          </div>
-        `)
-
-      const marker = new mapboxgl.Marker(el)
-        .setLngLat([lng, lat])
-        .setPopup(popup)
-        .addTo(mapInstance.current)
-
-      markers.current.push(marker)
-    })
-  }
-
   const visible = filter === "All" ? events : events.filter(e => e.type === filter || e.category === filter)
 
   return (
     <div style={{ minHeight: "100vh", background: "#F4F0E6", fontFamily: "'Inter', system-ui, sans-serif", color: "#2A3E2C" }}>
-
-      <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" />
 
       {/* Nav */}
       <header style={{
@@ -311,36 +112,8 @@ export default function EventsPage() {
         </div>
 
         {/* Map */}
-        <div style={{
-          borderRadius: 14, overflow: "hidden",
-          border: "1px solid rgba(0,0,0,0.08)",
-          marginBottom: 28, height: 400,
-          background: "#FDFAF3", position: "relative",
-        }}>
-          <div ref={mapContainer} style={{ width: "100%", height: "100%" }} />
-          {/* Hint overlay when hub is showing but not expanded */}
-          {mapCenter && events.length > 0 && !expandedRef.current && !loading && (
-            <div style={{
-              position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)",
-              background: "rgba(244,240,230,0.85)", backdropFilter: "blur(8px)",
-              border: "1px solid rgba(0,0,0,0.1)", borderRadius: 99,
-              padding: "7px 16px", fontSize: 12, fontWeight: 600, color: "#6B7C6C",
-              pointerEvents: "none", whiteSpace: "nowrap",
-            }}>
-              {events.length} events found near you
-            </div>
-          )}
-          {loading && (
-            <div style={{
-              position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)",
-              background: "rgba(244,240,230,0.85)", backdropFilter: "blur(8px)",
-              border: "1px solid rgba(0,0,0,0.1)", borderRadius: 99,
-              padding: "7px 16px", fontSize: 12, fontWeight: 600, color: "#6b7280",
-              pointerEvents: "none",
-            }}>
-              Searching…
-            </div>
-          )}
+        <div style={{ marginBottom: 28 }}>
+          <MobilizeMap zip={zip} height={400} onEventsLoaded={setEvents} onErrorChange={setError} />
         </div>
 
         {/* Status */}
@@ -432,26 +205,6 @@ export default function EventsPage() {
           })}
         </div>
       </div>
-
-      <style>{`
-        @keyframes hub-pulse {
-          0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
-          70%  { box-shadow: 0 0 0 16px rgba(255,255,255,0); }
-          100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
-        }
-        @keyframes dot-pop {
-          0%   { transform: scale(0); opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .mapboxgl-popup-content {
-          background: #E8E4D8 !important;
-          border: 1px solid rgba(0,0,0,0.1) !important;
-          border-radius: 10px !important;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
-          padding: 12px 14px !important;
-        }
-        .mapboxgl-popup-tip { display: none !important; }
-      `}</style>
     </div>
   )
 }

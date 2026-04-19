@@ -2,14 +2,9 @@
 import { useEffect, useState, useCallback, useRef } from "react"
 import { createClient } from "@/utils/supabase/client"
 import Link from "next/link"
-import dynamic from "next/dynamic"
 import { CAT_COLOR } from "@/lib/colors"
 import { ANIMAL_MAP, DEFAULT_ANIMAL } from "@/lib/animals"
 import FeedCard from "@/components/FeedCard"
-import EventCard from "@/components/EventCard"
-import NonprofitCard from "@/components/NonprofitCard"
-
-const MobilizeMap = dynamic(() => import("@/components/MobilizeMap"), { ssr: false })
 
 const supabase = createClient()
 
@@ -61,79 +56,6 @@ const CAT_ORDER = [
   "National Security", "Healthcare", "Environment", "Education", "Science",
   "Immigration", "Democracy & Media", "Foreign Policy", "Human Rights",
 ]
-
-const NONPROFITS = {
-  "Elections":         [
-    { name: "League of Women Voters",    description: "Nonpartisan voter registration, education, and advocacy for fair elections since 1920.", url: "https://www.lwv.org/donate" },
-    { name: "Brennan Center for Justice",description: "Research and litigation on voting rights, election security, and campaign finance reform.", url: "https://www.brennancenter.org/donate" },
-    { name: "Common Cause",              description: "Holds power accountable and fights for fair elections, redistricting reform, and voting access.", url: "https://www.commoncause.org/donate/" },
-  ],
-  "Executive Power":   [
-    { name: "Common Cause",              description: "Holds power accountable through nonpartisan government oversight and transparency advocacy.", url: "https://www.commoncause.org/donate/" },
-    { name: "Brennan Center for Justice",description: "Researches and litigates on executive authority, voting rights, and constitutional limits.", url: "https://www.brennancenter.org/donate" },
-    { name: "Campaign Legal Center",     description: "Advances democracy through litigation and policy work on campaign finance and ethics.", url: "https://campaignlegal.org/donate" },
-  ],
-  "Rule of Law":       [
-    { name: "ACLU",                              description: "Defends individual rights and liberties in courts and legislatures nationwide.", url: "https://action.aclu.org/donate-aclu" },
-    { name: "Brennan Center for Justice",        description: "Works to reform and protect American democratic institutions and rule of law.", url: "https://www.brennancenter.org/donate" },
-    { name: "Project on Government Oversight",   description: "Investigates and exposes government abuses to advance accountability.", url: "https://www.pogo.org/donate" },
-  ],
-  "Economy":           [
-    { name: "Economic Policy Institute",         description: "Research and policy advocacy to improve economic conditions for low- and middle-income workers.", url: "https://www.epi.org/donate/" },
-    { name: "Center on Budget and Policy Priorities", description: "Analyzes federal and state budget policies and their effects on low-income households.", url: "https://www.cbpp.org/donate" },
-    { name: "Demos",                             description: "Advocates for economic opportunity, democracy, and an inclusive society.", url: "https://www.demos.org/donate" },
-  ],
-  "Civil Rights":      [
-    { name: "ACLU",                              description: "Defends civil liberties and civil rights through litigation, advocacy, and education.", url: "https://action.aclu.org/donate-aclu" },
-    { name: "NAACP Legal Defense Fund",          description: "Litigates to achieve racial justice and advance civil rights in America.", url: "https://www.naacpldf.org/donate/" },
-    { name: "Southern Poverty Law Center",       description: "Monitors hate groups and pursues civil rights litigation across the South.", url: "https://www.splcenter.org/donate" },
-  ],
-  "National Security": [
-    { name: "Arms Control Association",          description: "Advocates for arms control and disarmament to reduce global security threats.", url: "https://www.armscontrol.org/contribute" },
-    { name: "Project on Government Oversight",   description: "Oversees Pentagon and intelligence community spending and accountability.", url: "https://www.pogo.org/donate" },
-    { name: "Human Rights Watch",                description: "Investigates and exposes human rights abuses linked to military and security operations.", url: "https://www.hrw.org/donate" },
-  ],
-  "Healthcare":        [
-    { name: "Families USA",                      description: "National advocacy organization working to achieve high-quality, affordable healthcare.", url: "https://familiesusa.org/donate/" },
-    { name: "National Patient Advocate Foundation", description: "Helps patients access and afford the health care they need.", url: "https://www.npaf.org/donate/" },
-    { name: "Doctors Without Borders",           description: "Delivers emergency medical care in health crises regardless of politics.", url: "https://donate.doctorswithoutborders.org/" },
-  ],
-  "Environment":       [
-    { name: "Sierra Club",                       description: "America's oldest and largest grassroots environmental organization.", url: "https://www.sierraclub.org/donate" },
-    { name: "Natural Resources Defense Council", description: "Uses law, science, and advocacy to protect the environment and public health.", url: "https://www.nrdc.org/donate" },
-    { name: "Environmental Defense Fund",        description: "Finds practical, nonpartisan solutions to environmental challenges.", url: "https://www.edf.org/donate" },
-  ],
-  "Education":         [
-    { name: "National Education Association Foundation", description: "Supports public education through grants, scholarships, and advocacy.", url: "https://www.neafoundation.org/donate/" },
-    { name: "PEN America",                       description: "Defends academic freedom, free expression, and open inquiry in schools.", url: "https://pen.org/donate/" },
-    { name: "DonorsChoose",                      description: "Connects donors directly with public school classroom projects in need.", url: "https://www.donorschoose.org" },
-  ],
-  "Science":           [
-    { name: "Union of Concerned Scientists",     description: "Uses science to protect our health, safety, and the environment from political interference.", url: "https://www.ucsusa.org/donate" },
-    { name: "American Association for the Advancement of Science", description: "Advances science and serves society through advocacy for research and evidence-based policy.", url: "https://www.aaas.org/donate" },
-    { name: "March for Science",                 description: "Advocates for evidence-based policy and the value of science in public life.", url: "https://marchforscience.org/donate" },
-  ],
-  "Immigration":       [
-    { name: "RAICES",                            description: "Provides legal services and advocates for immigrant families and asylum seekers.", url: "https://www.raicestexas.org/donate/" },
-    { name: "National Immigration Law Center",   description: "Defends and advances the rights of low-income immigrants through litigation and policy.", url: "https://www.nilc.org/donate/" },
-    { name: "International Rescue Committee",    description: "Helps refugees and displaced people rebuild their lives in safety and dignity.", url: "https://www.rescue.org/donate" },
-  ],
-  "Democracy & Media": [
-    { name: "Committee to Protect Journalists",  description: "Defends journalists and press freedom around the world.", url: "https://cpj.org/donate/" },
-    { name: "Reporters Without Borders",         description: "Advocates for freedom of the press and information worldwide.", url: "https://rsf.org/en/donate" },
-    { name: "PEN America",                       description: "Champions free expression and fights censorship of writers and journalists.", url: "https://pen.org/donate/" },
-  ],
-  "Foreign Policy":    [
-    { name: "Quincy Institute for Responsible Statecraft", description: "Advocates for a more restrained, diplomacy-first U.S. foreign policy.", url: "https://quincyinst.org/donate" },
-    { name: "Arms Control Association",          description: "Advocates for arms control and disarmament to reduce global security threats.", url: "https://www.armscontrol.org/contribute" },
-    { name: "Council on Foreign Relations",      description: "Independent think tank providing nonpartisan analysis on U.S. foreign policy.", url: "https://www.cfr.org/membership" },
-  ],
-  "Human Rights":      [
-    { name: "Human Rights Watch",                description: "Investigates and exposes human rights abuses around the world.", url: "https://www.hrw.org/donate" },
-    { name: "Amnesty International USA",         description: "Campaigns globally for human rights, dignity, and justice.", url: "https://www.amnesty.org/en/donate" },
-    { name: "American Civil Liberties Union",    description: "Defends civil liberties and human rights through litigation and advocacy.", url: "https://action.aclu.org/donate-aclu" },
-  ],
-}
 
 
 function catSlug(name) {
@@ -745,23 +667,25 @@ function NetworkTab({ userId, userCategories }) {
             )}
           </div>
         ) : (
-          feed.map(activity => (
-            <ActivityItem
-              key={activity.id}
-              activity={activity}
-              hasClapped={clapMap.mySet.has(activity.id)}
-              clapCount={clapMap.countMap[activity.id] || 0}
-              onClap={handleClap}
-            />
-          ))
+          <div>
+            {feed.map(activity => (
+              <ActivityItem
+                key={activity.id}
+                activity={activity}
+                hasClapped={clapMap.mySet.has(activity.id)}
+                clapCount={clapMap.countMap[activity.id] || 0}
+                onClap={handleClap}
+              />
+            ))}
+          </div>
         )
       )}
     </div>
   )
 }
 
-// ─── Home ─────────────────────────────────────────────────────────────────────
-export default function Home() {
+// ─── Feed Page ─────────────────────────────────────────────────────────────────
+export default function FeedPage() {
   const [issues,        setIssues]        = useState([])
   const [cat,           setCat]           = useState("home")
   const [scrolled,      setScrolled]      = useState(false)
@@ -783,16 +707,7 @@ export default function Home() {
   const [notifCount,        setNotifCount]        = useState(0)
   const [notifItems,        setNotifItems]        = useState([])
   const [socialProof,       setSocialProof]       = useState({})
-  const [previewPage,       setPreviewPage]       = useState(0)
-  const [spotlightPage,     setSpotlightPage]     = useState(0)
-  const [mapZip,            setMapZip]            = useState("")
-  const [mapEvents,         setMapEvents]         = useState([])
   const accountRef     = useRef(null)
-
-  useEffect(() => {
-    const saved = localStorage.getItem("userZipCode")
-    if (saved) setMapZip(saved)
-  }, [])
   const notifRef       = useRef(null)
 
   useEffect(() => {
@@ -1120,69 +1035,79 @@ export default function Home() {
 
   const userCats = prefs?.categories || []
 
+  // Feed pool — filtered by current pill/dropdown state
+  const pool = selectedCats.length > 0
+               ? issues.filter(i => selectedCats.includes(i.category))
+               : cat === "home" ? issues.filter(i => userCats.includes(i.category))
+               : issues.filter(i => i.category === cat)
+
+  const isHome = cat === "home" || selectedCats.length > 0
+
+  let feedIssues
+
+  if (isHome) {
+    // ── Home / multi-filter: blended score + interleave (no back-to-back category) ──
+    const maxClicks = Math.max(1, ...Object.values(catClicks))
+    const poolDates = pool.map(i => parseDate(i.date))
+    const minDate   = poolDates.length ? Math.min(...poolDates) : 0
+    const dateRange = Math.max(1, (poolDates.length ? Math.max(...poolDates) : 1) - minDate)
+
+    // Per-category severity ranges so each topic competes on equal footing
+    const catSevBounds = {}
+    pool.forEach(i => {
+      if (!catSevBounds[i.category]) catSevBounds[i.category] = { min: i.severity_score, max: i.severity_score }
+      if (i.severity_score > catSevBounds[i.category].max) catSevBounds[i.category].max = i.severity_score
+      if (i.severity_score < catSevBounds[i.category].min) catSevBounds[i.category].min = i.severity_score
+    })
+
+    function blendScore(issue) {
+      const affinity  = (catClicks[issue.category] || 0) / maxClicks
+      const bounds    = catSevBounds[issue.category] || { min: 1, max: 10 }
+      const sevRange  = Math.max(1, bounds.max - bounds.min)
+      const severity  = (issue.severity_score - bounds.min) / sevRange  // relative within category
+      const recency   = (parseDate(issue.date) - minDate) / dateRange
+      // Weights: recency 50%, severity 30%, affinity 20%
+      return (recency * 0.5) + (severity * 0.3) + (affinity * 0.2)
+    }
+
+    const scored = [...pool].sort((a, b) => blendScore(b) - blendScore(a))
+
+    // Cap each category so no topic dominates the feed
+    const uniqueCats = [...new Set(pool.map(i => i.category))]
+    const perCatCap  = Math.max(2, Math.ceil(scored.length / uniqueCats.length))
+    const catSeen    = {}
+    const capped     = scored.filter(i => {
+      catSeen[i.category] = (catSeen[i.category] || 0) + 1
+      return catSeen[i.category] <= perCatCap
+    })
+
+    // Interleave: never place two issues from the same category back to back
+    const interleaved = []
+    const remaining   = [...capped]
+    let lastCat       = null
+
+    while (remaining.length > 0) {
+      const idx = remaining.findIndex(i => i.category !== lastCat)
+      if (idx === -1) { interleaved.push(...remaining); break }
+      interleaved.push(remaining[idx])
+      lastCat = remaining[idx].category
+      remaining.splice(idx, 1)
+    }
+
+    feedIssues = interleaved
+  } else {
+    // ── Single category pill: newest first, severity breaks ties ──
+    feedIssues = [...pool].sort((a, b) => {
+      const dateDiff = parseDate(b.date) - parseDate(a.date)
+      if (dateDiff !== 0) return dateDiff
+      return b.severity_score - a.severity_score
+    })
+  }
+
   const since7 = Date.now() - 7 * 24 * 3600 * 1000
   const critWeekCount = issues.filter(i =>
     i.severity_score >= 8 && i.created_at && new Date(i.created_at).getTime() >= since7
   ).length
-
-  // 4-card preview — flat sequence guarantees every card changes on each click
-  const { happeningNow, previewTotalPages } = (() => {
-    const cats = selectedCats
-    if (!cats.length) return { happeningNow: [], previewTotalPages: 1 }
-    const n = cats.length
-    let slots
-    if (n === 1)      slots = [{ cat: cats[0], count: 4 }]
-    else if (n === 2) slots = [{ cat: cats[0], count: 2 }, { cat: cats[1], count: 2 }]
-    else if (n === 3) slots = [{ cat: cats[0], count: 2 }, { cat: cats[1], count: 1 }, { cat: cats[2], count: 1 }]
-    else              slots = cats.slice(0, 4).map(c => ({ cat: c, count: 1 }))
-
-    // Per-category sorted pools with independent read pointers
-    const catPool = {}
-    const catIdx  = {}
-    for (const { cat } of slots) {
-      catPool[cat] = [...issues]
-        .filter(i => i.category === cat)
-        .sort((a, b) => b.severity_score - a.severity_score || parseDate(b.date) - parseDate(a.date))
-      catIdx[cat] = 0
-    }
-
-    // Global fallback: all user-cat issues sorted, used when a cat pool is exhausted
-    const globalSorted = [...issues]
-      .filter(i => cats.includes(i.category))
-      .sort((a, b) => b.severity_score - a.severity_score || parseDate(b.date) - parseDate(a.date))
-    const totalUnique = globalSorted.length
-    if (totalUnique === 0) return { happeningNow: [], previewTotalPages: 1 }
-
-    // Build a flat ordered sequence: follow slot distribution, fall back to global
-    // when a category is exhausted so every position holds a distinct issue
-    const usedIds  = new Set()
-    const sequence = []
-    while (usedIds.size < totalUnique) {
-      let progressed = false
-      for (const { cat, count } of slots) {
-        for (let j = 0; j < count; j++) {
-          if (usedIds.size >= totalUnique) break
-          const pool = catPool[cat]
-          // Skip any pool items already consumed as fallbacks
-          while (catIdx[cat] < pool.length && usedIds.has(pool[catIdx[cat]].id)) catIdx[cat]++
-          const issue = catIdx[cat] < pool.length
-            ? pool[catIdx[cat]++]
-            : globalSorted.find(i => !usedIds.has(i.id))
-          if (issue && !usedIds.has(issue.id)) {
-            usedIds.add(issue.id)
-            sequence.push(issue)
-            progressed = true
-          }
-        }
-      }
-      if (!progressed) break
-    }
-
-    const previewTotalPages = Math.max(1, Math.ceil(sequence.length / 4))
-    const page        = previewPage % previewTotalPages
-    const happeningNow = sequence.slice(page * 4, page * 4 + 4)
-    return { happeningNow, previewTotalPages }
-  })()
 
   return (
     <div style={{ minHeight: "100vh", background: "#F4F0E6", fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: "#1C2E1E" }}>
@@ -1198,7 +1123,7 @@ export default function Home() {
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", height: 56,
           display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
               <div style={{ width: 34, height: 34, borderRadius: 8, background: "#15803d", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
                   <circle cx="8" cy="6" r="2.5" fill="white" opacity="0.9"/>
@@ -1207,9 +1132,9 @@ export default function Home() {
                 </svg>
               </div>
               <span style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 20, fontWeight: 800, color: "#1C2E1E", letterSpacing: "-0.02em", lineHeight: 1 }}>Herd</span>
-            </div>
+            </Link>
             <div style={{ width: 1, height: 16, background: "rgba(0,0,0,0.12)" }} />
-            <span style={{ fontSize: 10, color: "#4A5C4B", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase" }}>Civic Intelligence</span>
+            <span style={{ fontSize: 11, color: "#6B7C6C", fontWeight: 500, letterSpacing: "0.04em" }}>Full Feed</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {/* Notification bell */}
@@ -1387,6 +1312,22 @@ export default function Home() {
       <div style={{ borderBottom: "1px solid rgba(0,0,0,0.07)", background: "rgba(244,240,230,0.97)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+            <Link href="/" style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "12px 12px 12px 0", color: "#9CAD9C",
+              borderBottom: "3px solid transparent",
+              marginBottom: -1,
+              transition: "color 0.15s",
+            }}
+              onMouseEnter={e => e.currentTarget.style.color = "#4A5C4B"}
+              onMouseLeave={e => e.currentTarget.style.color = "#9CAD9C"}
+              title="Home"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+                <path d="M9 21V12h6v9"/>
+              </svg>
+            </Link>
             {[
               { id: "feed", label: "What's Happening" },
               { id: "network", label: "Network" },
@@ -1533,231 +1474,33 @@ export default function Home() {
 
       {activeTab === "feed" ? (
         <>
-          {/* 4-card preview */}
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 32px 0" }}>
-            {selectedCats.length === 0 ? (
-              <div style={{ padding: "32px 0", textAlign: "center", color: "#6B7C6C", fontSize: 13 }}>
-                Select at least one category above to see issues.
-              </div>
-            ) : (
-            <div style={{ display: "flex", alignItems: "stretch", gap: 10 }}>
-              <div className="preview-grid" style={{ alignItems: "stretch", flex: 1 }}>
-                {happeningNow.map(issue => (
-                  <FeedCard
-                    key={issue.id}
-                    issue={issue}
-                    weekCount={actionCounts[issue.slug] || 0}
-                    isArchived={archivedSlugs.has(issue.slug)}
-                    onArchive={toggleArchive}
-                    onCatClick={recordCatClick}
-                    followActionCount={socialProof[issue.slug] || 0}
-                    flippable={true}
-                  />
-                ))}
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
-                <button
-                  onClick={() => setPreviewPage(p => Math.max(0, p - 1))}
-                  style={{
-                    flex: 1, width: 36, border: "1px solid rgba(21,128,61,0.2)",
-                    borderRadius: 8, background: "rgba(21,128,61,0.07)", color: "#15803d",
-                    cursor: "pointer", fontSize: 16, fontWeight: 700,
-                    transition: "background 0.15s",
-                    visibility: previewPage > 0 ? "visible" : "hidden",
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.14)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "rgba(21,128,61,0.07)"}
-                >←</button>
-                <button
-                  onClick={() => setPreviewPage(p => p + 1)}
-                  style={{
-                    flex: 1, width: 36, border: "1px solid rgba(21,128,61,0.2)",
-                    borderRadius: 8, background: "rgba(21,128,61,0.07)", color: "#15803d",
-                    cursor: "pointer", fontSize: 16, fontWeight: 700,
-                    transition: "background 0.15s",
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.14)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "rgba(21,128,61,0.07)"}
-                >→</button>
-              </div>
-            </div>
+          {/* Section sub-header */}
+          <div id="full-feed" style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 32px 10px", display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.06)" }} />
+            <span style={{ fontSize: 11, color: "#6B7C6C", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+              <strong style={{ color: "#3A4B3B" }}>{feedIssues.length}</strong> issues
+            </span>
+          </div>
+
+          {/* Feed grid */}
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 40px" }}>
+            {feedIssues.length === 0 && (
+              <p style={{ color: "#4A5C4B", fontSize: 14, padding: "40px 0", textAlign: "center" }}>No issues match your current filter.</p>
             )}
+            <div className="feed-grid" style={{ alignItems: "stretch" }}>
+              {feedIssues.map(issue => (
+                <FeedCard
+                  key={issue.id}
+                  issue={issue}
+                  weekCount={actionCounts[issue.slug] || 0}
+                  isArchived={archivedSlugs.has(issue.slug)}
+                  onArchive={toggleArchive}
+                  onCatClick={recordCatClick}
+                  followActionCount={socialProof[issue.slug] || 0}
+                />
+              ))}
+            </div>
           </div>
-
-          {/* Open full feed button */}
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2px 32px 4px", display: "flex", justifyContent: "flex-end" }}>
-            <Link href="/feed" style={{
-              display: "inline-flex", alignItems: "center", gap: 4,
-              padding: "7px 18px",
-              background: "rgba(21,128,61,0.07)", border: "1px solid rgba(21,128,61,0.2)",
-              borderRadius: 99, color: "#15803d", fontSize: 12, fontWeight: 700,
-              textDecoration: "none", letterSpacing: "0.03em",
-              transition: "background 0.15s",
-            }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.13)"}
-              onMouseLeave={e => e.currentTarget.style.background = "rgba(21,128,61,0.07)"}
-            >Open full feed →</Link>
-          </div>
-
-          {/* Happening Here — unified */}
-          {(() => {
-            function parseEventDate(d) {
-              if (!d || d === "Flexible" || d === "Upcoming") return Infinity
-              try {
-                const parsed = new Date(`${d} ${new Date().getFullYear()}`)
-                if (isNaN(parsed)) return Infinity
-                if (parsed < new Date()) parsed.setFullYear(parsed.getFullYear() + 1)
-                return parsed.getTime()
-              } catch { return Infinity }
-            }
-            const sorted = mapEvents.slice().sort((a, b) => parseEventDate(a.date) - parseEventDate(b.date))
-            const inCat = sorted.filter(e => selectedCats.length === 0 || selectedCats.includes(e.category))
-            const featured = inCat.length >= 4
-              ? inCat.slice(0, 4)
-              : [...inCat, ...sorted.filter(e => !inCat.includes(e))].slice(0, 4)
-
-            return (
-              <div style={{ maxWidth: 1200, margin: "0 auto", padding: "4px 32px 20px" }}>
-                {/* Heading + zip */}
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                  <div style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 20, fontWeight: 800, color: "#1C2E1E", letterSpacing: "-0.02em" }}>
-                    Happening Here
-                  </div>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={5}
-                    defaultValue={mapZip}
-                    placeholder="zip"
-                    onBlur={e => {
-                      const v = e.target.value.replace(/\D/g, "").slice(0, 5)
-                      if (v.length === 5) { setMapZip(v); localStorage.setItem("userZipCode", v) }
-                      e.target.style.borderColor = "rgba(0,0,0,0.12)"
-                    }}
-                    onKeyDown={e => {
-                      if (e.key === "Enter") {
-                        const v = e.target.value.replace(/\D/g, "").slice(0, 5)
-                        if (v.length === 5) { setMapZip(v); localStorage.setItem("userZipCode", v) }
-                        e.target.blur()
-                      }
-                    }}
-                    onFocus={e => e.target.style.borderColor = "rgba(21,128,61,0.5)"}
-                    style={{
-                      width: 72, padding: "3px 10px", fontSize: 11, fontWeight: 600,
-                      color: "#4A5C4B", background: "rgba(0,0,0,0.04)",
-                      border: "1px solid rgba(0,0,0,0.12)", borderRadius: 99,
-                      outline: "none", letterSpacing: "0.08em", textAlign: "center",
-                      transition: "border-color 0.15s",
-                    }}
-                  />
-                </div>
-
-                {/* Map */}
-                <MobilizeMap zip={mapZip} height={300} onEventsLoaded={setMapEvents} />
-
-                {/* Featured label */}
-                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#9CAD9C", margin: "14px 0 8px" }}>
-                  Featured — hand-picked for you
-                </div>
-
-                {/* Event cards */}
-                {featured.length === 0 ? (
-                  <div style={{ fontSize: 12, color: "#9CAD9C", padding: "6px 0 10px" }}>
-                    {mapZip.length === 5 ? "No matching events found. Check back soon." : "Enter a zip code above to see events."}
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", gap: 10, alignItems: "stretch", marginBottom: 10 }}>
-                    {featured.map(event => <EventCard key={event.id} event={event} />)}
-                  </div>
-                )}
-
-                {/* See all events button */}
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: featured.length > 0 ? 8 : 10 }}>
-                  <Link href="/actions/events" style={{
-                    display: "inline-flex", alignItems: "center", gap: 4,
-                    padding: "7px 18px",
-                    background: "rgba(21,128,61,0.07)", border: "1px solid rgba(21,128,61,0.2)",
-                    borderRadius: 99, color: "#15803d", fontSize: 12, fontWeight: 700,
-                    textDecoration: "none", letterSpacing: "0.03em",
-                    transition: "background 0.15s",
-                  }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.13)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "rgba(21,128,61,0.07)"}
-                  >See all events near you →</Link>
-                </div>
-              </div>
-            )
-          })()}
-
-          {/* Spotlights */}
-          {(() => {
-            const cats = selectedCats.filter(c => NONPROFITS[c])
-            // Build pool with distribution logic
-            let pool = []
-            if (cats.length === 0) {
-              // no filter — pull 1 from each category up to 4
-              pool = Object.entries(NONPROFITS).flatMap(([cat, orgs]) =>
-                orgs.slice(0, 1).map(o => ({ org: o, category: cat }))
-              )
-            } else if (cats.length === 1) {
-              pool = (NONPROFITS[cats[0]] || []).map(o => ({ org: o, category: cats[0] }))
-            } else if (cats.length === 2) {
-              pool = [
-                ...(NONPROFITS[cats[0]] || []).slice(0, 2).map(o => ({ org: o, category: cats[0] })),
-                ...(NONPROFITS[cats[1]] || []).slice(0, 2).map(o => ({ org: o, category: cats[1] })),
-              ]
-            } else if (cats.length === 3) {
-              pool = [
-                ...(NONPROFITS[cats[0]] || []).slice(0, 2).map(o => ({ org: o, category: cats[0] })),
-                ...(NONPROFITS[cats[1]] || []).slice(0, 1).map(o => ({ org: o, category: cats[1] })),
-                ...(NONPROFITS[cats[2]] || []).slice(0, 1).map(o => ({ org: o, category: cats[2] })),
-              ]
-            } else {
-              pool = cats.slice(0, 4).flatMap(cat =>
-                (NONPROFITS[cat] || []).slice(0, 1).map(o => ({ org: o, category: cat }))
-              )
-            }
-
-            const totalPages = Math.max(1, Math.ceil(pool.length / 4))
-            const page = spotlightPage % totalPages
-            const visible = pool.slice(page * 4, page * 4 + 4)
-
-            return (
-              <div style={{ maxWidth: 1200, margin: "0 auto", padding: "8px 32px 32px" }}>
-                {/* Heading row */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                    <div style={{ fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: 20, fontWeight: 800, color: "#1C2E1E", letterSpacing: "-0.02em" }}>
-                      Spotlights
-                    </div>
-                    <span style={{ fontSize: 12, color: "#9CAD9C", fontWeight: 500 }}>
-                      Organizations making change in the causes you care about
-                    </span>
-                  </div>
-                  {totalPages > 1 && (
-                    <button
-                      onClick={() => setSpotlightPage(p => (p + 1) % totalPages)}
-                      style={{
-                        width: 36, height: 36, border: "1px solid rgba(21,128,61,0.2)",
-                        borderRadius: 8, background: "rgba(21,128,61,0.07)", color: "#15803d",
-                        cursor: "pointer", fontSize: 16, fontWeight: 700,
-                        transition: "background 0.15s", flexShrink: 0,
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.14)"}
-                      onMouseLeave={e => e.currentTarget.style.background = "rgba(21,128,61,0.07)"}
-                    >→</button>
-                  )}
-                </div>
-
-                {/* Cards */}
-                <div className="preview-grid" style={{ alignItems: "stretch" }}>
-                  {visible.map((item, i) => (
-                    <NonprofitCard key={item.org.name + i} org={item.org} category={item.category} />
-                  ))}
-                </div>
-              </div>
-            )
-          })()}
         </>
       ) : (
         /* Network tab */
@@ -1837,15 +1580,6 @@ export default function Home() {
       <style>{`
         ::-webkit-scrollbar { display: none; }
 
-        .preview-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 14px;
-        }
-        @media (max-width: 1080px) {
-          .preview-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
         @media (max-width: 700px) {
           .sbar-inner { height: 68px !important; }
           .sbar-item  { padding: 0 14px !important; gap: 8px !important; }
@@ -1861,6 +1595,18 @@ export default function Home() {
           .sbar-headline { font-size: 11px !important; }
           .sbar-body  { display: none !important; }
           .sbar-spacer { height: 60px !important; }
+        }
+
+        .feed-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 14px;
+        }
+        @media (min-width: 1080px) {
+          .feed-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 640px) {
+          .feed-grid { grid-template-columns: 1fr; }
         }
 
         .pill-ctrl:hover { background: rgba(0,0,0,0.05) !important; }
