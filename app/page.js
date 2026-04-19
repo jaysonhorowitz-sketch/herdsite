@@ -1239,6 +1239,27 @@ export default function Home() {
     i.severity_score >= 8 && i.created_at && new Date(i.created_at).getTime() >= since7
   ).length
 
+  // 4-card preview — distribution based on number of onboarding interests
+  const happeningNow = (() => {
+    const cats = userCats
+    if (!cats.length) return []
+    const n = cats.length
+    let slots
+    if (n === 1)      slots = [{ cat: cats[0], count: 4 }]
+    else if (n === 2) slots = [{ cat: cats[0], count: 2 }, { cat: cats[1], count: 2 }]
+    else if (n === 3) slots = [{ cat: cats[0], count: 2 }, { cat: cats[1], count: 1 }, { cat: cats[2], count: 1 }]
+    else              slots = cats.slice(0, 4).map(c => ({ cat: c, count: 1 }))
+    const result = []
+    for (const { cat, count } of slots) {
+      issues
+        .filter(i => i.category === cat)
+        .sort((a, b) => b.severity_score - a.severity_score || parseDate(b.date) - parseDate(a.date))
+        .slice(0, count)
+        .forEach(i => result.push(i))
+    }
+    return result
+  })()
+
   return (
     <div style={{ minHeight: "100vh", background: "#F4F0E6", fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: "#1C2E1E" }}>
 
@@ -1590,8 +1611,41 @@ export default function Home() {
 
       {activeTab === "feed" ? (
         <>
+          {/* 4-card preview */}
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 32px 0" }}>
+            <div style={{ display: "flex", alignItems: "stretch", gap: 10 }}>
+              <div className="preview-grid" style={{ alignItems: "stretch", flex: 1 }}>
+                {happeningNow.map(issue => (
+                  <FeedCard
+                    key={issue.id}
+                    issue={issue}
+                    weekCount={actionCounts[issue.slug] || 0}
+                    isArchived={archivedSlugs.has(issue.slug)}
+                    onArchive={toggleArchive}
+                    onCatClick={recordCatClick}
+                    followActionCount={socialProof[issue.slug] || 0}
+                  />
+                ))}
+              </div>
+              <a
+                href="#full-feed"
+                style={{
+                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                  gap: 6, flexShrink: 0, width: 36,
+                  background: "rgba(21,128,61,0.07)", border: "1px solid rgba(21,128,61,0.2)",
+                  borderRadius: 8, textDecoration: "none", color: "#15803d",
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(21,128,61,0.14)"}
+                onMouseLeave={e => e.currentTarget.style.background = "rgba(21,128,61,0.07)"}
+              >
+                <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1 }}>→</span>
+              </a>
+            </div>
+          </div>
+
           {/* Section sub-header */}
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 32px 10px", display: "flex", alignItems: "center", gap: 14 }}>
+          <div id="full-feed" style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 32px 10px", display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.06)" }} />
             <span style={{ fontSize: 11, color: "#6B7C6C", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
               <strong style={{ color: "#3A4B3B" }}>{feedIssues.length}</strong> issues
@@ -1699,6 +1753,18 @@ export default function Home() {
         }
         @media (max-width: 640px) {
           .feed-grid { grid-template-columns: 1fr; }
+        }
+
+        .preview-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 14px;
+        }
+        @media (max-width: 1080px) {
+          .preview-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+          .preview-grid { grid-template-columns: 1fr; }
         }
 
         .pill-ctrl:hover { background: rgba(0,0,0,0.05) !important; }
