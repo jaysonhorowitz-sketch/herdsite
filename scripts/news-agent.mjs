@@ -92,8 +92,8 @@ async function getExisting() {
 
 // ── Step 3: Ask Claude to evaluate ────────────────────────────────────────
 
-async function evaluateWithClaude(articles, existing) {
-  const existingList = existing
+async function evaluateWithClaude(articles, existing, sessionIssues = []) {
+  const existingList = [...existing, ...sessionIssues]
     .map(i => `- [${i.slug}] ${i.title} (${i.category}, ${i.date}, score ${i.severity_score})`)
     .join("\n")
 
@@ -122,13 +122,23 @@ async function evaluateWithClaude(articles, existing) {
 - Actions must be SPECIFIC and ACTIONABLE — real phone numbers, real organizations, real URLs when possible
 - Date format: "Mon YYYY" e.g. "Mar 2025"
 
+## CATEGORY DISAMBIGUATION
+- Immigration enforcement, ICE, deportation, border, asylum, visa policy → Immigration (NOT Civil Rights or Human Rights)
+- Voting access, election administration, redistricting, ballot rules → Elections (NOT Democracy & Media)
+- Press freedom, journalist treatment, platform regulation → Democracy & Media (NOT Civil Rights)
+- LGBTQ+ rights, racial discrimination, disability rights, religious liberty → Civil Rights
+- International humanitarian issues, foreign atrocities, refugees abroad → Human Rights (NOT Civil Rights)
+- US military, NATO, foreign treaties, sanctions, trade with adversaries → Foreign Policy (NOT National Security unless explicitly about domestic security threats)
+- When in doubt between two categories, pick the one that best describes the PRIMARY action taken, not the population affected.
+
 ## HEADLINE STYLE
 - Headlines must be readable as a sentence or a clear context-claim structure, not a run-on noun phrase.
 - Avoid stacking nouns without connectors. "Iran War Strait of Hormuz Disruption Threatens Global Commerce" is bad — it reads as a search query, not a headline. Better: "Strait of Hormuz disruption from Iran war threatens global oil supply" OR "Iran war — Hormuz disruption hits 20% of global oil supply."
 - When two distinct ideas need to be in the same headline (a context and a claim, or a topic and an event), separate them with an em dash (—) or a colon (:). Do not smash them together.
 - Use sentence case, not Title Case. Capitalize only the first word and proper nouns.
+- Write for a smart non-specialist, not an industry insider. Translate jargon and unfamiliar acronyms into plain English. 'CVE entries' → 'cybersecurity vulnerability records'. 'NDAA markup' → 'defense bill draft'. If a term is universally known (FBI, EPA, Medicare), keep it. If it requires industry context to parse, rewrite it.
 - Never include filler connectors like "amid", "as", "following" if they make the headline harder to parse.
-- Aim for under 85 characters but prioritize clarity over compression.
+- Aim for under 70 characters, hard cap at 80.
 
 ## FACTUAL ACCURACY
 - Only report what the source article actually states as fact. Do not convert speculation, predictions, warnings, or hypotheticals into reported events.
@@ -276,11 +286,22 @@ async function main() {
   // 3. Evaluate with Claude (process in batches of 20 articles)
   const BATCH = 20
   const allNewIssues = []
+  const sessionIssues = [] // issues accepted this run, fed to subsequent batches
   for (let i = 0; i < articles.length; i += BATCH) {
     const batch = articles.slice(i, i + BATCH)
     console.log(`🤖 Sending batch ${Math.floor(i / BATCH) + 1} of ${Math.ceil(articles.length / BATCH)} to Claude...`)
-    const issues = await evaluateWithClaude(batch, existing)
+    const issues = await evaluateWithClaude(batch, existing, sessionIssues)
     console.log(`   Claude identified ${issues.length} potential new issues`)
+    // Feed accepted issues into subsequent batches so Claude doesn't re-propose them
+    for (const issue of issues) {
+      sessionIssues.push({
+        title: issue.title,
+        slug: issue.slug || slugify(issue.title),
+        category: issue.category,
+        date: issue.date,
+        severity_score: issue.severity_score,
+      })
+    }
     allNewIssues.push(...issues)
   }
 
