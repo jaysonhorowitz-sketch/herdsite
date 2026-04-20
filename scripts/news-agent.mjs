@@ -83,7 +83,7 @@ async function fetchArticles() {
 async function getExisting() {
   const { data, error } = await supabase
     .from("issues")
-    .select("title, slug, category, date, severity_score")
+    .select("id, title, slug, category, date, severity_score")
     .order("created_at", { ascending: false })
 
   if (error) throw new Error("Supabase read error: " + error.message)
@@ -148,6 +148,21 @@ async function evaluateWithClaude(articles, existing, sessionIssues = []) {
 - Do not combine information across articles to make a claim that no single article supports.
 - Headlines must describe what happened, not what might happen or what people fear will happen.
 
+## SUPERSESSION
+If a new article describes an UPDATE to an existing tracked issue (same underlying ongoing story, new development that changes the state), include a 'supersedes' field in the JSON object with the slug of the existing issue being updated.
+
+Examples of supersession:
+- Existing: 'Strait of Hormuz closed by Iran' → New: 'Strait of Hormuz reopens after ceasefire' → supersedes: 'strait-of-hormuz-closed-by-iran'
+- Existing: 'Tariff on Chinese EVs raised to 100%' → New: 'Tariff on Chinese EVs lowered to 50% after talks' → supersedes the old one
+- Existing: 'DHS shutdown enters day 3' → New: 'DHS shutdown ends after 8 days' → supersedes the old one
+
+Do NOT supersede when:
+- The new article is just additional reporting on the same event (no state change)
+- The new article is a related but distinct event in the same broader story
+- You are unsure — when in doubt, omit the supersedes field and let it be a separate issue
+
+Only supersede when there is a clear state change in an ongoing situation.
+
 ## EXISTING ISSUES (do not duplicate)
 ${existingList}
 
@@ -174,7 +189,8 @@ Each element must match this exact shape:
   "sources": [
     {"label": "Source name — article headline", "url": "https://..."}
   ],
-  "is_published": true
+  "is_published": true,
+  "supersedes": "old-issue-slug (optional, only if updating an existing tracked issue with a clear state change — omit entirely if not applicable)"
 }`
 
   const msg = await anthropic.messages.create({
@@ -220,41 +236,30 @@ function validateIssue(issue) {
   return null // valid
 }
 
-// ── Step 5: Mark stale tariff/superseded issues ────────────────────────────
+// ── Step 5: Process supersessions ─────────────────────────────────────────
 
-async function consolidateTariffIssues(newIssues) {
-  // If the agent added a newer tariff summary, unpublish older granular ones
-  const newTariffIssues = newIssues.filter(i =>
-    i.category === "Economy" && /tariff/i.test(i.title)
-  )
-  if (newTariffIssues.length === 0) return
+async function processSupersessions(newIssues, existing) {
+  const slugToId = Object.fromEntries(existing.map(i => [i.slug, i.id]))
 
-  const { data: oldTariffs } = await supabase
-    .from("issues")
-    .select("id, title, slug, date")
-    .eq("category", "Economy")
-    .ilike("title", "%tariff%")
-    .eq("is_published", true)
+  const toUnpublish = []
+  for (const issue of newIssues) {
+    if (!issue.supersedes) continue
+    const id = slugToId[issue.supersedes]
+    if (!id) {
+      console.warn(`   ⚠️  supersedes slug not found: "${issue.supersedes}" (skipping)`)
+      continue
+    }
+    toUnpublish.push({ id, slug: issue.supersedes })
+  }
 
-  if (!oldTariffs?.length) return
-
-  // Only unpublish ones that are strictly older
-  const newDates = newTariffIssues.map(i => parseDateScore(i.date))
-  const maxNewDate = Math.max(...newDates)
-
-  const toUnpublish = oldTariffs.filter(o => parseDateScore(o.date) < maxNewDate)
   if (!toUnpublish.length) return
 
   const ids = toUnpublish.map(i => i.id)
-  await supabase.from("issues").update({ is_published: false }).in("id", ids)
-  console.log(`📦  Unpublished ${ids.length} older tariff issues (superseded by newer entries)`)
-}
+  const { error } = await supabase.from("issues").update({ is_published: false }).in("id", ids)
+  if (error) throw new Error("Supabase supersession update error: " + error.message)
 
-const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-function parseDateScore(d) {
-  if (!d) return 0
-  const [mon, yr] = d.split(" ")
-  return (parseInt(yr) || 0) * 12 + (MONTHS.indexOf(mon) || 0)
+  const slugs = toUnpublish.map(i => i.slug)
+  console.log(`🔄 Superseded ${ids.length} old issues: [${slugs.join(", ")}]`)
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────
@@ -331,8 +336,8 @@ async function main() {
     console.log("\nInserted:")
     toInsert.forEach(i => console.log(`   [${i.severity_score}/10] ${i.title}`))
 
-    // 6. Consolidate superseded issues (e.g. old tariff entries)
-    await consolidateTariffIssues(toInsert)
+    // 6. Unpublish any issues superseded by newly inserted ones
+    await processSupersessions(toInsert, existing)
   } else {
     console.log("   Nothing new to insert.")
   }
