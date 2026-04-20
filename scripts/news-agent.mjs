@@ -155,8 +155,7 @@ ${existingList}
 ${articleList}
 
 ## OUTPUT
-Return ONLY a valid JSON array. No prose, no markdown fences, no explanation — just the raw JSON array.
-If no articles warrant a new issue, return [].
+Your entire response MUST be a valid JSON array and nothing else. Start with [ and end with ]. No prose, no markdown fences, no explanation, no preamble like "Here are the issues:". If no articles warrant a new issue, return exactly: []
 
 Each element must match this exact shape:
 {
@@ -181,13 +180,10 @@ Each element must match this exact shape:
   const msg = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 8000,
-    messages: [
-      { role: "user", content: prompt },
-      { role: "assistant", content: "[" },
-    ],
+    messages: [{ role: "user", content: prompt }],
   })
 
-  const raw = "[" + msg.content[0].text.trim()
+  const raw = msg.content[0].text.trim()
 
   // Strip any accidental markdown fences
   const cleaned = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim()
