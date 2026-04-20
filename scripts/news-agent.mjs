@@ -171,10 +171,13 @@ Each element must match this exact shape:
   const msg = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 8000,
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      { role: "user", content: prompt },
+      { role: "assistant", content: "[" },
+    ],
   })
 
-  const raw = msg.content[0].text.trim()
+  const raw = "[" + msg.content[0].text.trim()
 
   // Strip any accidental markdown fences
   const cleaned = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim()
@@ -185,6 +188,17 @@ Each element must match this exact shape:
   } catch (e) {
     console.error("⚠️  Claude returned invalid JSON. Raw output:")
     console.error(raw.slice(0, 500))
+
+    // Fallback: extract first valid JSON array from the text
+    const match = raw.match(/\[[\s\S]*\]/)
+    if (match) {
+      try {
+        const parsed = JSON.parse(match[0])
+        return Array.isArray(parsed) ? parsed : []
+      } catch (e2) {
+        console.error("⚠️  Fallback extraction also failed.")
+      }
+    }
     return []
   }
 }
