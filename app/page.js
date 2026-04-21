@@ -692,7 +692,12 @@ function NetworkTab({ userId, userCategories }) {
         ) : following.size === 0 ? (
           <div>
             <div style={{ textAlign: "center", padding: "40px 20px 28px" }}>
-              <div style={{ fontSize: 52, marginBottom: 16 }}>🦌</div>
+              <div style={{ marginBottom: 16, display: "flex", justifyContent: "center" }}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="52" height="52">
+                  <rect width="32" height="32" rx="6" fill="#1C2E1E"/>
+                  <text x="16" y="24" fontFamily="Georgia, serif" fontSize="22" fontWeight="800" fill="#FFFFFF" textAnchor="middle">H</text>
+                </svg>
+              </div>
               <h3 style={{ fontSize: 20, fontWeight: 800, color: "#1C2E1E", margin: "0 0 8px", fontFamily: "var(--font-fraunces), Georgia, serif" }}>
                 Find your herd
               </h3>
