@@ -1843,8 +1843,13 @@ export default function Home() {
           grid-template-columns: repeat(4, 1fr);
           gap: 14px;
         }
-        @media (max-width: 1080px) {
+        @media (max-width: 1279px) {
+          .preview-grid { grid-template-columns: repeat(3, 1fr); }
+          .preview-grid > *:nth-child(n+4) { display: none; }
+        }
+        @media (max-width: 899px) {
           .preview-grid { grid-template-columns: repeat(2, 1fr); }
+          .preview-grid > *:nth-child(n+3) { display: none; }
         }
 
         @media (max-width: 700px) {
