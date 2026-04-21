@@ -18,8 +18,13 @@ const fraunces = Fraunces({
 });
 
 export const metadata = {
-  title: "Herd — Politics & Governance",
+  title: "Herd — Connect with issues you care about",
   description: "Connect with the issues you care about — understand what's happening, why it matters, and how you can make a difference.",
+  openGraph: {
+    title: "Herd — Connect with issues you care about",
+    description: "Connect with the issues you care about — understand what's happening, why it matters, and how you can make a difference.",
+    siteName: "Herd",
+  },
 };
 
 export default function RootLayout({ children }) {
