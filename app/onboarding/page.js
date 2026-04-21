@@ -294,7 +294,7 @@ export default function OnboardingPage() {
                     onMouseEnter={e => { e.currentTarget.style.borderColor = on ? "rgba(21,128,61,0.7)" : "rgba(255,255,255,0.18)"; e.currentTarget.style.background = on ? "rgba(21,128,61,0.2)" : "#1f2a42" }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = on ? "rgba(21,128,61,0.5)" : "rgba(0,0,0,0.07)"; e.currentTarget.style.background = on ? "rgba(21,128,61,0.15)" : "#E8E4D8" }}
                   >
-                    <span style={{ fontSize: 28, flexShrink: 0 }}>{opt.icon}</span>
+                    <span style={{ fontSize: 28, flexShrink: 0, filter: opt.key === "both" ? "grayscale(1)" : "none" }}>{opt.icon}</span>
                     <div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: on ? "#16a34a" : "#1C2E1E", marginBottom: 4 }}>
                         {opt.title}
