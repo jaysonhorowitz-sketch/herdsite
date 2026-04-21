@@ -51,6 +51,8 @@ async function fetchArticles() {
     "US military NATO foreign policy",
     "US press freedom media government",
     "US federal budget spending cut",
+    "US election 2026 midterm voting ballot redistricting",
+    "US education school university federal Department of Education",
   ]
 
   const from = daysAgo(7)
