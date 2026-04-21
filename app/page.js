@@ -489,35 +489,478 @@ function SkeletonRow() {
   )
 }
 
-// ─── NetworkTab ───────────────────────────────────────────────────────────────
-function NetworkTab({ userId, userCategories }) {
+// ─── RepsTab ──────────────────────────────────────────────────────────────────
+const ROLE_CATEGORIES = {
+  president: ["Executive Power", "Foreign Policy", "National Security", "Economy", "Immigration"],
+  senator:   ["Rule of Law", "Economy", "Healthcare", "Environment", "Civil Rights", "Elections", "Immigration", "Education", "Science", "Democracy & Media", "Human Rights", "Foreign Policy", "National Security", "Executive Power"],
+  house:     ["Economy", "Healthcare", "Education", "Environment", "Civil Rights", "Democracy & Media", "Human Rights", "Science"],
+}
+const PARTY_COLOR = { Democrat: "#1d4ed8", Republican: "#b91c1c", Independent: "#6b21a8" }
+const PARTY_SHORT  = { Democrat: "D", Republican: "R", Independent: "I" }
+
+function RepCard({ rep, userCategories }) {
+  const [open, setOpen] = useState(false)
+  const roleCategories = ROLE_CATEGORIES[rep.role] || []
+  const sharedCats = roleCategories.filter(c => userCategories.includes(c))
+  const displayCats = sharedCats.length ? sharedCats : roleCategories.slice(0, 4)
+  const partyColor = PARTY_COLOR[rep.party] || "#6B7C6C"
+
+  return (
+    <div onClick={e => { if (!e.target.closest("a")) setOpen(o => !o) }}
+      onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 24px rgba(0,0,0,0.1)"}
+      onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.05)"}
+      style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 16, padding: "18px 22px", cursor: "pointer", boxShadow: "0 2px 12px rgba(0,0,0,0.05)", transition: "box-shadow 0.15s" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "linear-gradient(135deg, #E8F0E8, #D4E6D4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, border: "2px solid rgba(21,128,61,0.12)" }}>🏛️</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: "#1C2E1E", fontFamily: "var(--font-fraunces), Georgia, serif" }}>{rep.name}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: "50%", fontSize: 10, fontWeight: 800, background: partyColor + "18", color: partyColor, border: `1.5px solid ${partyColor}40` }}>
+              {PARTY_SHORT[rep.party] || rep.party?.[0] || "?"}
+            </span>
+          </div>
+          <div style={{ fontSize: 11, color: "#6B7C6C", marginTop: 2 }}>{rep.title}</div>
+        </div>
+        <span style={{ fontSize: 14, color: "#9CAD9C", transition: "transform 0.15s", transform: open ? "rotate(180deg)" : "none", flexShrink: 0 }}>▾</span>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 12 }}>
+        {displayCats.map(cat => (
+          <span key={cat} style={{ fontSize: 10, fontWeight: 600, padding: "2px 9px", borderRadius: 20, background: (CAT_COLOR[cat] || "#15803d") + "14", color: CAT_COLOR[cat] || "#15803d", border: `1px solid ${(CAT_COLOR[cat] || "#15803d")}30` }}>{cat}</span>
+        ))}
+      </div>
+      {open && (
+        <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(0,0,0,0.07)", display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {rep.phone && <a href={`tel:${rep.phone}`} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, background: "#F0F7F0", color: "#15803d", textDecoration: "none", fontSize: 12, fontWeight: 600, border: "1px solid rgba(21,128,61,0.2)" }}>📞 {rep.phone}</a>}
+          {rep.link && <a href={rep.link} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, background: "#F0F7F0", color: "#15803d", textDecoration: "none", fontSize: 12, fontWeight: 600, border: "1px solid rgba(21,128,61,0.2)" }}>🌐 Official Website</a>}
+          {rep.office && <div style={{ width: "100%", fontSize: 11, color: "#9CAD9C", marginTop: 2 }}>📍 {rep.office}</div>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function RepsTab({ userCategories, userZip }) {
+  const [reps,        setReps]        = useState([])
+  const [loading,     setLoading]     = useState(true)
+  const [error,       setError]       = useState(null)
+  const [selectedCat, setSelectedCat] = useState("All")
+
+  useEffect(() => {
+    const zip = userZip || localStorage.getItem("userZipCode")
+    if (!zip) { setError("No zip code found. Add one in Settings."); setLoading(false); return }
+    fetch(`/api/reps?zip=${zip}`)
+      .then(r => r.json())
+      .then(d => { if (d.error) throw new Error(d.error); setReps(d.reps || []) })
+      .catch(() => setError("Couldn't load representatives."))
+      .finally(() => setLoading(false))
+  }, [userZip])
+
+  const president = reps.filter(r => r.role === "president")
+  const senators  = reps.filter(r => r.role === "senator")
+  const house     = reps.filter(r => r.role === "house")
+  const allCats   = ["All", ...Object.keys(CAT_COLOR)]
+
+  function tierVisible(role) {
+    return selectedCat === "All" || (ROLE_CATEGORIES[role] || []).includes(selectedCat)
+  }
+
+  return (
+    <div style={{ maxWidth: 760, margin: "0 auto", padding: "28px 32px 80px" }}>
+      {/* Category filter */}
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 28 }}>
+        {allCats.map(cat => {
+          const color = cat === "All" ? "#15803d" : (CAT_COLOR[cat] || "#15803d")
+          const active = selectedCat === cat
+          return (
+            <button key={cat} onClick={() => setSelectedCat(cat)} style={{ padding: "5px 12px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 11, fontWeight: active ? 700 : 500, background: active ? color : "rgba(0,0,0,0.06)", color: active ? "#fff" : "#4A5C4B", transition: "all 0.15s" }}>{cat}</button>
+          )
+        })}
+      </div>
+
+      {loading && <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>{[["55%",1],["78%",2],["100%",1]].map(([w,n],i) => <div key={i} style={{ width: w, display: "grid", gridTemplateColumns: `repeat(${n},1fr)`, gap: 10 }}>{Array(n).fill(0).map((_,j) => <div key={j} style={{ height: 100, borderRadius: 16, background: "rgba(0,0,0,0.06)" }} />)}</div>)}</div>}
+
+      {error && <div style={{ textAlign: "center", padding: "48px 20px", color: "#6B7C6C" }}><div style={{ fontSize: 36, marginBottom: 10 }}>🏛️</div><p style={{ fontSize: 13 }}>{error}</p></div>}
+
+      {!loading && !error && (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
+          {tierVisible("president") && president.length > 0 && (
+            <div style={{ width: "55%", minWidth: 260 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>President</div>
+              {president.map((r, i) => <RepCard key={i} rep={r} userCategories={userCategories} />)}
+            </div>
+          )}
+          {tierVisible("senator") && senators.length > 0 && (
+            <div style={{ width: "78%", minWidth: 300 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>U.S. Senate</div>
+              <div style={{ display: "grid", gridTemplateColumns: senators.length > 1 ? "1fr 1fr" : "1fr", gap: 10 }}>
+                {senators.map((r, i) => <RepCard key={i} rep={r} userCategories={userCategories} />)}
+              </div>
+            </div>
+          )}
+          {tierVisible("house") && house.length > 0 && (
+            <div style={{ width: "100%" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>U.S. House of Representatives</div>
+              {house.map((r, i) => <RepCard key={i} rep={r} userCategories={userCategories} />)}
+            </div>
+          )}
+          {!tierVisible("president") && !tierVisible("senator") && !tierVisible("house") && (
+            <div style={{ textAlign: "center", padding: "40px 20px", color: "#9CAD9C", fontSize: 13 }}>No reps impact <strong style={{ color: "#4A5C4B" }}>{selectedCat}</strong> — try another category.</div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── CommunityTab ─────────────────────────────────────────────────────────────
+function CommunityTab({ userId, userCategories, userZip }) {
+  const [scope,        setScope]        = useState("state")
+  const [userState,    setUserState]    = useState(null)
+  const [userCounty,   setUserCounty]   = useState(null)
+  const [userTown,     setUserTown]     = useState(null)
+  const [activeRoom,   setActiveRoom]   = useState(null)
+  const [messages,     setMessages]     = useState([])
+  const [draft,        setDraft]        = useState("")
+  const [sending,      setSending]      = useState(false)
+  const [myDisplayName, setMyDisplayName] = useState(null)
+  const messagesEndRef = useRef(null)
+
+  // Zip → location (town from Zippopotam, county from FCC Census API)
+  useEffect(() => {
+    if (!userZip) return
+    fetch(`https://api.zippopotam.us/us/${userZip}`)
+      .then(r => r.json())
+      .then(d => {
+        const p = d.places?.[0]
+        if (!p) return
+        setUserState(p["state abbreviation"])
+        setUserTown(p["place name"])
+        // Use lat/lon to get real county name from FCC
+        fetch(`https://geo.fcc.gov/api/census/block/find?latitude=${p.latitude}&longitude=${p.longitude}&format=json`)
+          .then(r => r.json())
+          .then(fcc => {
+            if (fcc?.County?.name) setUserCounty(fcc.County.name)
+            else setUserCounty(p["place name"])
+          })
+          .catch(() => setUserCounty(p["place name"]))
+      })
+      .catch(() => {})
+  }, [userZip])
+
+  // Default to first followed issue
+  useEffect(() => {
+    if (userCategories?.length && !activeRoom) setActiveRoom(userCategories[0])
+  }, [userCategories])
+
+  // Fetch display name once
+  useEffect(() => {
+    if (!userId || myDisplayName) return
+    supabase.from("user_prefs").select("display_name").eq("user_id", userId).maybeSingle()
+      .then(({ data }) => { if (data?.display_name) setMyDisplayName(data.display_name) })
+  }, [userId])
+
+  const scopeValue = scope === "state" ? userState : scope === "county" ? userCounty : userTown
+  const roomId = activeRoom && scopeValue ? `${activeRoom}_${scope}_${scopeValue}` : null
+
+  // Load + subscribe
+  useEffect(() => {
+    if (!roomId) return
+    setMessages([])
+    supabase.from("community_messages")
+      .select("id, user_id, display_name, content, created_at")
+      .eq("room_id", roomId)
+      .order("created_at", { ascending: true })
+      .limit(50)
+      .then(({ data }) => setMessages(data || []))
+
+    const channel = supabase.channel(`community:${roomId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "community_messages", filter: `room_id=eq.${roomId}` },
+        payload => setMessages(prev => [...prev, payload.new]))
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [roomId])
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
+
+  async function sendMessage() {
+    if (!draft.trim() || !userId || !roomId || sending) return
+    setSending(true)
+    await supabase.from("community_messages").insert({
+      room_id: roomId,
+      user_id: userId,
+      display_name: myDisplayName || "Anonymous",
+      content: draft.trim().slice(0, 280),
+    })
+    setDraft("")
+    setSending(false)
+  }
+
+  const scopeLabel = scopeValue || "..."
+
+  return (
+    <div style={{ display: "flex", maxWidth: 1200, margin: "0 auto", padding: "24px 32px", gap: 24, minHeight: 520 }}>
+      {/* Sidebar */}
+      <div style={{ width: 210, flexShrink: 0 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#9CAD9C", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Your Rooms</div>
+        {!userCategories?.length && <div style={{ fontSize: 13, color: "#9CAD9C" }}>Follow issues to join rooms.</div>}
+        {userCategories?.map(cat => (
+          <button key={cat} onClick={() => setActiveRoom(cat)} style={{
+            display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left",
+            padding: "8px 12px", borderRadius: 8, border: "none",
+            background: activeRoom === cat ? "#E8F0E8" : "transparent",
+            cursor: "pointer", fontSize: 13, fontWeight: activeRoom === cat ? 700 : 500,
+            color: activeRoom === cat ? "#1C2E1E" : "#4A5C4B", marginBottom: 2, transition: "background 0.12s",
+          }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: CAT_COLOR[cat] || "#15803d", flexShrink: 0 }} />
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Chat panel */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 14, overflow: "hidden", background: "#fff" }}>
+        {!activeRoom ? (
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CAD9C", fontSize: 14 }}>Select a room to start chatting.</div>
+        ) : (
+          <>
+            {/* Header */}
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FAFAF8" }}>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#1C2E1E" }}>{activeRoom}</div>
+                <div style={{ fontSize: 12, color: "#6B7C6C", marginTop: 1 }}>{scopeLabel}</div>
+              </div>
+              <div style={{ display: "flex", gap: 3, background: "rgba(0,0,0,0.05)", borderRadius: 8, padding: 3 }}>
+                {["town", "county", "state"].map(s => (
+                  <button key={s} onClick={() => setScope(s)} style={{
+                    padding: "4px 10px", borderRadius: 6, border: "none", cursor: "pointer",
+                    fontSize: 12, fontWeight: scope === s ? 700 : 500,
+                    background: scope === s ? "#fff" : "transparent",
+                    color: scope === s ? "#1C2E1E" : "#6B7C6C",
+                    boxShadow: scope === s ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                    transition: "all 0.12s", textTransform: "capitalize",
+                  }}>{s}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14, minHeight: 300, maxHeight: 400 }}>
+              {messages.length === 0 && (
+                <div style={{ textAlign: "center", color: "#9CAD9C", fontSize: 13, margin: "auto" }}>No messages yet. Start the conversation.</div>
+              )}
+              {messages.map(msg => (
+                <div key={msg.id} style={{ display: "flex", gap: 10 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#E8F0E8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 12, fontWeight: 700, color: "#4A5C4B" }}>
+                    {(msg.display_name || "?")[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#1C2E1E" }}>{msg.display_name || "Anonymous"}</span>
+                      <span style={{ fontSize: 11, color: "#9CAD9C" }}>{new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                    </div>
+                    <div style={{ fontSize: 14, color: "#2D3E2E", lineHeight: 1.5, marginTop: 2 }}>{msg.content}</div>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input */}
+            <div style={{ padding: "12px 20px", borderTop: "1px solid rgba(0,0,0,0.07)", display: "flex", gap: 10, alignItems: "flex-end", background: "#FAFAF8" }}>
+              {!userId ? (
+                <div style={{ flex: 1, fontSize: 13, color: "#9CAD9C", padding: "10px 0" }}>
+                  <Link href="/login" style={{ color: "#15803d", textDecoration: "none", fontWeight: 600 }}>Sign in</Link> to join the conversation.
+                </div>
+              ) : (
+                <>
+                  <textarea
+                    value={draft}
+                    onChange={e => setDraft(e.target.value.slice(0, 280))}
+                    onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
+                    placeholder={`Message ${activeRoom} · ${scopeLabel}`}
+                    rows={2}
+                    style={{
+                      flex: 1, resize: "none", border: "1px solid rgba(0,0,0,0.1)", borderRadius: 10,
+                      padding: "10px 14px", fontSize: 14, fontFamily: "inherit", color: "#1C2E1E",
+                      outline: "none", background: "#fff", lineHeight: 1.5,
+                    }}
+                  />
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                    <span style={{ fontSize: 11, color: draft.length > 250 ? "#dc2626" : "#9CAD9C" }}>{280 - draft.length}</span>
+                    <button onClick={sendMessage} disabled={!draft.trim() || sending} style={{
+                      background: !draft.trim() || sending ? "#D1D5DB" : "#15803d",
+                      color: "#fff", border: "none", borderRadius: 8,
+                      padding: "9px 18px", fontSize: 13, fontWeight: 700,
+                      cursor: !draft.trim() || sending ? "default" : "pointer",
+                      transition: "background 0.12s",
+                    }}>Send</button>
+                  </div>
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── FindFriendsTab ───────────────────────────────────────────────────────────
+function FindFriendsTab({ userId, userCategories }) {
   const [search,        setSearch]        = useState("")
   const [searchResults, setSearchResults] = useState([])
-  const [feed,          setFeed]          = useState([])
   const [following,     setFollowing]     = useState(new Set())
   const [pending,       setPending]       = useState(new Set())
-  const [loadingFeed,   setLoadingFeed]   = useState(true)
   const [searching,     setSearching]     = useState(false)
-  const [clapMap,       setClapMap]       = useState({ mySet: new Set(), countMap: {} })
   const [suggested,     setSuggested]     = useState([])
-  const searchRef = useRef(null)
 
-  // Load who current user follows
   useEffect(() => {
-    if (!userId) { setLoadingFeed(false); return }
-    supabase.from("follows")
-      .select("following_id, status")
-      .eq("follower_id", userId)
+    if (!userId) return
+    supabase.from("follows").select("following_id, status").eq("follower_id", userId)
       .then(({ data }) => {
         if (data) {
           setFollowing(new Set(data.filter(f => f.status === "accepted").map(f => f.following_id)))
           setPending(new Set(data.filter(f => f.status === "pending").map(f => f.following_id)))
         }
+      })
+  }, [userId])
+
+  useEffect(() => {
+    if (!userId) return
+    supabase.from("user_prefs")
+      .select("user_id, display_name, username, animal_type, categories, is_private")
+      .neq("user_id", userId).limit(40)
+      .then(({ data }) => {
+        if (!data) return
+        // Score by shared categories, fall back to all users with a display name
+        const scored = data
+          .filter(u => u.display_name || u.username)
+          .map(u => ({ ...u, overlap: (u.categories || []).filter(c => (userCategories || []).includes(c)).length }))
+          .sort((a, b) => b.overlap - a.overlap)
+          .slice(0, 12)
+        setSuggested(scored)
+      })
+  }, [userId, userCategories])
+
+  useEffect(() => {
+    if (!search.trim()) { setSearchResults([]); return }
+    setSearching(true)
+    const t = setTimeout(async () => {
+      const q = search.trim()
+      const isZip = /^\d{5}$/.test(q)
+      let query = supabase.from("user_prefs")
+        .select("user_id, display_name, username, animal_type, categories, is_private")
+        .neq("user_id", userId || "00000000-0000-0000-0000-000000000000").limit(10)
+      if (isZip) query = query.eq("zip_code", q)
+      else query = query.or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
+      const { data } = await query
+      setSearchResults(data || [])
+      setSearching(false)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [search, userId])
+
+  async function toggleFollow(targetId, isPrivate) {
+    if (following.has(targetId) || pending.has(targetId)) {
+      await supabase.from("follows").delete().eq("follower_id", userId).eq("following_id", targetId)
+      setFollowing(p => { const s = new Set(p); s.delete(targetId); return s })
+      setPending(p => { const s = new Set(p); s.delete(targetId); return s })
+    } else {
+      const status = isPrivate ? "pending" : "accepted"
+      await supabase.from("follows").insert({ follower_id: userId, following_id: targetId, status })
+      if (status === "accepted") setFollowing(p => new Set([...p, targetId]))
+      else setPending(p => new Set([...p, targetId]))
+    }
+  }
+
+  const showResults = search.trim().length > 0
+
+  return (
+    <div style={{ maxWidth: 680, margin: "0 auto", padding: "28px 32px 120px" }}>
+      {/* Search */}
+      <div style={{ marginBottom: 28, position: "relative" }}>
+        <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#9CAD9C", fontSize: 14, pointerEvents: "none" }}>🔍</span>
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search by name, username, or zip code…"
+          style={{
+            width: "100%", boxSizing: "border-box", padding: "13px 36px 13px 42px",
+            fontSize: 14, color: "#1C2E1E", background: "#fff",
+            border: "1px solid rgba(0,0,0,0.1)", borderRadius: 12, outline: "none",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)", transition: "border-color 0.15s, box-shadow 0.15s",
+          }}
+          onFocus={e => { e.target.style.borderColor = "rgba(21,128,61,0.4)"; e.target.style.boxShadow = "0 0 0 3px rgba(21,128,61,0.08)" }}
+          onBlur={e => { e.target.style.borderColor = "rgba(0,0,0,0.1)"; e.target.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)" }}
+        />
+        {search && (
+          <button onClick={() => setSearch("")}
+            style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9CAD9C", fontSize: 18, lineHeight: 1, padding: "0 4px" }}>×</button>
+        )}
+      </div>
+
+      {/* Search results */}
+      {showResults && (
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6B7C6C" }}>
+              {searching ? "Searching…" : `${searchResults.length} result${searchResults.length !== 1 ? "s" : ""}`}
+            </div>
+            {/^\d{5}$/.test(search.trim()) && (
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#15803d", background: "rgba(21,128,61,0.08)", border: "1px solid rgba(21,128,61,0.2)", padding: "3px 10px", borderRadius: 20 }}>
+                📍 By zip code
+              </div>
+            )}
+          </div>
+          {searching && [1,2].map(i => <SkeletonRow key={i} />)}
+          {!searching && searchResults.map(user => (
+            <UserCard key={user.user_id} user={user} isFollowing={following.has(user.user_id)} isPending={pending.has(user.user_id)} onToggle={toggleFollow} />
+          ))}
+          {!searching && searchResults.length === 0 && (
+            <p style={{ color: "#6B7C6C", fontSize: 13, textAlign: "center", padding: "20px 0" }}>No users found for &ldquo;{search}&rdquo;</p>
+          )}
+        </div>
+      )}
+
+      {/* People you may know */}
+      {!showResults && suggested.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6B7C6C", marginBottom: 14 }}>
+            People You May Know
+          </div>
+          {suggested.map(user => (
+            <UserCard key={user.user_id} user={user} isFollowing={following.has(user.user_id)} isPending={pending.has(user.user_id)} onToggle={toggleFollow} commonTopics={user.overlap || 0} />
+          ))}
+        </div>
+      )}
+
+      {!showResults && !suggested.length && (
+        <div style={{ textAlign: "center", padding: "60px 20px", color: "#9CAD9C", fontSize: 14 }}>
+          Search for people above to find your herd.
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── NetworkTab ───────────────────────────────────────────────────────────────
+function NetworkTab({ userId, onFindFriends }) {
+  const [feed,        setFeed]        = useState([])
+  const [following,   setFollowing]   = useState(new Set())
+  const [loadingFeed, setLoadingFeed] = useState(true)
+  const [clapMap,     setClapMap]     = useState({ mySet: new Set(), countMap: {} })
+
+  useEffect(() => {
+    if (!userId) { setLoadingFeed(false); return }
+    supabase.from("follows").select("following_id, status").eq("follower_id", userId)
+      .then(({ data }) => {
+        if (data) setFollowing(new Set(data.filter(f => f.status === "accepted").map(f => f.following_id)))
         setLoadingFeed(false)
       })
   }, [userId])
 
-  // Load activity feed from followed users
   useEffect(() => {
     if (!userId || following.size === 0) return
     supabase.from("user_activity")
@@ -528,7 +971,6 @@ function NetworkTab({ userId, userCategories }) {
       .then(({ data }) => setFeed(data || []))
   }, [userId, following])
 
-  // Load clap counts + whether current user clapped
   useEffect(() => {
     if (!feed.length || !userId) return
     const ids = feed.map(f => f.id)
@@ -542,67 +984,6 @@ function NetworkTab({ userId, userCategories }) {
       setClapMap({ mySet, countMap })
     })
   }, [feed, userId])
-
-  // Load suggested users (people with similar categories not yet followed)
-  useEffect(() => {
-    if (!userId || !userCategories?.length) return
-    supabase.from("user_prefs")
-      .select("user_id, display_name, username, animal_type, categories, is_private")
-      .neq("user_id", userId)
-      .limit(40)
-      .then(({ data }) => {
-        if (!data) return
-        const scored = data
-          .filter(u => u.username) // only show users with a username
-          .map(u => {
-            const overlap = (u.categories || []).filter(c => userCategories.includes(c)).length
-            return { ...u, overlap }
-          })
-          .filter(u => u.overlap > 0)
-          .sort((a, b) => b.overlap - a.overlap)
-          .slice(0, 5)
-        setSuggested(scored)
-      })
-  }, [userId, userCategories])
-
-  // Debounced search — supports username, name, and 5-digit zip
-  useEffect(() => {
-    if (!search.trim()) { setSearchResults([]); return }
-    setSearching(true)
-    const t = setTimeout(async () => {
-      const q = search.trim()
-      const isZip = /^\d{5}$/.test(q)
-      let query = supabase.from("user_prefs")
-        .select("user_id, display_name, username, animal_type, categories, is_private")
-        .neq("user_id", userId || "00000000-0000-0000-0000-000000000000")
-        .limit(10)
-
-      if (isZip) {
-        query = query.eq("zip_code", q)
-      } else {
-        query = query.or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
-      }
-
-      const { data } = await query
-      setSearchResults(data || [])
-      setSearching(false)
-    }, 300)
-    return () => clearTimeout(t)
-  }, [search, userId])
-
-  async function toggleFollow(targetId, isPrivate) {
-    if (following.has(targetId) || pending.has(targetId)) {
-      await supabase.from("follows").delete()
-        .eq("follower_id", userId).eq("following_id", targetId)
-      setFollowing(p => { const s = new Set(p); s.delete(targetId); return s })
-      setPending(p => { const s = new Set(p); s.delete(targetId); return s })
-    } else {
-      const status = isPrivate ? "pending" : "accepted"
-      await supabase.from("follows").insert({ follower_id: userId, following_id: targetId, status })
-      if (status === "accepted") setFollowing(p => new Set([...p, targetId]))
-      else setPending(p => new Set([...p, targetId]))
-    }
-  }
 
   async function handleClap(activityId) {
     if (!userId) return
@@ -622,139 +1003,37 @@ function NetworkTab({ userId, userCategories }) {
     }
   }
 
-  const showSearch = search.trim().length > 0
-
   return (
-    <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 32px 120px" }}>
-      {/* Search bar */}
-      <div style={{ marginBottom: 20, position: "relative" }}>
-        <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#9CAD9C", fontSize: 14, pointerEvents: "none" }}>🔍</span>
-        <input
-          ref={searchRef}
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Search by username or name…"
-          style={{
-            width: "100%", boxSizing: "border-box",
-            padding: "12px 36px 12px 40px",
-            fontSize: 14, color: "#1C2E1E",
-            background: "#fff", border: "1px solid rgba(0,0,0,0.1)",
-            borderRadius: 12, outline: "none",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-            transition: "border-color 0.15s, box-shadow 0.15s",
-          }}
-          onFocus={e => { e.target.style.borderColor = "rgba(21,128,61,0.4)"; e.target.style.boxShadow = "0 0 0 3px rgba(21,128,61,0.08)" }}
-          onBlur={e => { e.target.style.borderColor = "rgba(0,0,0,0.1)"; e.target.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)" }}
-        />
-        {search && (
-          <button onClick={() => setSearch("")}
-            style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9CAD9C", fontSize: 18, lineHeight: 1, padding: "0 4px" }}>
-            ×
+    <div style={{ maxWidth: 680, margin: "0 auto", padding: "28px 32px 120px" }}>
+      {loadingFeed ? (
+        <div>{[1,2,3].map(i => <SkeletonRow key={i} />)}</div>
+      ) : following.size === 0 ? (
+        <div style={{ textAlign: "center", padding: "60px 20px 28px" }}>
+          <div style={{ fontSize: 52, marginBottom: 16 }}>🦌</div>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: "#1C2E1E", margin: "0 0 8px", fontFamily: "var(--font-fraunces), Georgia, serif" }}>
+            Find your herd
+          </h3>
+          <p style={{ fontSize: 14, color: "#6B7C6C", lineHeight: 1.65, margin: "0 0 20px", maxWidth: 300, marginInline: "auto" }}>
+            Follow people who share your issues to see their actions here.
+          </p>
+          <button onClick={onFindFriends} style={{ padding: "10px 24px", borderRadius: 20, fontSize: 13, fontWeight: 700, background: "#15803d", color: "#fff", border: "none", cursor: "pointer", transition: "background 0.15s" }}
+            onMouseEnter={e => e.currentTarget.style.background = "#166534"}
+            onMouseLeave={e => e.currentTarget.style.background = "#15803d"}>
+            Find Friends →
           </button>
-        )}
-      </div>
-
-      {/* Search results */}
-      {showSearch && (
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6B7C6C" }}>
-              {searching ? "Searching…" : `${searchResults.length} result${searchResults.length !== 1 ? "s" : ""}`}
-            </div>
-            {/^\d{5}$/.test(search.trim()) && (
-              <div style={{ fontSize: 11, fontWeight: 600, color: "#15803d", background: "rgba(21,128,61,0.08)", border: "1px solid rgba(21,128,61,0.2)", padding: "3px 10px", borderRadius: 20 }}>
-                📍 By zip code
-              </div>
-            )}
-          </div>
-          {searching && [1,2].map(i => <SkeletonRow key={i} />)}
-          {!searching && searchResults.map(user => (
-            <UserCard key={user.user_id} user={user}
-              isFollowing={following.has(user.user_id)}
-              isPending={pending.has(user.user_id)}
-              onToggle={toggleFollow}
-            />
-          ))}
-          {!searching && searchResults.length === 0 && (
-            <p style={{ color: "#6B7C6C", fontSize: 13, textAlign: "center", padding: "20px 0" }}>
-              No users found for &ldquo;{search}&rdquo;
-            </p>
-          )}
         </div>
-      )}
-
-      {/* Feed / empty state */}
-      {!showSearch && (
-        loadingFeed ? (
-          <div>
-            {[1,2,3].map(i => <SkeletonRow key={i} />)}
-          </div>
-        ) : following.size === 0 ? (
-          <div>
-            <div style={{ textAlign: "center", padding: "40px 20px 28px" }}>
-              <div style={{ fontSize: 52, marginBottom: 16 }}>🦌</div>
-              <h3 style={{ fontSize: 20, fontWeight: 800, color: "#1C2E1E", margin: "0 0 8px", fontFamily: "var(--font-fraunces), Georgia, serif" }}>
-                Find your herd
-              </h3>
-              <p style={{ fontSize: 14, color: "#6B7C6C", lineHeight: 1.65, margin: "0 0 20px", maxWidth: 300, marginInline: "auto" }}>
-                Follow others who share your issues to see their actions here.
-              </p>
-              <button
-                onClick={() => searchRef.current?.focus()}
-                style={{ padding: "10px 24px", borderRadius: 20, fontSize: 13, fontWeight: 700, background: "#15803d", color: "#fff", border: "none", cursor: "pointer", transition: "background 0.15s" }}
-                onMouseEnter={e => e.currentTarget.style.background = "#166534"}
-                onMouseLeave={e => e.currentTarget.style.background = "#15803d"}
-              >Search for people →</button>
-            </div>
-
-            {suggested.length > 0 && (
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6B7C6C", marginBottom: 10 }}>
-                  Suggested for you
-                </div>
-                {suggested.map(user => (
-                  <UserCard
-                    key={user.user_id}
-                    user={user}
-                    isFollowing={following.has(user.user_id)}
-                    isPending={pending.has(user.user_id)}
-                    onToggle={toggleFollow}
-                    commonTopics={user.overlap || 0}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        ) : feed.length === 0 ? (
-          <div>
-            <div style={{ padding: "32px 0 24px", textAlign: "center", color: "#9CAD9C", fontSize: 13 }}>
-              No recent activity from people you follow yet.
-            </div>
-            {suggested.filter(u => !following.has(u.user_id)).length > 0 && (
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6B7C6C", marginBottom: 10 }}>
-                  More people to follow
-                </div>
-                {suggested.filter(u => !following.has(u.user_id)).map(user => (
-                  <UserCard key={user.user_id} user={user}
-                    isFollowing={false} isPending={pending.has(user.user_id)}
-                    onToggle={toggleFollow}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          feed.map(activity => (
-            <ActivityItem
-              key={activity.id}
-              activity={activity}
-              hasClapped={clapMap.mySet.has(activity.id)}
-              clapCount={clapMap.countMap[activity.id] || 0}
-              onClap={handleClap}
-            />
-          ))
-        )
+      ) : feed.length === 0 ? (
+        <div style={{ padding: "32px 0 24px", textAlign: "center", color: "#9CAD9C", fontSize: 13 }}>
+          No recent activity from people you follow yet.
+        </div>
+      ) : (
+        feed.map(activity => (
+          <ActivityItem key={activity.id} activity={activity}
+            hasClapped={clapMap.mySet.has(activity.id)}
+            clapCount={clapMap.countMap[activity.id] || 0}
+            onClap={handleClap}
+          />
+        ))
       )}
     </div>
   )
@@ -1110,7 +1389,7 @@ export default function Home() {
           supabase.from("user_prefs")
             .update({ cat_clicks: next })
             .eq("user_id", user.id)
-            .catch(() => {})
+            .then(() => {}, () => {})
         }
       })
       return next
@@ -1325,6 +1604,15 @@ export default function Home() {
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.06)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >My Impact</Link>
+                <Link href="/my-reps" onClick={() => setAccountOpen(false)}
+                  style={{
+                    display: "block", padding: "9px 14px", borderRadius: 7,
+                    fontSize: 13, fontWeight: 600, color: "#2A3E2C",
+                    textDecoration: "none", transition: "background 0.12s",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.06)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                >My Reps</Link>
                 <Link href="/settings" onClick={() => setAccountOpen(false)}
                   style={{
                     display: "block", padding: "9px 14px", borderRadius: 7,
@@ -1390,7 +1678,10 @@ export default function Home() {
           <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
             {[
               { id: "feed", label: "What's Happening" },
-              { id: "network", label: "Network" },
+              { id: "network", label: "My Network" },
+              { id: "findFriends", label: "Find Friends" },
+              { id: "myReps", label: "My Reps" },
+              { id: "community", label: "Community" },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -1532,7 +1823,13 @@ export default function Home() {
         )
       })()}
 
-      {activeTab === "feed" ? (
+      {activeTab === "community" ? (
+        <CommunityTab userId={userId} userCategories={userCats} userZip={mapZip} />
+      ) : activeTab === "findFriends" ? (
+        <FindFriendsTab userId={userId} userCategories={userCats} />
+      ) : activeTab === "myReps" ? (
+        <RepsTab userCategories={userCats} userZip={mapZip} />
+      ) : activeTab === "feed" ? (
         <>
           {/* 4-card preview */}
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 32px 0" }}>
@@ -1761,8 +2058,8 @@ export default function Home() {
           })()}
         </>
       ) : (
-        /* Network tab */
-        <NetworkTab userId={userId} userCategories={userCats} />
+        /* My Network tab */
+        <NetworkTab userId={userId} onFindFriends={() => setActiveTab("findFriends")} />
       )}
 
       {/* Footer */}
