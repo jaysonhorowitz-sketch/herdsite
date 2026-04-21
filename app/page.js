@@ -1542,7 +1542,7 @@ export default function Home() {
               </div>
             ) : (
             <div style={{ display: "flex", alignItems: "stretch", gap: 10 }}>
-              <div className="preview-grid" style={{ alignItems: "stretch", flex: 1 }}>
+              <div className="issue-card-grid grid grid-cols-3 lg:grid-cols-4 gap-[14px] items-stretch" style={{ flex: 1 }}>
                 {happeningNow.map(issue => (
                   <FeedCard
                     key={issue.id}
@@ -1850,6 +1850,11 @@ export default function Home() {
         @media (max-width: 899px) {
           .preview-grid { grid-template-columns: repeat(2, 1fr); }
           .preview-grid > *:nth-child(n+3) { display: none; }
+        }
+
+        /* Issue card grid: 3-up default, 4-up at lg — hide 4th card below lg */
+        @media (max-width: 1023px) {
+          .issue-card-grid > *:nth-child(n+4) { display: none; }
         }
 
         @media (max-width: 700px) {

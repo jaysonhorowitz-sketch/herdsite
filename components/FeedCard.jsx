@@ -106,11 +106,10 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
             <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#5A6B5B" }}>
               {issue.category}
             </span>
-            <span style={{ fontSize: 10, color: "#A8B5A9", fontWeight: 500, letterSpacing: "0.02em" }}>{issue.date}</span>
+            <span className="hidden lg:inline" style={{ fontSize: 10, color: "#A8B5A9", fontWeight: 500, letterSpacing: "0.02em" }}>{issue.date}</span>
           </div>
 
-          <h2 style={{
-            fontSize: 17, fontWeight: 800, margin: "0 0 12px", color: "#1a2e1c",
+          <h2 className="text-sm lg:text-base" style={{ fontWeight: 800, margin: "0 0 12px", color: "#1a2e1c",
             lineHeight: 1.35, letterSpacing: "-0.02em",
             fontFamily: "var(--font-fraunces), Georgia, serif",
             flex: "0 0 auto",
@@ -136,7 +135,7 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
               <span className="sev-pulse" style={{ "--c": tier.color }} />
-              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5A6B5B" }}>
+              <span className="hidden md:inline" style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5A6B5B" }}>
                 {tier.label}
               </span>
             </div>
@@ -147,7 +146,7 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
               border: "1px solid rgba(21,128,61,0.3)",
               color: "#15803d", fontSize: 10, fontWeight: 700,
               letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap",
-            }}>Take Action →</span>
+            }}><span className="hidden sm:inline">Take Action </span>→</span>
           </div>
         </Link>
       </div>
@@ -210,11 +209,11 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
               <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#5A6B5B" }}>
                 {issue.category}
               </span>
-              <span style={{ fontSize: 10, color: "#A8B5A9", fontWeight: 500, letterSpacing: "0.02em" }}>{issue.date}</span>
+              <span className="hidden lg:inline" style={{ fontSize: 10, color: "#A8B5A9", fontWeight: 500, letterSpacing: "0.02em" }}>{issue.date}</span>
             </div>
 
-            <h2 style={{
-              fontSize: 17, fontWeight: 800, margin: "0 0 12px", color: "#1a2e1c",
+            <h2 className="text-sm lg:text-base" style={{
+              fontWeight: 800, margin: "0 0 12px", color: "#1a2e1c",
               lineHeight: 1.35, letterSpacing: "-0.02em",
               fontFamily: "var(--font-fraunces), Georgia, serif",
               flex: 1,
@@ -239,7 +238,7 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                 <span className="sev-pulse" style={{ "--c": tier.color }} />
-                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5A6B5B" }}>
+                <span className="hidden md:inline" style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5A6B5B" }}>
                   {tier.label}
                 </span>
               </div>
@@ -254,7 +253,7 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
                   letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap",
                   cursor: "pointer",
                 }}
-              >Take Action →</span>
+              ><span className="hidden sm:inline">Take Action </span>→</span>
             </div>
           </div>
         </div>
@@ -265,7 +264,7 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
             <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#5A6B5B" }}>
               {issue.category}
             </span>
-            <span style={{ fontSize: 10, color: "#A8B5A9", fontWeight: 500, letterSpacing: "0.02em" }}>{issue.date}</span>
+            <span className="hidden lg:inline" style={{ fontSize: 10, color: "#A8B5A9", fontWeight: 500, letterSpacing: "0.02em" }}>{issue.date}</span>
           </div>
 
           <p style={{ color: "#5A6B5B", fontSize: 13, lineHeight: 1.65, margin: 0, flex: 1, overflow: "auto" }}>
@@ -286,7 +285,7 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
               letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap",
               cursor: "pointer",
             }}
-          >Take Action →</span>
+          ><span className="hidden sm:inline">Take Action </span>→</span>
         </div>
 
       </div>
