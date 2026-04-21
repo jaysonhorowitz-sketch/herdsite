@@ -785,13 +785,13 @@ export default function Home() {
   const [socialProof,       setSocialProof]       = useState({})
   const [previewPage,       setPreviewPage]       = useState(0)
   const [spotlightPage,     setSpotlightPage]     = useState(0)
-  const [mapZip,            setMapZip]            = useState("")
+  const [mapZip,            setMapZip]            = useState("10001")
   const [mapEvents,         setMapEvents]         = useState([])
   const accountRef     = useRef(null)
 
   useEffect(() => {
     const saved = localStorage.getItem("userZipCode")
-    if (saved) setMapZip(saved)
+    setMapZip(saved || "10001")
   }, [])
   const notifRef       = useRef(null)
 
