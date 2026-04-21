@@ -808,6 +808,7 @@ export default function Home() {
           const raw = localStorage.getItem("howbadisite_prefs")
           const parsed = raw ? JSON.parse(raw) : {}
           setPrefs({ categories: parsed.categories || [], actionPref: parsed.actionPref || null })
+          setSelectedCats(parsed.categories || [])
         } catch {
           setPrefs({ categories: [], actionPref: null })
         }
@@ -1127,7 +1128,7 @@ export default function Home() {
 
   // 4-card preview — flat sequence guarantees every card changes on each click
   const { happeningNow, previewTotalPages } = (() => {
-    const cats = selectedCats
+    const cats = selectedCats.length > 0 ? selectedCats : [...new Set(issues.map(i => i.category))]
     if (!cats.length) return { happeningNow: [], previewTotalPages: 1 }
     const n = cats.length
     let slots
