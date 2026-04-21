@@ -55,7 +55,7 @@ export default function EventCard({ event }) {
 
       {/* Date/location + Register button on same row */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 2 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+        <div className="hidden lg:flex" style={{ flexDirection: "column", gap: 2, minWidth: 0 }}>
           {event.date && event.date !== "Flexible" && event.date !== "Upcoming" && (
             <span style={{ fontSize: 11, color: "#4A5C4B", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {event.date}{event.time ? " · " + event.time : ""}
