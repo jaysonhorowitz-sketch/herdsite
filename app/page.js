@@ -1427,7 +1427,10 @@ export default function Home() {
       {activeTab === "feed" && (() => {
         const personalizedCats = CAT_ORDER.filter(c => c !== "All" && userCats.includes(c))
         const otherCats = CAT_ORDER.filter(c => c !== "All" && !userCats.includes(c))
-        const allCats = showMore ? [...personalizedCats, ...otherCats] : personalizedCats
+        // Always surface any selected cats even if they're in the "more" bucket
+        const extraSelected = otherCats.filter(c => selectedCats.includes(c))
+        const hiddenCats = otherCats.filter(c => !selectedCats.includes(c))
+        const allCats = showMore ? [...personalizedCats, ...otherCats] : [...personalizedCats, ...extraSelected]
 
         const pillStyle = (active, color) => ({
           flexShrink: 0,
@@ -1501,7 +1504,7 @@ export default function Home() {
               </button>}
 
               {/* More / Less expander — sits right of Select all */}
-              {otherCats.length > 0 && (
+              {hiddenCats.length > 0 && (
                 <button
                   onClick={() => setShowMore(v => !v)}
                   className="pill-ctrl"
@@ -1514,7 +1517,7 @@ export default function Home() {
                     transition: "all 0.15s", whiteSpace: "nowrap",
                   }}
                 >
-                  {showMore ? "Less ▴" : `+${otherCats.length} more ▾`}
+                  {showMore ? "Less ▴" : `+${hiddenCats.length} more ▾`}
                 </button>
               )}
               <div className="ticker-wrap" style={{ marginLeft: "auto", flexShrink: 0, alignSelf: "center", display: "flex", whiteSpace: "nowrap" }}>
