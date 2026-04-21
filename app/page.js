@@ -1858,19 +1858,18 @@ export default function Home() {
         }
 
         @media (max-width: 700px) {
-          .sbar-inner { height: 68px !important; }
+          .sbar-inner { height: 60px !important; }
           .sbar-item  { padding: 0 14px !important; gap: 8px !important; }
           .sbar-icon  { font-size: 18px !important; }
           .sbar-headline { font-size: 12px !important; }
-          .sbar-body  { font-size: 10px !important; }
-          .sbar-spacer { height: 68px !important; }
+          .sbar-body  { display: none !important; }
+          .sbar-spacer { height: 60px !important; }
         }
         @media (max-width: 460px) {
           .sbar-inner { height: 60px !important; }
           .sbar-item  { padding: 0 8px !important; gap: 5px !important; }
           .sbar-icon  { display: none !important; }
           .sbar-headline { font-size: 11px !important; }
-          .sbar-body  { display: none !important; }
           .sbar-spacer { height: 60px !important; }
         }
 
