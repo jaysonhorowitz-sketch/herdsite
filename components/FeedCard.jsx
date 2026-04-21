@@ -130,23 +130,24 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
             </div>
           )}
 
-          <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginBottom: 14 }} />
-
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <span className="sev-pulse" style={{ "--c": tier.color }} />
-              <span className="hidden md:inline" style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5A6B5B" }}>
-                {tier.label}
-              </span>
+          <div style={{ flexShrink: 0 }}>
+            <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginBottom: 14 }} />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span className="sev-pulse" style={{ "--c": tier.color }} />
+                <span className="hidden md:inline" style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5A6B5B" }}>
+                  {tier.label}
+                </span>
+              </div>
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                padding: "5px 12px", borderRadius: 6,
+                background: "rgba(21,128,61,0.1)",
+                border: "1px solid rgba(21,128,61,0.3)",
+                color: "#15803d", fontSize: 10, fontWeight: 700,
+                letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap",
+              }}><span className="hidden sm:inline">Take Action </span>→</span>
             </div>
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: 4,
-              padding: "5px 12px", borderRadius: 6,
-              background: "rgba(21,128,61,0.1)",
-              border: "1px solid rgba(21,128,61,0.3)",
-              color: "#15803d", fontSize: 10, fontWeight: 700,
-              letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap",
-            }}><span className="hidden sm:inline">Take Action </span>→</span>
           </div>
         </Link>
       </div>
@@ -204,7 +205,7 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
           >{isArchived ? "★" : "☆"}</button>
 
           {/* Top section — hovering here triggers flip */}
-          <div onMouseEnter={() => setHovered(true)} style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          <div onMouseEnter={() => setHovered(true)} style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: 0 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, paddingRight: 24 }}>
               <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#5A6B5B" }}>
                 {issue.category}
@@ -232,7 +233,7 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
           </div>
 
           {/* Bottom section — hovering here cancels flip so Take Action is usable */}
-          <div onMouseEnter={() => setHovered(false)}>
+          <div onMouseEnter={() => setHovered(false)} style={{ flexShrink: 0 }}>
             <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginBottom: 14 }} />
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
