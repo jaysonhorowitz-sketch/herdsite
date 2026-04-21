@@ -1038,7 +1038,7 @@ export default function FeedPage() {
   // Feed pool — filtered by current pill/dropdown state
   const pool = selectedCats.length > 0
                ? issues.filter(i => selectedCats.includes(i.category))
-               : cat === "home" ? issues.filter(i => userCats.includes(i.category))
+               : cat === "home" ? (userCats.length > 0 ? issues.filter(i => userCats.includes(i.category)) : issues)
                : issues.filter(i => i.category === cat)
 
   const isHome = cat === "home" || selectedCats.length > 0

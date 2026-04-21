@@ -66,6 +66,29 @@ export default function OnboardingPage() {
     setTimeout(() => { setScreen(n); setLeaving(false) }, 220)
   }
 
+  async function handleSkip() {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (user) {
+      await supabase.from("user_prefs").upsert(
+        {
+          user_id: user.id,
+          categories: selected,
+          action_pref: actionPref || "both",
+          zip_code: zipCode.trim() || null,
+          school:   school.trim()  || null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" }
+      )
+    }
+
+    localStorage.setItem("onboardingComplete", "true")
+    localStorage.setItem("howbadisite_prefs", JSON.stringify({ categories: selected, actionPref: actionPref || "both", skipped: true }))
+    window.location.href = "/"
+  }
+
   async function finish() {
     setSaving(true)
     setSaveError(null)
@@ -138,7 +161,7 @@ export default function OnboardingPage() {
           ))}
         </div>
         <button
-          onClick={() => { localStorage.setItem('onboardingComplete', 'true'); localStorage.setItem("howbadisite_prefs", JSON.stringify({ categories: [], actionPref: "both", skipped: true })); window.location.href = "/" }}
+          onClick={handleSkip}
           style={{ background: "none", border: "none", color: "#2A3E2C", fontSize: 12, cursor: "pointer" }}>
           Skip →
         </button>
