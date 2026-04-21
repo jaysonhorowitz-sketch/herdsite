@@ -133,7 +133,7 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
           <div style={{ flexShrink: 0 }}>
             <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginBottom: 14 }} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <div className="hidden md:flex" style={{ alignItems: "center", gap: 5 }}>
                 <span className="sev-pulse" style={{ "--c": tier.color }} />
                 <span className="hidden md:inline" style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5A6B5B" }}>
                   {tier.label}
@@ -237,7 +237,7 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
             <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginBottom: 14 }} />
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <div className="hidden md:flex" style={{ alignItems: "center", gap: 5 }}>
                 <span className="sev-pulse" style={{ "--c": tier.color }} />
                 <span className="hidden md:inline" style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5A6B5B" }}>
                   {tier.label}
