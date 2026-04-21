@@ -1550,7 +1550,7 @@ export default function Home() {
               </div>
             ) : (
             <div style={{ display: "flex", alignItems: "stretch", gap: 10 }}>
-              <div className="issue-card-grid grid grid-cols-3 lg:grid-cols-4 gap-[14px] items-stretch" style={{ flex: 1 }}>
+              <div className="issue-card-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[14px] items-stretch" style={{ flex: 1 }}>
                 {happeningNow.map(issue => (
                   <FeedCard
                     key={issue.id}
@@ -1675,7 +1675,7 @@ export default function Home() {
                     {mapZip.length === 5 ? "No matching events found. Check back soon." : "Enter a zip code above to see events."}
                   </div>
                 ) : (
-                  <div style={{ display: "flex", gap: 10, alignItems: "stretch", marginBottom: 10 }}>
+                  <div className="events-grid" style={{ display: "grid", gap: 10, alignItems: "stretch", marginBottom: 10 }}>
                     {featured.map(event => <EventCard key={event.id} event={event} />)}
                   </div>
                 )}
@@ -1860,9 +1860,18 @@ export default function Home() {
           .preview-grid > *:nth-child(n+3) { display: none; }
         }
 
-        /* Issue card grid: 3-up default, 4-up at lg — hide 4th card below lg */
+        /* Featured events grid: 2-up mobile, 4-up sm+ */
+        .events-grid { grid-template-columns: repeat(4, 1fr); }
+        @media (max-width: 639px) {
+          .events-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* Issue card grid: 2-up mobile, 3-up sm, 4-up lg */
         @media (max-width: 1023px) {
           .issue-card-grid > *:nth-child(n+4) { display: none; }
+        }
+        @media (max-width: 639px) {
+          .issue-card-grid > *:nth-child(n+3) { display: none; }
         }
 
         @media (max-width: 700px) {
