@@ -1,12 +1,13 @@
 "use client"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { motion, useReducedMotion } from "framer-motion"
 import { SCHOOLS } from "@/lib/schools"
 import { createClient } from "@/utils/supabase/client"
 
 const CATEGORIES = [
-  { name: "Economy",           icon: "📊", desc: "Trade, tariffs, fiscal policy"                   },
-  { name: "Civil Rights",      icon: "🗳️", desc: "Voting, discrimination, equal protection"        },
+  { name: "Economy",           icon: "📈", desc: "Trade, tariffs, fiscal policy"                   },
+  { name: "Civil Rights",      icon: "🕊️", desc: "Discrimination, equal protection, civil liberties" },
   { name: "Elections",         icon: "🗓️", desc: "2026 midterms, local elections, ballot measures" },
   { name: "Immigration",       icon: "🧭", desc: "Border policy, deportation, asylum"               },
   { name: "Environment",       icon: "🌿", desc: "EPA, climate, energy policy"                      },
@@ -134,9 +135,25 @@ export default function OnboardingPage() {
     window.location.href = "/"
   }
 
+  const prefersReducedMotion = useReducedMotion()
+
   const word = selected.length > 0
     ? selected.slice(0, 2).join(" & ") + (selected.length > 2 ? ` +${selected.length - 2}` : "")
     : "the issues that matter"
+
+  const heroEmojis = selected
+    .map(c => CATEGORIES.find(x => x.name === c)?.icon)
+    .filter(Boolean)
+    .slice(0, 3)
+
+  // Per-emoji fly-in start positions (x, y, rotate) — left / top / right
+  const EMOJI_STARTS = [
+    { x: -220, y: 30,  rotate: -40 },
+    { x: 0,   y: -210, rotate:  25 },
+    { x: 220,  y: 30,  rotate:  40 },
+  ]
+  // x overshoot at convergence so emojis cross each other's paths
+  const EMOJI_CONVERGE_X = [55, 0, -55]
 
   return (
     <div style={{
@@ -277,7 +294,7 @@ export default function OnboardingPage() {
                     onMouseEnter={e => { e.currentTarget.style.borderColor = on ? "rgba(21,128,61,0.7)" : "rgba(255,255,255,0.18)"; e.currentTarget.style.background = on ? "rgba(21,128,61,0.2)" : "#1f2a42" }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = on ? "rgba(21,128,61,0.5)" : "rgba(0,0,0,0.07)"; e.currentTarget.style.background = on ? "rgba(21,128,61,0.15)" : "#E8E4D8" }}
                   >
-                    <span style={{ fontSize: 28, flexShrink: 0 }}>{opt.icon}</span>
+                    <span style={{ fontSize: 28, flexShrink: 0, filter: opt.key === "both" ? "grayscale(1)" : "none" }}>{opt.icon}</span>
                     <div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: on ? "#16a34a" : "#1C2E1E", marginBottom: 4 }}>
                         {opt.title}
@@ -404,31 +421,86 @@ export default function OnboardingPage() {
                 width: 300, height: 200, background: "radial-gradient(ellipse, rgba(21,128,61,0.2) 0%, transparent 70%)",
                 pointerEvents: "none" }} />
 
-              <div style={{ fontSize: 48, marginBottom: 20 }}>
-                {selected.map(c => CATEGORIES.find(x => x.name === c)?.icon).filter(Boolean).slice(0, 3).join(" ")}
+              {/* ── Animated emojis ── */}
+              <div style={{ fontSize: 48, marginBottom: 20, display: "flex", justifyContent: "center", gap: 8, position: "relative" }}>
+                {heroEmojis.length === 0
+                  ? <span style={{ opacity: 0 }}>·</span>
+                  : heroEmojis.map((emoji, i) => {
+                      const cfg = EMOJI_STARTS[i] || EMOJI_STARTS[0]
+                      const cx  = EMOJI_CONVERGE_X[i] ?? 0
+                      return prefersReducedMotion
+                        ? <span key={i}>{emoji}</span>
+                        : (
+                          <motion.span
+                            key={i}
+                            initial={{ x: cfg.x, y: cfg.y, rotate: cfg.rotate, opacity: 0, scale: 0.8 }}
+                            animate={{
+                              x:       [null, cx,   cx * 0.45, cx * -0.18, 0],
+                              y:       [null, 0,    -22,        9,          0],
+                              rotate:  [null, cfg.rotate * -0.2, cfg.rotate * -0.35, cfg.rotate * 0.1, 0],
+                              opacity: [null, 1,    1,          1,          1],
+                              scale:   [null, 1.25, 1.0,        1.06,       1.0],
+                            }}
+                            transition={{
+                              duration: 1.2,
+                              times: [0, 0.5, 0.68, 0.84, 1.0],
+                              ease: "easeOut",
+                            }}
+                            style={{ display: "inline-block" }}
+                          >{emoji}</motion.span>
+                        )
+                    })
+                }
               </div>
 
-              <h2 style={{ fontSize: "clamp(22px, 4vw, 32px)", fontWeight: 800, color: "#f0ede4",
-                letterSpacing: "-0.02em", lineHeight: 1.2, margin: "0 0 16px" }}>
+              {/* ── Headline ── */}
+              <motion.h2
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { delay: 1.2, type: "spring", stiffness: 260, damping: 20 }}
+                style={{ fontSize: "clamp(22px, 4vw, 32px)", fontWeight: 800, color: "#f0ede4",
+                  letterSpacing: "-0.02em", lineHeight: 1.2, margin: "0 0 16px" }}
+              >
                 You care about {word}
-              </h2>
+              </motion.h2>
 
-              <p style={{ fontSize: 15, color: "rgba(240,237,228,0.65)", lineHeight: 1.7, margin: "0 0 24px" }}>
+              {/* ── Subtitle ── */}
+              <motion.p
+                initial={prefersReducedMotion ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { delay: 1.6, duration: 0.3 }}
+                style={{ fontSize: 15, color: "rgba(240,237,228,0.65)", lineHeight: 1.7, margin: "0 0 24px" }}
+              >
                 {actionPref === "informed" && "We'll show you the most significant developments in your areas — clearly and without spin."}
                 {actionPref === "action"   && "Every issue in your feed comes with concrete actions ranked by how much time they take."}
                 {actionPref === "both"     && "You'll see what's happening and exactly what you can do about it."}
-              </p>
+              </motion.p>
 
+              {/* ── Category pills ── */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-                {selected.map(name => {
+                {selected.map((name, i) => {
                   const cat = CATEGORIES.find(c => c.name === name)
-                  return (
-                    <span key={name} style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px",
-                      borderRadius: 99, background: "rgba(21,128,61,0.15)", color: "#16a34a",
-                      border: "1px solid rgba(21,128,61,0.25)" }}>
-                      {cat?.icon} {name}
-                    </span>
-                  )
+                  return prefersReducedMotion
+                    ? (
+                      <span key={name} style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px",
+                        borderRadius: 99, background: "rgba(21,128,61,0.15)", color: "#16a34a",
+                        border: "1px solid rgba(21,128,61,0.25)" }}>
+                        {cat?.icon} {name}
+                      </span>
+                    )
+                    : (
+                      <motion.span
+                        key={name}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.8 + i * 0.1, duration: 0.25 }}
+                        style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px",
+                          borderRadius: 99, background: "rgba(21,128,61,0.15)", color: "#16a34a",
+                          border: "1px solid rgba(21,128,61,0.25)" }}
+                      >
+                        {cat?.icon} {name}
+                      </motion.span>
+                    )
                 })}
               </div>
             </div>
