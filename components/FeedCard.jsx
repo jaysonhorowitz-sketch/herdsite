@@ -109,7 +109,7 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
             <span className="hidden lg:inline" style={{ fontSize: 10, color: "#A8B5A9", fontWeight: 500, letterSpacing: "0.02em" }}>{issue.date}</span>
           </div>
 
-          <h2 className="text-sm lg:text-base" style={{ fontWeight: 800, margin: "0 0 12px", color: "#1a2e1c",
+          <h2 className="text-xs sm:text-sm lg:text-base" style={{ fontWeight: 800, margin: "0 0 12px", color: "#1a2e1c",
             lineHeight: 1.35, letterSpacing: "-0.02em",
             fontFamily: "var(--font-fraunces), Georgia, serif",
             flex: "0 0 auto",
@@ -213,7 +213,7 @@ export default function FeedCard({ issue, weekCount, isArchived, onArchive, onCa
               <span className="hidden lg:inline" style={{ fontSize: 10, color: "#A8B5A9", fontWeight: 500, letterSpacing: "0.02em" }}>{issue.date}</span>
             </div>
 
-            <h2 className="text-sm lg:text-base" style={{
+            <h2 className="text-xs sm:text-sm lg:text-base" style={{
               fontWeight: 800, margin: "0 0 12px", color: "#1a2e1c",
               lineHeight: 1.35, letterSpacing: "-0.02em",
               fontFamily: "var(--font-fraunces), Georgia, serif",
