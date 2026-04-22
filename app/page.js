@@ -1716,11 +1716,6 @@ export default function Home() {
         <>
           {/* 4-card preview */}
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 32px 0" }}>
-            {selectedCats.length === 0 ? (
-              <div style={{ padding: "32px 0", textAlign: "center", color: "#6B7C6C", fontSize: 13 }}>
-                Select at least one category above to see issues.
-              </div>
-            ) : (
             <div style={{ display: "flex", alignItems: "stretch", gap: 10 }}>
               <div className="issue-card-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[14px] items-stretch" style={{ flex: 1 }}>
                 {happeningNow.map(issue => (
@@ -1762,7 +1757,6 @@ export default function Home() {
                 >→</button>
               </div>
             </div>
-            )}
           </div>
 
           {/* Open full feed button */}
