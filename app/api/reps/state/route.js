@@ -5,20 +5,20 @@ export async function GET(request) {
   const zip = searchParams.get("zip")
   if (!zip) return NextResponse.json({ error: "zip required" }, { status: 400 })
 
-  // Geocode zip → lat/lng via Nominatim
+  // Geocode zip → lat/lng via Zippopotam (works from serverless/cloud IPs)
   let lat, lng
   try {
     const geoCtl = new AbortController()
     const geoTimer = setTimeout(() => geoCtl.abort(), 10000)
     const geoRes = await fetch(
-      `https://nominatim.openstreetmap.org/search?postalcode=${zip}&country=US&format=json`,
-      { headers: { "User-Agent": "howbadisite/1.0" }, signal: geoCtl.signal }
+      `https://api.zippopotam.us/us/${zip}`,
+      { signal: geoCtl.signal }
     )
     clearTimeout(geoTimer)
+    if (!geoRes.ok) return NextResponse.json({ error: "Zip code not found" }, { status: 404 })
     const geoData = await geoRes.json()
-    if (!geoData.length) return NextResponse.json({ error: "Zip code not found" }, { status: 404 })
-    lat = geoData[0].lat
-    lng = geoData[0].lon
+    lat = geoData.places[0].latitude
+    lng = geoData.places[0].longitude
   } catch (e) {
     if (e.name === "AbortError") return NextResponse.json({ error: "Geocoding timed out" }, { status: 504 })
     return NextResponse.json({ error: "Failed to geocode zip" }, { status: 500 })
