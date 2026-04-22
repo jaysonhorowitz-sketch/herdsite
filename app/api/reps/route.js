@@ -8,7 +8,7 @@ const PRESIDENT = {
   link: "https://www.whitehouse.gov/contact/",
   office: "The White House, 1600 Pennsylvania Ave NW, Washington, DC 20500",
   role: "president",
-  photoURL: null,
+  photoURL: "https://upload.wikimedia.org/wikipedia/commons/5/56/Donald_Trump_official_portrait.jpg",
 }
 
 export async function GET(request) {
@@ -34,23 +34,43 @@ export async function GET(request) {
     const data = await res.json()
     const raws = data.representatives || []
 
-    const reps = raws.map(r => ({
-      name: r.name,
-      party: r.party,
-      area: r.area,
-      role: r.area === "US Senate" ? "senator" : "house",
-      title: r.area === "US Senate"
-        ? `U.S. Senator · ${r.state}`
-        : `U.S. Representative · ${r.state}${r.district ? `-${r.district}` : ""}`,
-      phone: r.phone || null,
-      link: r.url || null,
-      office: null,
-      photoURL: r.photoURL || null,
-      state: r.state || null,
-      district: r.district || null,
-      twitter: r.twitter || null,
-      instagram: r.instagram || null,
-      fieldOffices: r.field_offices || [],
+    // Extract bioguide ID from 5calls photo URL, then use unitedstates.github.io (more reliable)
+    const bioguideFromUrl = url => {
+      if (!url) return null
+      const m = url.match(/\/([A-Z]\d{6})\.jpg/)
+      return m ? m[1] : null
+    }
+
+    const checkPhoto = async url => {
+      if (!url) return null
+      try {
+        const r = await fetch(url, { method: "HEAD" })
+        return r.ok ? url : null
+      } catch { return null }
+    }
+
+    const reps = await Promise.all(raws.map(async r => {
+      const bioguide = bioguideFromUrl(r.photoURL)
+      const githubUrl = bioguide ? `https://unitedstates.github.io/images/congress/450x550/${bioguide}.jpg` : null
+      const photoURL = await checkPhoto(githubUrl) || await checkPhoto(r.photoURL)
+      return {
+        name: r.name,
+        party: r.party,
+        area: r.area,
+        role: r.area === "US Senate" ? "senator" : "house",
+        title: r.area === "US Senate"
+          ? `U.S. Senator · ${r.state}`
+          : `U.S. Representative · ${r.state}${r.district ? `-${r.district}` : ""}`,
+        phone: r.phone || null,
+        link: r.url || null,
+        office: null,
+        photoURL,
+        state: r.state || null,
+        district: r.district || null,
+        twitter: r.twitter || null,
+        instagram: r.instagram || null,
+        fieldOffices: r.field_offices || [],
+      }
     }))
 
     return NextResponse.json({

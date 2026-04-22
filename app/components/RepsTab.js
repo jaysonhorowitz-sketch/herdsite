@@ -23,7 +23,9 @@ function RepCard({ rep }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
         <div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, overflow: "hidden", background: "linear-gradient(135deg, #E8F0E8, #D4E6D4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, border: "2px solid rgba(21,128,61,0.12)" }}>
-          {rep.photoURL ? <img src={rep.photoURL} alt={rep.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "🏛️"}
+          {rep.photoURL
+            ? <img src={rep.photoURL} alt={rep.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; e.target.parentNode.innerText = "🏛️" }} />
+            : "🏛️"}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -78,6 +80,9 @@ export default function RepsTab({ userZip }) {
   const [stateReps,    setStateReps]   = useState({ senate: [], assembly: [] })
   const [stateLoading, setStateLoading] = useState(null)
   const [stateError,   setStateError]  = useState(null)
+  const [localReps,    setLocalReps]   = useState(null)
+  const [localLoading, setLocalLoading] = useState(null)
+  const [localError,   setLocalError]  = useState(null)
 
   const CACHE_TTL = 24 * 60 * 60 * 1000
 
@@ -120,8 +125,20 @@ export default function RepsTab({ userZip }) {
     setStateLoading(false)
   }
 
+  async function fetchLocalReps(z) {
+    setLocalLoading(true); setLocalError(null)
+    try {
+      const res = await fetch(`/api/reps/local?zip=${z}`)
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setLocalReps(data)
+    } catch (e) { setLocalError("Couldn't load local representatives.") }
+    setLocalLoading(false)
+  }
+
   useEffect(() => {
     if (activeTab === "State" && zip) fetchStateReps(zip)
+    if (activeTab === "Local" && zip) fetchLocalReps(zip)
   }, [activeTab, zip])
 
   const president = reps.filter(r => r.role === "president")
@@ -227,35 +244,91 @@ export default function RepsTab({ userZip }) {
               <p style={{ fontSize: 13 }}>No state reps found for this zip.</p>
             </div>
           )}
-          {stateLoading === false && !stateError && (stateReps.senate.length > 0 || stateReps.assembly.length > 0) && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-              {stateReps.senate.length > 0 && (
-                <div>
-                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>NY State Senate</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {stateReps.senate.map((r, i) => <RepCard key={i} rep={r} />)}
+          {stateLoading === false && !stateError && (stateReps.senate.length > 0 || stateReps.assembly.length > 0) && (() => {
+            const firstRep = stateReps.senate[0] || stateReps.assembly[0]
+            const stateName = firstRep?.title?.split(" State ")?.[0] || "State"
+            return (
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                {stateReps.senate.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>{stateName} State Senate</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {stateReps.senate.map((r, i) => <RepCard key={i} rep={r} />)}
+                    </div>
                   </div>
-                </div>
-              )}
-              {stateReps.assembly.length > 0 && (
-                <div>
-                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>NY State Assembly</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {stateReps.assembly.map((r, i) => <RepCard key={i} rep={r} />)}
+                )}
+                {stateReps.assembly.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>{stateName} State Assembly</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {stateReps.assembly.map((r, i) => <RepCard key={i} rep={r} />)}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )
+          })()}
         </>
       )}
 
-      {/* Local placeholder */}
+      {/* Local */}
       {activeTab === "Local" && (
-        <div style={{ textAlign: "center", padding: "60px 20px", color: "#9CAD9C" }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "#4A5C4B", marginBottom: 4 }}>Local representatives</div>
-          <div style={{ fontSize: 12 }}>In production</div>
-        </div>
+        <>
+          {localLoading && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {[1,2,3,4].map(i => <div key={i} style={{ height: 90, borderRadius: 16, background: "rgba(0,0,0,0.06)" }} />)}
+            </div>
+          )}
+          {!localLoading && localError && (
+            <div style={{ textAlign: "center", padding: "48px 20px", color: "#6B7C6C" }}>
+              <div style={{ fontSize: 36, marginBottom: 10 }}>🏛️</div>
+              <p style={{ fontSize: 13, marginBottom: 14 }}>{localError}</p>
+              {zip && <button onClick={() => fetchLocalReps(zip)} style={{ padding: "7px 18px", borderRadius: 10, border: "1px solid rgba(21,128,61,0.3)", background: "#F0F7F0", color: "#15803d", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Try again</button>}
+            </div>
+          )}
+          {!localLoading && !localError && localReps && (() => {
+            const sections = [
+              { key: "county_exec", label: "County Executive" },
+              { key: "county",      label: "County Legislature" },
+              { key: "local_exec",  label: "Mayor / City Executive" },
+              { key: "local",       label: "City Council" },
+              { key: "school",      label: "School Board" },
+            ].filter(s => localReps[s.key]?.length > 0)
+
+            if (sections.length === 0) return (
+              <div style={{ textAlign: "center", padding: "48px 20px", color: "#6B7C6C" }}>
+                <div style={{ fontSize: 36, marginBottom: 10 }}>🏛️</div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#1C2E1E", marginBottom: 6 }}>No data available for this zip</p>
+                <p style={{ fontSize: 12, color: "#6B7C6C", marginBottom: 20, maxWidth: 280, margin: "0 auto 20px" }}>
+                  Our local officials database doesn't cover all municipalities yet. Find yours directly:
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+                  <a href="https://www.usa.gov/elected-officials" target="_blank" rel="noopener noreferrer"
+                    style={{ padding: "8px 20px", borderRadius: 10, background: "#F0F7F0", color: "#15803d", fontSize: 12, fontWeight: 600, border: "1px solid rgba(21,128,61,0.2)", textDecoration: "none" }}>
+                    USA.gov — Find Elected Officials →
+                  </a>
+                  <a href="https://ballotpedia.org/Sample_Ballot_Lookup" target="_blank" rel="noopener noreferrer"
+                    style={{ padding: "8px 20px", borderRadius: 10, background: "rgba(0,0,0,0.04)", color: "#4A5C4B", fontSize: 12, fontWeight: 600, border: "1px solid rgba(0,0,0,0.08)", textDecoration: "none" }}>
+                    Ballotpedia — Look Up Your Officials →
+                  </a>
+                </div>
+              </div>
+            )
+
+            return (
+              <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+                {sections.map(({ key, label }) => (
+                  <div key={key}>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>{label}</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {localReps[key].map((r, i) => <RepCard key={i} rep={r} />)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
+        </>
       )}
     </div>
   )

@@ -1006,7 +1006,7 @@ export default function Home() {
         return { type: "follow", name: p?.display_name || p?.username || "Someone", username: p?.username, created_at: f.created_at }
       })
       setNotifCount(notifs.length)
-      setNotifItems(notifs)
+      setNotifItems(notifs.slice(0, 5))
 
       // Check for new network activity since last visit
       const lastCheck = localStorage.getItem("lastNetworkCheck")
@@ -1220,14 +1220,14 @@ export default function Home() {
             issue_slug: slug,
             issue_title: issue?.title || null,
             created_at: new Date().toISOString(),
-          }).catch(() => {})
+          }).then(() => {}, () => {})
         } else {
           supabase.from("user_activity")
             .delete()
             .eq("user_id", user.id)
             .eq("activity_type", "saved_issue")
             .eq("issue_slug", slug)
-            .catch(() => {})
+            .then(() => {}, () => {})
         }
       })
       return next
@@ -1377,8 +1377,9 @@ export default function Home() {
               <div ref={notifRef} style={{ position: "relative" }}>
                 <button
                   onClick={() => {
+                    const opening = !notifOpen
                     setNotifOpen(v => !v)
-                    if (!notifOpen) {
+                    if (opening) {
                       localStorage.setItem("lastNotifCheck", new Date().toISOString())
                       setNotifCount(0)
                     }
@@ -1475,24 +1476,6 @@ export default function Home() {
                 borderRadius: 10, padding: "6px", minWidth: 160,
                 boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 100,
               }}>
-                <Link href="/profile" onClick={() => setAccountOpen(false)}
-                  style={{
-                    display: "block", padding: "9px 14px", borderRadius: 7,
-                    fontSize: 13, fontWeight: 600, color: "#2A3E2C",
-                    textDecoration: "none", transition: "background 0.12s",
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.06)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                >My Impact</Link>
-                <Link href="/my-reps" onClick={() => setAccountOpen(false)}
-                  style={{
-                    display: "block", padding: "9px 14px", borderRadius: 7,
-                    fontSize: 13, fontWeight: 600, color: "#2A3E2C",
-                    textDecoration: "none", transition: "background 0.12s",
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.06)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                >My Reps</Link>
                 <Link href="/settings" onClick={() => setAccountOpen(false)}
                   style={{
                     display: "block", padding: "9px 14px", borderRadius: 7,
@@ -1502,6 +1485,15 @@ export default function Home() {
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.06)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >Settings</Link>
+                <Link href="/archive" onClick={() => setAccountOpen(false)}
+                  style={{
+                    display: "block", padding: "9px 14px", borderRadius: 7,
+                    fontSize: 13, fontWeight: 600, color: "#2A3E2C",
+                    textDecoration: "none", transition: "background 0.12s",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.06)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                >Archive</Link>
                 <div style={{ height: 1, background: "rgba(0,0,0,0.07)", margin: "4px 0" }} />
                 <button
                   onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login" }}

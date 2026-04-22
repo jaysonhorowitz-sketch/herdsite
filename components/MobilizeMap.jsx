@@ -117,19 +117,15 @@ export default function MobilizeMap({ zip, height = 300, onEventsLoaded, onError
       // Scatter event dots around center
       const cLng = mapCenter[0]
       const cLat = mapCenter[1]
-      console.log(`[MobilizeMap] center: lng=${cLng}, lat=${cLat}`)
 
       events.forEach((event, i) => {
         const catColor = CAT_COLOR[event.category] || "#6B7C6C"
 
-        // Simple random offset: ±0.008° to ±0.022° in both lng and lat
         const sign = () => (Math.random() < 0.5 ? 1 : -1)
         const lngOffset = sign() * (0.008 + Math.random() * 0.014)
         const latOffset = sign() * (0.008 + Math.random() * 0.014)
         const lng = cLng + lngOffset
         const lat = cLat + latOffset
-
-        console.log(`[MobilizeMap] dot ${i}: setLngLat([${lng.toFixed(5)}, ${lat.toFixed(5)}]) offsets=(${lngOffset.toFixed(4)}, ${latOffset.toFixed(4)})`)
 
         const el = document.createElement("div")
         el.style.cssText = `
@@ -139,7 +135,6 @@ export default function MobilizeMap({ zip, height = 300, onEventsLoaded, onError
           box-shadow: 0 2px 6px rgba(0,0,0,0.35);
           cursor: pointer;
           transition: transform 0.15s;
-          position: relative; z-index: 5;
         `
         el.onmouseenter = () => { el.style.transform = "scale(1.6)" }
         el.onmouseleave = () => { el.style.transform = "scale(1)" }

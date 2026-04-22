@@ -38,21 +38,34 @@ export async function GET(request) {
     const data = await res.json()
     const stateOnly = (data.results || []).filter(r => r.jurisdiction.classification === "state")
 
-    const normalize = r => ({
+    const checkPhoto = async url => {
+      if (!url) return null
+      try {
+        const r = await fetch(url, { method: "HEAD", redirect: "follow" })
+        return r.ok ? url : null
+      } catch { return null }
+    }
+
+    const stateName = stateOnly[0]?.jurisdiction?.name || ""
+    const chamber = org => org === "upper" ? `${stateName} State Senator` : `${stateName} Assembly Member`
+
+    const normalize = async r => ({
       name: r.name,
       party: r.party === "Democratic" ? "Democrat" : r.party,
       district: r.current_role.district,
-      title: `${r.current_role.org_classification === "upper" ? "NY State Senator" : "NY Assembly Member"} · District ${r.current_role.district}`,
-      photoURL: r.image || null,
+      title: `${chamber(r.current_role.org_classification)} · District ${r.current_role.district}`,
+      photoURL: await checkPhoto(r.image),
       link: r.openstates_url || null,
       email: r.email || null,
       phone: r.offices?.find(o => o.voice)?.voice || null,
       role: r.current_role.org_classification === "upper" ? "state_senate" : "state_assembly",
     })
 
+    const normalized = await Promise.all(stateOnly.map(normalize))
+
     return NextResponse.json({
-      senate:   stateOnly.filter(r => r.current_role.org_classification === "upper").map(normalize),
-      assembly: stateOnly.filter(r => r.current_role.org_classification === "lower").map(normalize),
+      senate:   normalized.filter(r => r.role === "state_senate"),
+      assembly: normalized.filter(r => r.role === "state_assembly"),
     })
   } catch (e) {
     clearTimeout(timer)

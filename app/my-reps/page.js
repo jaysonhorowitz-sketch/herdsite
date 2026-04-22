@@ -67,7 +67,7 @@ function RepCard({ rep }) {
           fontSize: 24, border: "2px solid rgba(21,128,61,0.12)",
         }}>
           {rep.photoURL
-            ? <img src={rep.photoURL} alt={rep.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ? <img src={rep.photoURL} alt={rep.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; e.target.parentNode.innerText = "🏛️" }} />
             : "🏛️"}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
