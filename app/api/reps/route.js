@@ -3,12 +3,12 @@ import { NextResponse } from "next/server"
 const PRESIDENT = {
   name: "Donald J. Trump",
   party: "Republican",
-  state: "Washington, D.C.",
   title: "President of the United States",
   phone: "202-456-1111",
   link: "https://www.whitehouse.gov/contact/",
   office: "The White House, 1600 Pennsylvania Ave NW, Washington, DC 20500",
   role: "president",
+  photoURL: null,
 }
 
 export async function GET(request) {
@@ -16,30 +16,52 @@ export async function GET(request) {
   const zip = searchParams.get("zip")
   if (!zip) return NextResponse.json({ error: "zip required" }, { status: 400 })
 
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 10000)
+
   try {
     const res = await fetch(
-      `https://whoismyrepresentative.com/getall_mems.php?zip=${zip}&output=json`
+      `https://api.5calls.org/v1/representatives?location=${zip}`,
+      {
+        headers: { "X-5Calls-Token": process.env.FIVE_CALLS_API_KEY || "" },
+        signal: controller.signal,
+      }
     )
-    const text = await res.text()
-    const data = JSON.parse(text)
-    const results = data.results || []
+    clearTimeout(timeout)
 
-    const members = results.map(r => ({
+    if (!res.ok) throw new Error(`5calls returned ${res.status}`)
+
+    const data = await res.json()
+    const raws = data.representatives || []
+
+    const reps = raws.map(r => ({
       name: r.name,
       party: r.party,
-      state: r.state,
-      district: r.district || null,
+      area: r.area,
+      role: r.area === "US Senate" ? "senator" : "house",
+      title: r.area === "US Senate"
+        ? `U.S. Senator · ${r.state}`
+        : `U.S. Representative · ${r.state}${r.district ? `-${r.district}` : ""}`,
       phone: r.phone || null,
-      office: r.office || null,
-      link: r.link || null,
-      role: r.district ? "house" : "senator",
-      title: r.district
-        ? `U.S. Representative · ${r.state}-${r.district}`
-        : `U.S. Senator · ${r.state}`,
+      link: r.url || null,
+      office: null,
+      photoURL: r.photoURL || null,
+      state: r.state || null,
+      district: r.district || null,
+      twitter: r.twitter || null,
+      instagram: r.instagram || null,
+      fieldOffices: r.field_offices || [],
     }))
 
-    return NextResponse.json({ reps: [PRESIDENT, ...members] })
+    return NextResponse.json({
+      reps: [PRESIDENT, ...reps],
+      lowAccuracy: data.lowAccuracy || false,
+    })
   } catch (e) {
+    clearTimeout(timeout)
+    if (e.name === "AbortError") {
+      return NextResponse.json({ error: "Request timed out" }, { status: 504 })
+    }
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
 }
