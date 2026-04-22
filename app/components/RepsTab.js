@@ -67,11 +67,19 @@ function RepCard({ rep }) {
   )
 }
 
+const TABS = ["Federal", "State", "Local"]
+
 export default function RepsTab({ userZip }) {
-  const [zip,     setZip]     = useState(userZip || "")
-  const [reps,    setReps]    = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error,   setError]   = useState(null)
+  const [zip,       setZip]       = useState(userZip || "")
+  const [reps,      setReps]      = useState([])
+  const [loading,   setLoading]   = useState(true)
+  const [error,     setError]     = useState(null)
+  const [activeTab,    setActiveTab]   = useState("Federal")
+  const [stateReps,    setStateReps]   = useState({ senate: [], assembly: [] })
+  const [stateLoading, setStateLoading] = useState(null)
+  const [stateError,   setStateError]  = useState(null)
+
+  const CACHE_TTL = 24 * 60 * 60 * 1000
 
   useEffect(() => {
     const z = userZip || localStorage.getItem("userZipCode")
@@ -88,21 +96,46 @@ export default function RepsTab({ userZip }) {
       .finally(() => setLoading(false))
   }
 
+  async function fetchStateReps(z, bust = false) {
+    if (!bust) {
+      try {
+        const raw = localStorage.getItem(`state_reps_cache_${z}`)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          if (Date.now() - parsed.cachedAt <= CACHE_TTL) {
+            setStateReps(parsed.data); setStateLoading(false); return
+          }
+        }
+      } catch {}
+    }
+    setStateLoading(true); setStateError(null)
+    try {
+      const res = await fetch(`/api/reps/state?zip=${z}`)
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      const result = { senate: data.senate || [], assembly: data.assembly || [] }
+      setStateReps(result)
+      try { localStorage.setItem(`state_reps_cache_${z}`, JSON.stringify({ data: result, cachedAt: Date.now() })) } catch {}
+    } catch { setStateError("Couldn't load state reps for this zip.") }
+    setStateLoading(false)
+  }
+
+  useEffect(() => {
+    if (activeTab === "State" && zip) fetchStateReps(zip)
+  }, [activeTab, zip])
+
   const president = reps.filter(r => r.role === "president")
   const senators  = reps.filter(r => r.role === "senator")
   const house     = reps.filter(r => r.role === "house")
 
   return (
     <div style={{ maxWidth: 760, margin: "0 auto", padding: "28px 32px 80px" }}>
-      {/* Zip input */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 28, marginLeft: -6 }}>
+      {/* Zip + tabs row */}
+      <div style={{ display: "flex", alignItems: "center", borderBottom: "1px solid rgba(0,0,0,0.08)", marginBottom: 28 }}>
+        {/* Zip input */}
         <input
           key={zip}
-          type="text"
-          inputMode="numeric"
-          maxLength={5}
-          defaultValue={zip}
-          placeholder="10001"
+          type="text" inputMode="numeric" maxLength={5} defaultValue={zip} placeholder="10001"
           onBlur={e => {
             const v = e.target.value.replace(/\D/g, "").slice(0, 5)
             if (v.length === 5) { setZip(v); localStorage.setItem("userZipCode", v); fetchReps(v) }
@@ -117,42 +150,111 @@ export default function RepsTab({ userZip }) {
           }}
           onFocus={e => e.target.style.borderColor = "rgba(21,128,61,0.5)"}
           style={{
-            width: 72, padding: "3px 10px", fontSize: 11, fontWeight: 600,
+            width: 66, padding: "3px 10px", fontSize: 11, fontWeight: 600,
             color: "#4A5C4B", background: "rgba(0,0,0,0.04)",
             border: "1px solid rgba(0,0,0,0.12)", borderRadius: 99,
             outline: "none", letterSpacing: "0.08em", textAlign: "center",
-            transition: "border-color 0.15s",
+            transition: "border-color 0.15s", marginRight: 12, flexShrink: 0,
           }}
         />
-        <span style={{ fontSize: 11, color: "#9CAD9C", fontWeight: 500 }}>Zip code</span>
+        {/* Tabs */}
+        {TABS.map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
+            onMouseEnter={e => { if (activeTab !== tab) e.currentTarget.style.color = "#4A5C4B" }}
+            onMouseLeave={e => { if (activeTab !== tab) e.currentTarget.style.color = "#9CAD9C" }}
+            style={{
+              padding: "10px 14px", fontSize: 13, background: "none", border: "none", cursor: "pointer",
+              fontWeight: activeTab === tab ? 800 : 500,
+              color: activeTab === tab ? "#1C2E1E" : "#9CAD9C",
+              borderBottom: activeTab === tab ? "3px solid #15803d" : "3px solid transparent",
+              marginBottom: -1, transition: "color 0.15s",
+            }}>
+            {tab}
+          </button>
+        ))}
       </div>
 
-      {loading && <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>{[["55%",1],["78%",2],["100%",1]].map(([w,n],i) => <div key={i} style={{ width: w, display: "grid", gridTemplateColumns: `repeat(${n},1fr)`, gap: 10 }}>{Array(n).fill(0).map((_,j) => <div key={j} style={{ height: 100, borderRadius: 16, background: "rgba(0,0,0,0.06)" }} />)}</div>)}</div>}
+      {/* Federal */}
+      {activeTab === "Federal" && (
+        <>
+          {loading && <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>{[["55%",1],["78%",2],["100%",1]].map(([w,n],i) => <div key={i} style={{ width: w, display: "grid", gridTemplateColumns: `repeat(${n},1fr)`, gap: 10 }}>{Array(n).fill(0).map((_,j) => <div key={j} style={{ height: 100, borderRadius: 16, background: "rgba(0,0,0,0.06)" }} />)}</div>)}</div>}
+          {error && <div style={{ textAlign: "center", padding: "48px 20px", color: "#6B7C6C" }}><div style={{ fontSize: 36, marginBottom: 10 }}>🏛️</div><p style={{ fontSize: 13 }}>{error}</p></div>}
+          {!loading && !error && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
+              {president.length > 0 && (
+                <div style={{ width: "55%", minWidth: 260 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>President</div>
+                  {president.map((r, i) => <RepCard key={i} rep={r} />)}
+                </div>
+              )}
+              {senators.length > 0 && (
+                <div style={{ width: "78%", minWidth: 300 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>U.S. Senate</div>
+                  <div style={{ display: "grid", gridTemplateColumns: senators.length > 1 ? "1fr 1fr" : "1fr", gap: 10 }}>
+                    {senators.map((r, i) => <RepCard key={i} rep={r} />)}
+                  </div>
+                </div>
+              )}
+              {house.length > 0 && (
+                <div style={{ width: "100%" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>U.S. House of Representatives</div>
+                  {house.map((r, i) => <RepCard key={i} rep={r} />)}
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
 
-      {error && <div style={{ textAlign: "center", padding: "48px 20px", color: "#6B7C6C" }}><div style={{ fontSize: 36, marginBottom: 10 }}>🏛️</div><p style={{ fontSize: 13 }}>{error}</p></div>}
+      {/* State */}
+      {activeTab === "State" && (
+        <>
+          {stateLoading === true && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {[1, 2, 3].map(i => <div key={i} style={{ height: 90, borderRadius: 16, background: "rgba(0,0,0,0.06)" }} />)}
+            </div>
+          )}
+          {stateLoading === false && stateError && (
+            <div style={{ textAlign: "center", padding: "48px 20px", color: "#6B7C6C" }}>
+              <div style={{ fontSize: 36, marginBottom: 10 }}>🏛️</div>
+              <p style={{ fontSize: 13, marginBottom: 14 }}>{stateError}</p>
+              {zip && <button onClick={() => fetchStateReps(zip, true)} style={{ padding: "7px 18px", borderRadius: 10, border: "1px solid rgba(21,128,61,0.3)", background: "#F0F7F0", color: "#15803d", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Try again</button>}
+            </div>
+          )}
+          {stateLoading === false && !stateError && stateReps.senate.length === 0 && stateReps.assembly.length === 0 && (
+            <div style={{ textAlign: "center", padding: "48px 20px", color: "#6B7C6C" }}>
+              <div style={{ fontSize: 36, marginBottom: 10 }}>🏛️</div>
+              <p style={{ fontSize: 13 }}>No state reps found for this zip.</p>
+            </div>
+          )}
+          {stateLoading === false && !stateError && (stateReps.senate.length > 0 || stateReps.assembly.length > 0) && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              {stateReps.senate.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>NY State Senate</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {stateReps.senate.map((r, i) => <RepCard key={i} rep={r} />)}
+                  </div>
+                </div>
+              )}
+              {stateReps.assembly.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>NY State Assembly</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {stateReps.assembly.map((r, i) => <RepCard key={i} rep={r} />)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
 
-      {!loading && !error && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
-          {president.length > 0 && (
-            <div style={{ width: "55%", minWidth: 260 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>President</div>
-              {president.map((r, i) => <RepCard key={i} rep={r} />)}
-            </div>
-          )}
-          {senators.length > 0 && (
-            <div style={{ width: "78%", minWidth: 300 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>U.S. Senate</div>
-              <div style={{ display: "grid", gridTemplateColumns: senators.length > 1 ? "1fr 1fr" : "1fr", gap: 10 }}>
-                {senators.map((r, i) => <RepCard key={i} rep={r} />)}
-              </div>
-            </div>
-          )}
-          {house.length > 0 && (
-            <div style={{ width: "100%" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 8 }}>U.S. House of Representatives</div>
-              {house.map((r, i) => <RepCard key={i} rep={r} />)}
-            </div>
-          )}
+      {/* Local placeholder */}
+      {activeTab === "Local" && (
+        <div style={{ textAlign: "center", padding: "60px 20px", color: "#9CAD9C" }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#4A5C4B", marginBottom: 4 }}>Local representatives</div>
+          <div style={{ fontSize: 12 }}>In production</div>
         </div>
       )}
     </div>

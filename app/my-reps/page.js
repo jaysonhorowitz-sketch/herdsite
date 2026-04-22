@@ -141,6 +141,10 @@ export default function MyReps() {
   const [error,       setError]       = useState(null)
   const [lowAccuracy, setLowAccuracy] = useState(false)
   const [animal,      setAnimal]      = useState(null)
+  const [activeTab,    setActiveTab]   = useState("Federal")
+  const [stateReps,    setStateReps]   = useState({ senate: [], assembly: [] })
+  const [stateLoading, setStateLoading] = useState(null)
+  const [stateError,   setStateError]  = useState(null)
 
   useEffect(() => {
     async function load() {
@@ -195,6 +199,34 @@ export default function MyReps() {
     fetchReps(v, true)
     setError(null)
   }
+
+  async function fetchStateReps(z, bust = false) {
+    if (!bust) {
+      try {
+        const raw = localStorage.getItem(`state_reps_cache_${z}`)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          if (Date.now() - parsed.cachedAt <= CACHE_TTL) {
+            setStateReps(parsed.data); setStateLoading(false); return
+          }
+        }
+      } catch {}
+    }
+    setStateLoading(true); setStateError(null)
+    try {
+      const res = await fetch(`/api/reps/state?zip=${z}`)
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      const result = { senate: data.senate || [], assembly: data.assembly || [] }
+      setStateReps(result)
+      try { localStorage.setItem(`state_reps_cache_${z}`, JSON.stringify({ data: result, cachedAt: Date.now() })) } catch {}
+    } catch { setStateError("Couldn't load state reps for this zip.") }
+    setStateLoading(false)
+  }
+
+  useEffect(() => {
+    if (activeTab === "State" && zip) fetchStateReps(zip)
+  }, [activeTab, zip])
 
   const president = reps.filter(r => r.role === "president")
   const senators  = reps.filter(r => r.role === "senator")
@@ -256,61 +288,145 @@ export default function MyReps() {
           >Update</button>
         </div>
 
-        {loading && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-            {[["55%", 1], ["78%", 2], ["100%", 1]].map(([w, n], i) => (
-              <div key={i} style={{ width: w, display: "grid", gridTemplateColumns: `repeat(${n}, 1fr)`, gap: 12 }}>
-                {Array(n).fill(0).map((_, j) => (
-                  <div key={j} style={{ height: 90, borderRadius: 16, background: "rgba(0,0,0,0.06)" }} />
+        {/* Tabs */}
+        <div style={{ display: "flex", borderBottom: "1px solid rgba(0,0,0,0.08)", marginBottom: 28 }}>
+          {["Federal", "State", "Local"].map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)}
+              onMouseEnter={e => { if (activeTab !== tab) e.currentTarget.style.color = "#4A5C4B" }}
+              onMouseLeave={e => { if (activeTab !== tab) e.currentTarget.style.color = "#9CAD9C" }}
+              style={{
+                padding: "10px 14px", fontSize: 13, background: "none", border: "none", cursor: "pointer",
+                fontWeight: activeTab === tab ? 800 : 500,
+                color: activeTab === tab ? "#1C2E1E" : "#9CAD9C",
+                borderBottom: activeTab === tab ? "3px solid #15803d" : "3px solid transparent",
+                marginBottom: -1, transition: "color 0.15s",
+              }}>
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* Federal tab */}
+        {activeTab === "Federal" && (
+          <>
+            {loading && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+                {[["55%", 1], ["78%", 2], ["100%", 1]].map(([w, n], i) => (
+                  <div key={i} style={{ width: w, display: "grid", gridTemplateColumns: `repeat(${n}, 1fr)`, gap: 12 }}>
+                    {Array(n).fill(0).map((_, j) => (
+                      <div key={j} style={{ height: 90, borderRadius: 16, background: "rgba(0,0,0,0.06)" }} />
+                    ))}
+                  </div>
                 ))}
               </div>
-            ))}
-          </div>
+            )}
+
+            {error && (
+              <div style={{ textAlign: "center", padding: "60px 20px", color: "#6B7C6C" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🏛️</div>
+                <p style={{ fontSize: 14, marginBottom: 16 }}>{error}</p>
+                {zip && (
+                  <button onClick={() => fetchReps(zip, true)} style={{ padding: "8px 20px", borderRadius: 10, border: "1px solid rgba(21,128,61,0.3)", background: "#F0F7F0", color: "#15803d", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                    Try again
+                  </button>
+                )}
+              </div>
+            )}
+
+            {!loading && !error && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+
+                {president.length > 0 && (
+                  <div style={{ width: "55%", minWidth: 280 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 10 }}>President</div>
+                    {president.map((rep, i) => <RepCard key={i} rep={rep} />)}
+                  </div>
+                )}
+
+                {senators.length > 0 && (
+                  <div style={{ width: "78%", minWidth: 320 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 10 }}>U.S. Senate</div>
+                    <div style={{ display: "grid", gridTemplateColumns: senators.length > 1 ? "1fr 1fr" : "1fr", gap: 12 }}>
+                      {senators.map((rep, i) => <RepCard key={i} rep={rep} />)}
+                    </div>
+                  </div>
+                )}
+
+                {house.length > 0 && (
+                  <div style={{ width: "100%" }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 10 }}>U.S. House of Representatives</div>
+                    {house.map((rep, i) => <RepCard key={i} rep={rep} />)}
+                  </div>
+                )}
+
+                {lowAccuracy && (
+                  <p style={{ fontSize: 11, color: "#9CAD9C", margin: "4px 0 0", textAlign: "center" }}>
+                    District based on zip code — may not be exact
+                  </p>
+                )}
+              </div>
+            )}
+          </>
         )}
 
-        {error && (
-          <div style={{ textAlign: "center", padding: "60px 20px", color: "#6B7C6C" }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🏛️</div>
-            <p style={{ fontSize: 14, marginBottom: 16 }}>{error}</p>
-            {zip && (
-              <button onClick={() => fetchReps(zip, true)} style={{ padding: "8px 20px", borderRadius: 10, border: "1px solid rgba(21,128,61,0.3)", background: "#F0F7F0", color: "#15803d", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                Try again
-              </button>
+        {/* State tab */}
+        {activeTab === "State" && (
+          <>
+            {stateLoading === true && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {[1, 2, 3].map(i => (
+                  <div key={i} style={{ height: 90, borderRadius: 16, background: "rgba(0,0,0,0.06)" }} />
+                ))}
+              </div>
             )}
-          </div>
+
+            {stateLoading === false && stateError && (
+              <div style={{ textAlign: "center", padding: "60px 20px", color: "#6B7C6C" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🏛️</div>
+                <p style={{ fontSize: 14, marginBottom: 16 }}>{stateError}</p>
+                {zip && (
+                  <button onClick={() => fetchStateReps(zip, true)} style={{ padding: "8px 20px", borderRadius: 10, border: "1px solid rgba(21,128,61,0.3)", background: "#F0F7F0", color: "#15803d", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                    Try again
+                  </button>
+                )}
+              </div>
+            )}
+
+            {stateLoading === false && !stateError && stateReps.senate.length === 0 && stateReps.assembly.length === 0 && (
+              <div style={{ textAlign: "center", padding: "60px 20px", color: "#6B7C6C" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🏛️</div>
+                <p style={{ fontSize: 14 }}>No state reps found for this zip.</p>
+              </div>
+            )}
+
+            {stateLoading === false && !stateError && (stateReps.senate.length > 0 || stateReps.assembly.length > 0) && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+                {stateReps.senate.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 10 }}>NY State Senate</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      {stateReps.senate.map((rep, i) => <RepCard key={i} rep={rep} />)}
+                    </div>
+                  </div>
+                )}
+                {stateReps.assembly.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 10 }}>NY State Assembly</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      {stateReps.assembly.map((rep, i) => <RepCard key={i} rep={rep} />)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
 
-        {!loading && !error && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
-
-            {president.length > 0 && (
-              <div style={{ width: "55%", minWidth: 280 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 10 }}>President</div>
-                {president.map((rep, i) => <RepCard key={i} rep={rep} />)}
-              </div>
-            )}
-
-            {senators.length > 0 && (
-              <div style={{ width: "78%", minWidth: 320 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 10 }}>U.S. Senate</div>
-                <div style={{ display: "grid", gridTemplateColumns: senators.length > 1 ? "1fr 1fr" : "1fr", gap: 12 }}>
-                  {senators.map((rep, i) => <RepCard key={i} rep={rep} />)}
-                </div>
-              </div>
-            )}
-
-            {house.length > 0 && (
-              <div style={{ width: "100%" }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#9CAD9C", textAlign: "center", marginBottom: 10 }}>U.S. House of Representatives</div>
-                {house.map((rep, i) => <RepCard key={i} rep={rep} />)}
-              </div>
-            )}
-
-            {lowAccuracy && (
-              <p style={{ fontSize: 11, color: "#9CAD9C", margin: "4px 0 0", textAlign: "center" }}>
-                District based on zip code — may not be exact
-              </p>
-            )}
+        {/* Local tab */}
+        {activeTab === "Local" && (
+          <div style={{ textAlign: "center", padding: "60px 20px", color: "#9CAD9C" }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#4A5C4B", marginBottom: 4 }}>Local representatives</div>
+            <div style={{ fontSize: 12 }}>In production</div>
           </div>
         )}
       </div>
