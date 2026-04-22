@@ -10,7 +10,9 @@
       "Bash(git commit:*)",
       "Bash(git remote:*)",
       "Bash(npx impeccable:*)",
-      "Bash(grep -n \"NONPROFITS\\\\|const.*orgs\\\\|name.*description.*url\" /Users/ethanhorowitz/Desktop/howbadisite/app/issue/\\\\[slug\\\\]/page.js | head -50)"
+      "Bash(grep -n \"NONPROFITS\\\\|const.*orgs\\\\|name.*description.*url\" /Users/ethanhorowitz/Desktop/howbadisite/app/issue/\\\\[slug\\\\]/page.js | head -50)",
+      "WebFetch(domain:v3.openstates.org)",
+      "Bash(curl -s \"http://localhost:3000/api/reps/state?zip=10001\")"
     ]
   }
 }
